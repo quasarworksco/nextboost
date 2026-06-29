@@ -240,18 +240,18 @@
           <div class="card">
             <div class="card-header">Configuración del proveedor</div>
             <div class="card-body">
-              <div class="alert alert-success mb-3">✅ La API key de JAP vive en el <strong>Cloudflare Worker</strong> como secret — nunca llega al navegador.</div>
+              <div class="alert alert-success mb-3">✅ API key segura en <strong>Cloudflare Worker</strong> — nunca visible en el navegador.</div>
               <div class="form-group">
-                <label>URL del Worker (Cloudflare)</label>
-                <input type="url" class="input" id="settings-api-url" placeholder="https://nexboost-api.tu-subdomain.workers.dev">
-                <div style="font-size:12px;color:var(--muted);margin-top:4px">Actualiza también <code>PROVIDER.url</code> en <code>js/config.js</code></div>
+                <label>Worker URL <span style="color:var(--green);font-size:11px">● Activo</span></label>
+                <input type="url" class="input" id="settings-api-url" readonly style="opacity:.6;cursor:default" tabindex="-1">
               </div>
               <div class="form-group">
-                <label>Markup (ej: 1.5 = 50% ganancia sobre costo de JAP)</label>
-                <input type="number" class="input" id="settings-markup" placeholder="1.5" min="1" step="0.1">
+                <label>Markup de precios (ej: 1.5 = 50% de ganancia)</label>
+                <input type="number" class="input" id="settings-markup" placeholder="1.5" min="1.0" step="0.1">
+                <div style="font-size:12px;color:var(--muted);margin-top:4px">Se aplica al sincronizar servicios desde el proveedor.</div>
               </div>
               <div id="settings-alert"></div>
-              <button class="btn btn-primary" id="save-settings-btn">Guardar configuración</button>
+              <button class="btn btn-primary" id="save-settings-btn">Guardar markup</button>
             </div>
           </div>
           <div class="card">
@@ -381,7 +381,7 @@ async function checkProviderBalance() {
   try {
     const res = await SmmAPI.getBalance();
     document.getElementById('provider-balance').textContent = formatUSD2(res.balance);
-  } catch(e) { document.getElementById('provider-balance').textContent = 'No configurado'; }
+  } catch(e) { document.getElementById('provider-balance').textContent = '$—'; }
 }
 
 // ── Pending badge ─────────────────────────────────────
@@ -559,7 +559,7 @@ async function syncProviderServices() {
   status.innerHTML = '';
   try {
     const settingsSnap = await db.collection('settings').doc('main').get();
-    const markup = settingsSnap.exists ? (settingsSnap.data().markup || APP.markup) : APP.markup;
+    const markup = (settingsSnap.exists && settingsSnap.data().markup) ? settingsSnap.data().markup : APP.markup;
     const count = await Services.syncFromProvider(markup);
     status.innerHTML = `<span style="color:var(--green)">✅ ${count} servicios sincronizados</span>`;
     toast(`${count} servicios sincronizados`, 'success');
@@ -573,29 +573,28 @@ async function syncProviderServices() {
 
 // ── Settings ──────────────────────────────────────────
 async function loadSettings() {
+  // Worker URL comes from config.js — show it as read-only info
+  document.getElementById('settings-api-url').value = PROVIDER.url;
+
   const snap = await db.collection('settings').doc('main').get();
-  if (!snap.exists) return;
-  const d = snap.data();
-  document.getElementById('settings-api-url').value = d.smmApiUrl || '';
-  document.getElementById('settings-api-key').value = d.smmApiKey || '';
-  document.getElementById('settings-markup').value  = d.markup || '1.5';
+  const d = snap.exists ? snap.data() : {};
+  document.getElementById('settings-markup').value  = d.markup  || APP.markup;
   document.getElementById('settings-binance').value = d.binance || '';
-  document.getElementById('settings-zelle').value   = d.zelle || '';
-  document.getElementById('settings-usdt').value    = d.usdt || '';
+  document.getElementById('settings-zelle').value   = d.zelle   || '';
+  document.getElementById('settings-usdt').value    = d.usdt    || '';
 }
 
 document.getElementById('save-settings-btn').addEventListener('click', async () => {
-  const data = {
-    smmApiUrl: document.getElementById('settings-api-url').value.trim(),
-    markup:    parseFloat(document.getElementById('settings-markup').value) || 1.5,
-    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-  };
+  const markup = parseFloat(document.getElementById('settings-markup').value) || APP.markup;
   const alertEl = document.getElementById('settings-alert');
   try {
-    await db.collection('settings').doc('main').set(data, { merge: true });
-    alertEl.innerHTML = '<div class="alert alert-success">✅ Configuración guardada.</div>';
+    await db.collection('settings').doc('main').set({
+      markup,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    }, { merge: true });
+    alertEl.innerHTML = '<div class="alert alert-success">✅ Markup guardado.</div>';
+    setTimeout(() => alertEl.innerHTML = '', 3000);
     toast('Configuración guardada', 'success');
-    checkProviderBalance();
   } catch(e) { alertEl.innerHTML = `<div class="alert alert-error">❌ ${e.message}</div>`; }
 });
 
