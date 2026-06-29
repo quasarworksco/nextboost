@@ -237,9 +237,22 @@
 
       <!-- ═══ ORDERS ═══ -->
       <div id="page-orders" class="page-section" style="display:none">
+        <div class="card mb-3">
+          <div class="card-body" style="padding:12px 16px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+            <input type="text" class="input" id="admin-orders-search" placeholder="Buscar servicio o usuario..." style="max-width:240px;margin:0" oninput="applyAdminOrderFilters()">
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+              <button class="btn btn-sm btn-primary" id="aof-all"       onclick="setAdminOrderFilter('')">Todos</button>
+              <button class="btn btn-sm btn-ghost"   id="aof-pending"   onclick="setAdminOrderFilter('pending')">Pendiente</button>
+              <button class="btn btn-sm btn-ghost"   id="aof-active"    onclick="setAdminOrderFilter('active')">Activo</button>
+              <button class="btn btn-sm btn-ghost"   id="aof-completed" onclick="setAdminOrderFilter('completed')">Completado</button>
+              <button class="btn btn-sm btn-ghost"   id="aof-partial"   onclick="setAdminOrderFilter('partial')">Parcial</button>
+              <button class="btn btn-sm btn-ghost"   id="aof-canceled"  onclick="setAdminOrderFilter('canceled')">Cancelado</button>
+            </div>
+          </div>
+        </div>
         <div class="card">
           <div class="card-header flex items-center justify-between">
-            <span>Todos los pedidos</span>
+            <span>Todos los pedidos <span id="admin-orders-count" style="font-size:13px;font-weight:400;color:var(--muted)"></span></span>
             <div style="display:flex;gap:8px">
               <button class="btn btn-ghost btn-sm" onclick="exportOrdersCSV()">⬇ CSV</button>
               <button class="btn btn-ghost btn-sm" onclick="syncAllOrders()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg> Sincronizar</button>
@@ -722,12 +735,31 @@ async function rejectRecharge(rechargeId) {
 }
 
 // ── Orders ────────────────────────────────────────────
-async function loadAdminOrders() {
+let _adminOrderFilter = '';
+function setAdminOrderFilter(status) {
+  _adminOrderFilter = status;
+  ['all','pending','active','completed','partial','canceled'].forEach(s => {
+    const btn = document.getElementById('aof-' + (s === '' ? 'all' : s));
+    if (btn) btn.className = s === status ? 'btn btn-sm btn-primary' : 'btn btn-sm btn-ghost';
+  });
+  applyAdminOrderFilters();
+}
+function applyAdminOrderFilters() {
+  const q = (document.getElementById('admin-orders-search')?.value || '').toLowerCase().trim();
+  let list = allOrders;
+  if (_adminOrderFilter) list = list.filter(o => (o.status||'').toLowerCase() === _adminOrderFilter);
+  if (q) list = list.filter(o =>
+    (o.serviceName||'').toLowerCase().includes(q) ||
+    (o.userEmail||'').toLowerCase().includes(q) ||
+    o.id.includes(q)
+  );
+  renderAdminOrdersTable(list);
+}
+function renderAdminOrdersTable(orders) {
   const tbody = document.getElementById('admin-orders-body');
-  tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px"><span class="spinner"></span></td></tr>';
-  const snap = await db.collection('orders').orderBy('createdAt','desc').limit(200).get();
-  allOrders = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-  tbody.innerHTML = allOrders.map(o => `
+  const countEl = document.getElementById('admin-orders-count');
+  if (countEl) countEl.textContent = orders.length ? `(${orders.length})` : '';
+  tbody.innerHTML = orders.map(o => `
     <tr>
       <td data-label="#" style="font-family:monospace;font-size:11px">${o.id.slice(0,8)}</td>
       <td data-label="Usuario" style="font-size:12px">${o.userEmail || o.userId?.slice(0,10)+'...'}</td>
@@ -738,16 +770,24 @@ async function loadAdminOrders() {
       <td data-label="Fecha" style="color:var(--muted);font-size:12px">${formatDate(o.createdAt)}</td>
     </tr>`).join('') || '<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--muted)">Sin pedidos</td></tr>';
 }
+async function loadAdminOrders() {
+  const tbody = document.getElementById('admin-orders-body');
+  tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px"><span class="spinner"></span></td></tr>';
+  const snap = await db.collection('orders').orderBy('createdAt','desc').limit(500).get();
+  allOrders = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  applyAdminOrderFilters();
+}
 
 async function syncAllOrders() {
   const btn = document.querySelector('[onclick="syncAllOrders()"]');
-  btn.disabled = true; btn.textContent = 'Sincronizando...';
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Sincronizando...';
   try {
-    await Orders.syncStatus(allOrders);
+    const pending = allOrders.filter(o => ['pending','active','in progress'].includes((o.status||'').toLowerCase()));
+    await Orders.syncStatus(pending.length ? pending : allOrders.slice(0,50));
     await loadAdminOrders();
     toast('Estados sincronizados', 'success');
   } catch(e) { toast('Error: ' + e.message, 'error'); }
-  btn.disabled = false; btn.innerHTML = 'Sincronizar estados';
+  btn.disabled = false; btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg> Sincronizar';
 }
 
 // ── Users ─────────────────────────────────────────────

@@ -1,0 +1,4 @@
+# Cloudflare Pages redirects
+/api/*  https://nexboost-api.nextboostdgp.workers.dev/:splat  200
+
+# 404 fallback handled by 404.html (Cloudflare picks it up automatically)
