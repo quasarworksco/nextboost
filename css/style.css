@@ -668,24 +668,46 @@ section .subtitle { text-align: center; color: var(--muted); margin-bottom: 52px
 .faq-arrow { transition: transform .25s; }
 
 /* ─── RESPONSIVE ─────────────────────────────────────────── */
+@media (max-width: 1100px) {
+  .grid-4 { grid-template-columns: repeat(2, 1fr); }
+}
+
 @media (max-width: 900px) {
   .sidebar { transform: translateX(-100%); box-shadow: none; }
   .sidebar.open { transform: translateX(0); box-shadow: var(--shadow-l); }
-  .main-content { margin-left: 0; }
-  .hamburger { display: block; }
-  .grid-4 { grid-template-columns: repeat(2, 1fr); }
+  .main-content { margin-left: 0 !important; }
+  .hamburger { display: flex !important; }
   .landing-nav { padding: 14px 20px; }
+  .grid-4 { grid-template-columns: repeat(2, 1fr); }
+  .topbar { padding: 12px 20px; }
+  /* overlay when sidebar open */
+  .sidebar-backdrop {
+    display: block; position: fixed; inset: 0;
+    background: rgba(12,20,69,.4); z-index: 99;
+    backdrop-filter: blur(2px);
+  }
 }
+
+@media (max-width: 700px) {
+  .grid-2, .grid-3 { grid-template-columns: 1fr; }
+  .topbar-right .balance-chip span:not(#balance-display):not(#provider-balance) { display: none; }
+}
+
 @media (max-width: 600px) {
   .nav-links { display: none; }
   section { padding: 60px 20px; }
-  .stats-bar { gap: 28px; padding: 20px; }
-  .grid-2, .grid-3 { grid-template-columns: 1fr; }
+  .stats-bar { gap: 20px; padding: 20px; }
   .grid-4 { grid-template-columns: 1fr 1fr; }
   .auth-card { padding: 28px 22px; }
-  .page { padding: 16px; }
-  .topbar { padding: 12px 16px; }
-  .hero h1 { font-size: 52px; }
+  .page { padding: 14px; }
+  .topbar { padding: 10px 14px; }
+  .topbar-title { font-size: 16px; }
+  .hero h1 { font-size: 48px; }
   .cta-section { padding: 60px 20px; }
-  .stats-bar { gap: 24px; }
+  /* Tables: allow horizontal scroll, clip long text */
+  td { max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .table-wrap { border-radius: 0; }
 }
+
+/* sidebar backdrop (JS adds this class) */
+.sidebar-backdrop { display: none; }

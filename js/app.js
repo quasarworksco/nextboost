@@ -10,10 +10,9 @@ function toast(msg, type = 'info', duration = 4000) {
     container.id = 'toast-container';
     document.body.appendChild(container);
   }
-  const icons = { success: '✅', error: '❌', info: 'ℹ️', warning: '⚠️' };
   const el = document.createElement('div');
   el.className = `toast ${type}`;
-  el.innerHTML = `<span>${icons[type] || 'ℹ️'}</span><span>${msg}</span>`;
+  el.innerHTML = `<span>${msg}</span>`;
   container.appendChild(el);
   setTimeout(() => { el.style.opacity = '0'; el.style.transition = 'opacity .3s'; setTimeout(() => el.remove(), 300); }, duration);
 }
@@ -52,11 +51,21 @@ function initSidebar() {
   const hamburger = document.getElementById('hamburger');
   const sidebar   = document.getElementById('sidebar');
   if (!hamburger || !sidebar) return;
-  hamburger.addEventListener('click', () => sidebar.classList.toggle('open'));
-  document.addEventListener('click', e => {
-    if (window.innerWidth < 900 && !sidebar.contains(e.target) && !hamburger.contains(e.target))
-      sidebar.classList.remove('open');
-  });
+
+  let backdrop = document.querySelector('.sidebar-backdrop');
+  if (!backdrop) {
+    backdrop = document.createElement('div');
+    backdrop.className = 'sidebar-backdrop';
+    document.body.appendChild(backdrop);
+  }
+
+  function openSidebar()  { sidebar.classList.add('open');    backdrop.style.display = 'block'; }
+  function closeSidebar() { sidebar.classList.remove('open'); backdrop.style.display = 'none';  }
+
+  hamburger.addEventListener('click', () => sidebar.classList.contains('open') ? closeSidebar() : openSidebar());
+  backdrop.addEventListener('click', closeSidebar);
+  // close on nav item click (mobile)
+  sidebar.querySelectorAll('.nav-item').forEach(el => el.addEventListener('click', () => { if (window.innerWidth < 900) closeSidebar(); }));
 }
 
 // ── Active nav ────────────────────────────────────────
