@@ -419,6 +419,57 @@
   </div>
 </div>
 
+<!-- WELCOME ONBOARDING MODAL -->
+<div class="modal-overlay" id="welcome-modal">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-body" style="padding:32px 28px;text-align:center">
+
+      <div style="width:64px;height:64px;background:var(--blue-xs);border-radius:18px;display:flex;align-items:center;justify-content:center;margin:0 auto 20px">
+        <span class="logo" style="font-size:22px;line-height:1">Next<span>Boost</span></span>
+      </div>
+
+      <h2 style="font-size:22px;margin-bottom:6px;color:var(--navy)" id="welcome-name">Bienvenido</h2>
+      <p style="color:var(--muted);font-size:14px;margin-bottom:28px">Sigue estos pasos para comenzar a crecer</p>
+
+      <div style="display:flex;flex-direction:column;gap:14px;text-align:left;margin-bottom:28px">
+        <div style="display:flex;align-items:flex-start;gap:14px;background:var(--bg2);border-radius:12px;padding:14px">
+          <div style="min-width:32px;height:32px;background:var(--blue);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:14px;flex-shrink:0">1</div>
+          <div>
+            <div style="font-weight:700;font-size:14px;color:var(--navy)">Recarga tu saldo</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:2px">Ve a "Recargar saldo", elige tu método de pago preferido y envía el comprobante.</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:14px;background:var(--bg2);border-radius:12px;padding:14px">
+          <div style="min-width:32px;height:32px;background:var(--blue);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:14px;flex-shrink:0">2</div>
+          <div>
+            <div style="font-weight:700;font-size:14px;color:var(--navy)">Elige un servicio</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:2px">En "Nuevo pedido" busca el servicio por plataforma (Instagram, TikTok, YouTube...) y filtra por precio.</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:14px;background:var(--bg2);border-radius:12px;padding:14px">
+          <div style="min-width:32px;height:32px;background:var(--blue);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:14px;flex-shrink:0">3</div>
+          <div>
+            <div style="font-weight:700;font-size:14px;color:var(--navy)">Confirma tu pedido</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:2px">Pega el enlace de tu perfil o publicación, elige la cantidad y confirma. Tu pedido inicia automáticamente.</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:14px;background:var(--bg2);border-radius:12px;padding:14px">
+          <div style="min-width:32px;height:32px;background:var(--blue);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:14px;flex-shrink:0">4</div>
+          <div>
+            <div style="font-weight:700;font-size:14px;color:var(--navy)">Monitorea el progreso</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:2px">En "Mis pedidos" puedes ver el estado de cada pedido. Si tienes dudas, contáctanos por WhatsApp.</div>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn btn-primary btn-full" onclick="closeWelcome()">Comenzar ahora</button>
+      <div style="font-size:12px;color:var(--muted);margin-top:12px">
+        ¿Tienes dudas? <a href="https://wa.me/12398231738?text=Hola%20NextBoost%2C%20necesito%20ayuda" target="_blank" style="color:var(--blue)">Escríbenos por WhatsApp</a>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ORDER DETAIL MODAL -->
 <div class="modal-overlay" id="order-detail-modal">
   <div class="modal">
@@ -483,6 +534,7 @@ requireAuth(async user => {
   loadRecentOrders();
   loadRechargeHistory();
   loadPaymentSettings();
+  checkOnboarding();
 });
 
 // ── Balance display ───────────────────────────────────
@@ -947,6 +999,20 @@ document.getElementById('update-password-btn').addEventListener('click', async (
     toast('Contraseña cambiada', 'success');
   } catch(e) { alertEl.innerHTML = `<div class="alert alert-error">❌ ${e.message}</div>`; }
 });
+
+// ── Onboarding ────────────────────────────────────────
+function checkOnboarding() {
+  const key = 'nb_welcomed_' + currentUser.uid;
+  if (localStorage.getItem(key)) return;
+  const name = userData.name || currentUser.email.split('@')[0];
+  document.getElementById('welcome-name').textContent = 'Bienvenido, ' + name.split(' ')[0];
+  openModal('welcome-modal');
+}
+
+function closeWelcome() {
+  localStorage.setItem('nb_welcomed_' + currentUser.uid, '1');
+  closeModal('welcome-modal');
+}
 
 // ── Nav hooks ─────────────────────────────────────────
 document.querySelectorAll('.nav-item').forEach(item => {
