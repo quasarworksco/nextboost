@@ -11,7 +11,7 @@
 
 <!-- LOADING -->
 <div class="loading-overlay" id="loading-overlay">
-  <div class="logo" style="font-size:28px;font-weight:800">Next<span style="color:var(--accent)">Boost</span></div>
+  <div class="logo" style="font-size:28px">Next<span>Boost</span></div>
   <div class="spinner" style="width:32px;height:32px"></div>
 </div>
 
@@ -24,25 +24,25 @@
     <div class="nav-section">
       <div class="nav-section-title">Principal</div>
       <div class="nav-item active" data-page="home" data-title="Inicio" onclick="showPage('home')">
-        <span class="nav-icon">🏠</span> Inicio
+        <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span> Inicio
       </div>
       <div class="nav-item" data-page="new-order" data-title="Nuevo pedido" onclick="showPage('new-order')">
-        <span class="nav-icon">➕</span> Nuevo pedido
+        <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></span> Nuevo pedido
       </div>
       <div class="nav-item" data-page="orders" data-title="Mis pedidos" onclick="showPage('orders')">
-        <span class="nav-icon">📦</span> Mis pedidos
+        <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg></span> Mis pedidos
       </div>
     </div>
     <div class="nav-section">
       <div class="nav-section-title">Cuenta</div>
       <div class="nav-item" data-page="add-funds" data-title="Recargar saldo" onclick="showPage('add-funds')">
-        <span class="nav-icon">💳</span> Recargar saldo
+        <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></span> Recargar saldo
       </div>
       <div class="nav-item" data-page="api" data-title="API" onclick="showPage('api')">
-        <span class="nav-icon">🤖</span> API
+        <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></span> API
       </div>
       <div class="nav-item" data-page="profile" data-title="Perfil" onclick="showPage('profile')">
-        <span class="nav-icon">👤</span> Perfil
+        <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span> Perfil
       </div>
     </div>
   </nav>
@@ -55,7 +55,10 @@
       </div>
     </div>
     <div style="padding:8px 12px">
-      <button class="btn btn-ghost btn-sm btn-full" onclick="signOut()">🚪 Cerrar sesión</button>
+      <button class="btn btn-ghost btn-sm btn-full" onclick="signOut()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Cerrar sesión
+      </button>
     </div>
   </div>
 </aside>
@@ -65,11 +68,16 @@
   <div class="main-content">
     <div class="topbar">
       <div style="display:flex;align-items:center;gap:12px">
-        <button class="hamburger" id="hamburger">☰</button>
+        <button class="hamburger" id="hamburger">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
         <div class="topbar-title" id="page-title">Inicio</div>
       </div>
       <div class="topbar-right">
-        <div class="balance-chip">💰 <span id="balance-display">$0.00</span></div>
+        <div class="balance-chip">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle;margin-right:4px"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          <span id="balance-display">$0.00</span>
+        </div>
       </div>
     </div>
 
@@ -79,22 +87,22 @@
       <div id="page-home" class="page-section">
         <div class="grid-4 mb-4" id="stats-grid">
           <div class="stat-card">
-            <div class="stat-icon">💰</div>
+            <div class="stat-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
             <div class="stat-value gradient-text" id="stat-balance">$0.00</div>
             <div class="stat-label">Saldo disponible</div>
           </div>
           <div class="stat-card">
-            <div class="stat-icon">📦</div>
+            <div class="stat-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg></div>
             <div class="stat-value" id="stat-orders">0</div>
             <div class="stat-label">Pedidos totales</div>
           </div>
           <div class="stat-card">
-            <div class="stat-icon">✅</div>
+            <div class="stat-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
             <div class="stat-value" id="stat-completed">0</div>
             <div class="stat-label">Completados</div>
           </div>
           <div class="stat-card">
-            <div class="stat-icon">💸</div>
+            <div class="stat-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></div>
             <div class="stat-value" id="stat-spent">$0.00</div>
             <div class="stat-label">Total gastado</div>
           </div>
@@ -104,18 +112,18 @@
         <div class="grid-2 mb-4">
           <div class="card">
             <div class="card-body">
-              <div style="font-size:22px;margin-bottom:8px">⚡</div>
-              <div style="font-weight:700;font-size:16px;margin-bottom:6px">Nuevo pedido</div>
+              <div style="width:44px;height:44px;background:var(--blue-xs);border-radius:12px;display:flex;align-items:center;justify-content:center;margin-bottom:12px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div>
+              <div style="font-weight:700;font-size:16px;margin-bottom:6px;color:var(--navy)">Nuevo pedido</div>
               <div style="color:var(--muted);font-size:13px;margin-bottom:16px">Elige un servicio y comienza a crecer</div>
-              <button class="btn btn-primary btn-sm" onclick="showPage('new-order')">Pedir ahora →</button>
+              <button class="btn btn-primary btn-sm" onclick="showPage('new-order')">Pedir ahora</button>
             </div>
           </div>
           <div class="card">
             <div class="card-body">
-              <div style="font-size:22px;margin-bottom:8px">💳</div>
-              <div style="font-weight:700;font-size:16px;margin-bottom:6px">Recargar saldo</div>
+              <div style="width:44px;height:44px;background:var(--blue-xs);border-radius:12px;display:flex;align-items:center;justify-content:center;margin-bottom:12px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></div>
+              <div style="font-weight:700;font-size:16px;margin-bottom:6px;color:var(--navy)">Recargar saldo</div>
               <div style="color:var(--muted);font-size:13px;margin-bottom:16px">Binance Pay, Zelle, USDT y más</div>
-              <button class="btn btn-outline btn-sm" onclick="showPage('add-funds')">Recargar →</button>
+              <button class="btn btn-outline btn-sm" onclick="showPage('add-funds')">Recargar</button>
             </div>
           </div>
         </div>
@@ -197,7 +205,7 @@
           <div>
             <div class="card mb-3">
               <div class="card-body">
-                <div style="font-size:16px;font-weight:700;margin-bottom:12px">ℹ️ Instrucciones</div>
+                <div style="font-size:16px;font-weight:700;margin-bottom:12px;color:var(--navy)">Instrucciones</div>
                 <ol style="padding-left:18px;color:var(--muted);font-size:13px;line-height:2">
                   <li>Selecciona la categoría y el servicio</li>
                   <li>Pega el enlace de tu perfil o publicación</li>
@@ -207,7 +215,7 @@
               </div>
             </div>
             <div class="alert alert-warning">
-              ⚠️ Asegúrate de que tu perfil sea <strong>público</strong> antes de hacer el pedido. Los pedidos no se reembolsan si el perfil está privado.
+              Asegúrate de que tu perfil sea <strong>público</strong> antes de hacer el pedido. Los pedidos no se reembolsan si el perfil está privado.
             </div>
           </div>
         </div>
@@ -218,7 +226,7 @@
         <div class="card">
           <div class="card-header flex items-center justify-between">
             <span>Mis pedidos</span>
-            <button class="btn btn-ghost btn-sm" id="sync-orders-btn">🔄 Actualizar estados</button>
+            <button class="btn btn-ghost btn-sm" id="sync-orders-btn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg> Actualizar estados</button>
           </div>
           <div class="card-body" style="padding:0">
             <div class="table-wrap">
@@ -245,9 +253,9 @@
                 <div class="form-group">
                   <label>Método de pago</label>
                   <select class="select" id="pay-method">
-                    <option value="binance">₿ Binance Pay</option>
-                    <option value="zelle">💵 Zelle</option>
-                    <option value="usdt">🪙 USDT TRC20</option>
+                    <option value="binance">Binance Pay</option>
+                    <option value="zelle">Zelle</option>
+                    <option value="usdt">USDT TRC20</option>
                   </select>
                 </div>
                 <div class="form-group">
@@ -279,7 +287,7 @@
               </div>
             </div>
             <div class="alert alert-info">
-              ℹ️ Las recargas son revisadas y aprobadas por un administrador. Tiempo estimado: <strong>10-30 minutos</strong> en horario hábil.
+              Las recargas son revisadas y aprobadas por un administrador. Tiempo estimado: <strong>10-30 minutos</strong> en horario hábil.
             </div>
           </div>
         </div>
@@ -290,15 +298,15 @@
         <div class="card mb-3">
           <div class="card-header">Tu API Key</div>
           <div class="card-body">
-            <div class="alert alert-info mb-3">ℹ️ Usa esta clave para integrar NextBoost en tu propio sistema o panel SMM.</div>
+            <div class="alert alert-info mb-3">Usa esta clave para integrar NextBoost en tu propio sistema o panel SMM.</div>
             <div class="form-group">
               <label>API Key</label>
               <div style="display:flex;gap:10px">
                 <input type="text" class="input" id="api-key-display" readonly style="font-family:monospace;font-size:13px">
-                <button class="btn btn-ghost" onclick="copyApiKey()">📋 Copiar</button>
+                <button class="btn btn-ghost" onclick="copyApiKey()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copiar</button>
               </div>
             </div>
-            <button class="btn btn-outline btn-sm" id="regen-key-btn">🔄 Regenerar clave</button>
+            <button class="btn btn-outline btn-sm" id="regen-key-btn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg> Regenerar clave</button>
           </div>
         </div>
         <div class="card">
