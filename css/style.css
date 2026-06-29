@@ -1000,9 +1000,137 @@ section .subtitle { text-align: center; color: var(--muted); margin-bottom: 52px
   .topbar-title { font-size: 16px; }
   .hero h1 { font-size: 48px; }
   .cta-section { padding: 60px 20px; }
-  /* Tables: allow horizontal scroll, clip long text */
-  td { max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .table-wrap { border-radius: 0; }
+
+  /* ── Orders table → card list on mobile ── */
+  .orders-table-wrap { overflow: visible; }
+  .orders-table-wrap table,
+  .orders-table-wrap thead,
+  .orders-table-wrap tbody,
+  .orders-table-wrap th,
+  .orders-table-wrap td,
+  .orders-table-wrap tr { display: block; width: 100%; }
+  .orders-table-wrap thead { display: none; }
+  .orders-table-wrap tbody tr {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 10px;
+    padding: 12px 14px;
+    position: relative;
+  }
+  .orders-table-wrap tbody td {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 4px 0;
+    font-size: 13px;
+    border: none;
+    max-width: 100%;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: unset;
+  }
+  .orders-table-wrap tbody td::before {
+    content: attr(data-label);
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    min-width: 80px;
+    flex-shrink: 0;
+  }
+  .orders-table-wrap tbody td a {
+    word-break: break-all;
+    max-width: calc(100% - 90px);
+  }
+  .orders-table-wrap tbody td:last-child {
+    justify-content: flex-end;
+    padding-top: 8px;
+    border-top: 1px solid var(--border);
+    margin-top: 4px;
+  }
+  .orders-table-wrap tbody td:last-child::before { display: none; }
+
+  /* Recent orders table (home) — simpler, fewer cols */
+  .recent-table-wrap { overflow: visible; }
+  .recent-table-wrap table,
+  .recent-table-wrap thead,
+  .recent-table-wrap tbody,
+  .recent-table-wrap th,
+  .recent-table-wrap td,
+  .recent-table-wrap tr { display: block; width: 100%; }
+  .recent-table-wrap thead { display: none; }
+  .recent-table-wrap tbody tr {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 8px;
+    padding: 10px 14px;
+  }
+  .recent-table-wrap tbody td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 3px 0;
+    font-size: 13px;
+    border: none;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: unset;
+    max-width: 100%;
+  }
+  .recent-table-wrap tbody td::before {
+    content: attr(data-label);
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    min-width: 80px;
+    flex-shrink: 0;
+  }
+
+  /* Recharge history table */
+  .recharge-table-wrap { overflow: visible; }
+  .recharge-table-wrap table,
+  .recharge-table-wrap thead,
+  .recharge-table-wrap tbody,
+  .recharge-table-wrap th,
+  .recharge-table-wrap td,
+  .recharge-table-wrap tr { display: block; width: 100%; }
+  .recharge-table-wrap thead { display: none; }
+  .recharge-table-wrap tbody tr {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 8px;
+    padding: 10px 14px;
+  }
+  .recharge-table-wrap tbody td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 3px 0;
+    font-size: 13px;
+    border: none;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: unset;
+    max-width: 100%;
+  }
+  .recharge-table-wrap tbody td::before {
+    content: attr(data-label);
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    min-width: 80px;
+    flex-shrink: 0;
+  }
+
+  /* General table fallback (API docs etc) */
+  td { max-width: 100%; white-space: normal; }
+  .table-wrap { border-radius: 0; overflow-x: auto; }
 }
 
 /* sidebar backdrop (JS adds this class) */

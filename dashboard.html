@@ -136,7 +136,7 @@
             <button class="btn btn-ghost btn-sm" onclick="showPage('orders')">Ver todos</button>
           </div>
           <div class="card-body" style="padding:0">
-            <div class="table-wrap">
+            <div class="table-wrap recent-table-wrap">
               <table>
                 <thead><tr>
                   <th>#</th><th>Servicio</th><th>Cantidad</th><th>Costo</th><th>Estado</th><th>Fecha</th>
@@ -235,7 +235,7 @@
             <button class="btn btn-ghost btn-sm" id="sync-orders-btn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg> Actualizar estados</button>
           </div>
           <div class="card-body" style="padding:0">
-            <div class="table-wrap">
+            <div class="table-wrap orders-table-wrap">
               <table>
                 <thead><tr>
                   <th>#</th><th>Servicio</th><th>Enlace</th><th>Cant.</th><th>Costo</th><th>Estado</th><th>Fecha</th><th></th>
@@ -322,7 +322,7 @@
             <div class="card mb-3">
               <div class="card-header">Historial de recargas</div>
               <div class="card-body" style="padding:0">
-                <div class="table-wrap">
+                <div class="table-wrap recharge-table-wrap">
                   <table>
                     <thead><tr><th>Monto</th><th>Método</th><th>Estado</th><th>Fecha</th></tr></thead>
                     <tbody id="recharge-history-body">
@@ -512,12 +512,12 @@ function renderRecentOrders(orders) {
   if (!orders.length) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--muted)">Sin pedidos aún</td></tr>'; return; }
   tbody.innerHTML = orders.map(o => `
     <tr>
-      <td style="font-family:monospace;font-size:11px">${o.id.slice(0,8)}</td>
-      <td>${o.serviceName || '—'}</td>
-      <td>${(o.quantity||0).toLocaleString()}</td>
-      <td>${formatUSD2(o.charge)}</td>
-      <td>${statusBadge(o.status)}</td>
-      <td style="color:var(--muted)">${formatDate(o.createdAt)}</td>
+      <td data-label="#">${o.id.slice(0,8)}</td>
+      <td data-label="Servicio">${o.serviceName || '—'}</td>
+      <td data-label="Cantidad">${(o.quantity||0).toLocaleString()}</td>
+      <td data-label="Costo">${formatUSD2(o.charge)}</td>
+      <td data-label="Estado">${statusBadge(o.status)}</td>
+      <td data-label="Fecha" style="color:var(--muted)">${formatDate(o.createdAt)}</td>
     </tr>`).join('');
 }
 
@@ -692,13 +692,13 @@ function renderOrdersTable(orders) {
   if (!orders.length) { tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:24px;color:var(--muted)">Sin pedidos aún</td></tr>'; return; }
   tbody.innerHTML = orders.map(o => `
     <tr>
-      <td style="font-family:monospace;font-size:11px">${o.id.slice(0,8)}</td>
-      <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${o.serviceName}">${o.serviceName||'—'}</td>
-      <td><a href="${o.link}" target="_blank" style="font-size:11px;color:var(--accent);max-width:120px;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${o.link||'—'}</a></td>
-      <td>${(o.quantity||0).toLocaleString()}</td>
-      <td>${formatUSD2(o.charge)}</td>
-      <td>${statusBadge(o.status)}</td>
-      <td style="color:var(--muted);font-size:12px">${formatDate(o.createdAt)}</td>
+      <td data-label="#" style="font-family:monospace;font-size:11px">${o.id.slice(0,8)}</td>
+      <td data-label="Servicio">${o.serviceName||'—'}</td>
+      <td data-label="Enlace"><a href="${o.link}" target="_blank" style="font-size:12px;color:var(--blue);word-break:break-all">${o.link||'—'}</a></td>
+      <td data-label="Cant.">${(o.quantity||0).toLocaleString()}</td>
+      <td data-label="Costo">${formatUSD2(o.charge)}</td>
+      <td data-label="Estado">${statusBadge(o.status)}</td>
+      <td data-label="Fecha" style="color:var(--muted);font-size:12px">${formatDate(o.createdAt)}</td>
       <td><button class="btn btn-ghost btn-sm" onclick="showOrderDetail('${o.id}')">Ver</button></td>
     </tr>`).join('');
 }
@@ -883,7 +883,12 @@ async function loadRechargeHistory() {
   if (snap.empty) { tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--muted)">Sin recargas</td></tr>'; return; }
   tbody.innerHTML = snap.docs.map(d => {
     const r = d.data();
-    return `<tr><td><strong>${formatUSD2(r.amount)}</strong></td><td>${r.method}</td><td>${statusBadge(r.status)}</td><td style="color:var(--muted);font-size:12px">${formatDate(r.createdAt)}</td></tr>`;
+    return `<tr>
+      <td data-label="Monto"><strong>${formatUSD2(r.amount)}</strong></td>
+      <td data-label="Método">${r.method}</td>
+      <td data-label="Estado">${statusBadge(r.status)}</td>
+      <td data-label="Fecha" style="color:var(--muted);font-size:12px">${formatDate(r.createdAt)}</td>
+    </tr>`;
   }).join('');
 }
 
