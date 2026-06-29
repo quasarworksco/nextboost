@@ -181,9 +181,28 @@
         <!-- KPI row -->
         <div class="grid-4 mb-4" id="stats-kpis">
           <div class="stat-card"><div class="stat-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><div class="stat-value" id="sk-revenue">—</div><div class="stat-label">Ingresos período</div></div>
+          <div class="stat-card"><div class="stat-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></div><div class="stat-value" id="sk-profit" style="color:var(--green)">—</div><div class="stat-label">Ganancia neta</div></div>
           <div class="stat-card"><div class="stat-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg></div><div class="stat-value" id="sk-orders">—</div><div class="stat-label">Pedidos período</div></div>
           <div class="stat-card"><div class="stat-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></div><div class="stat-value" id="sk-recharges">—</div><div class="stat-label">Recargas aprobadas</div></div>
-          <div class="stat-card"><div class="stat-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div><div class="stat-value" id="sk-newusers">—</div><div class="stat-label">Clientes nuevos</div></div>
+        </div>
+        <!-- Profit detail row -->
+        <div class="grid-4 mb-4">
+          <div class="stat-card" style="border-left:3px solid var(--green)">
+            <div class="stat-value" id="sk-cost" style="font-size:18px;color:var(--muted)">—</div>
+            <div class="stat-label">Costo proveedor</div>
+          </div>
+          <div class="stat-card" style="border-left:3px solid var(--blue)">
+            <div class="stat-value" id="sk-margin" style="font-size:18px;color:var(--blue)">—</div>
+            <div class="stat-label">Margen promedio</div>
+          </div>
+          <div class="stat-card" style="border-left:3px solid var(--blue)">
+            <div class="stat-value" id="sk-newusers">—</div>
+            <div class="stat-label">Clientes nuevos</div>
+          </div>
+          <div class="stat-card" style="border-left:3px solid var(--blue)">
+            <div class="stat-value" id="sk-aov" style="font-size:18px">—</div>
+            <div class="stat-label">Ticket promedio</div>
+          </div>
         </div>
         <!-- Chart + Top tables -->
         <div class="grid-2 mb-4">
@@ -505,6 +524,11 @@
                 <input type="number" class="input" id="settings-min-recharge" placeholder="5" min="1" step="0.5">
                 <div style="font-size:12px;color:var(--muted);margin-top:4px">Monto mínimo que un cliente puede solicitar recargar.</div>
               </div>
+              <div class="form-group">
+                <label>Límite de pedidos activos por usuario</label>
+                <input type="number" class="input" id="settings-max-active-orders" placeholder="10" min="1" step="1">
+                <div style="font-size:12px;color:var(--muted);margin-top:4px">Máximo de pedidos en estado pendiente/activo que un usuario puede tener a la vez.</div>
+              </div>
               <div id="settings-pay-alert"></div>
               <button class="btn btn-primary" id="save-payments-btn">Guardar métodos de pago</button>
             </div>
@@ -576,6 +600,13 @@
         <table>
           <thead><tr><th>Servicio</th><th>Costo</th><th>Estado</th><th>Fecha</th></tr></thead>
           <tbody id="user-detail-orders"><tr><td colspan="4" style="text-align:center;padding:16px;color:var(--muted)">Cargando...</td></tr></tbody>
+        </table>
+      </div>
+      <div style="font-weight:700;font-size:14px;margin-bottom:10px;margin-top:20px;color:var(--navy)">Historial de saldo</div>
+      <div class="table-wrap admin-table-wrap">
+        <table>
+          <thead><tr><th>Tipo</th><th>Monto</th><th>Descripción</th><th>Fecha</th></tr></thead>
+          <tbody id="user-detail-balance"><tr><td colspan="4" style="text-align:center;padding:16px;color:var(--muted)">Cargando...</td></tr></tbody>
         </table>
       </div>
     </div>
@@ -788,9 +819,11 @@ async function loadAdminRecharges() {
 
 async function approveRecharge(rechargeId, userId, amount) {
   if (!confirm(`¿Aprobar recarga de ${formatUSD2(amount)}?`)) return;
+  const now = firebase.firestore.FieldValue.serverTimestamp();
   const batch = db.batch();
-  batch.update(db.collection('recharges').doc(rechargeId), { status: 'approved', approvedAt: firebase.firestore.FieldValue.serverTimestamp(), approvedBy: adminUser.uid });
+  batch.update(db.collection('recharges').doc(rechargeId), { status: 'approved', approvedAt: now, approvedBy: adminUser.uid });
   batch.update(db.collection('users').doc(userId), { balance: firebase.firestore.FieldValue.increment(amount) });
+  batch.set(db.collection('balance_history').doc(), { userId, type: 'recharge', amount, description: `Recarga aprobada por admin`, createdAt: now });
   await batch.commit();
   toast(`Recarga de ${formatUSD2(amount)} aprobada`, 'success');
   loadAdminRecharges();
@@ -873,16 +906,20 @@ function renderUsersTable(users) {
   const tbody = document.getElementById('admin-users-body');
   if (!users.length) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--muted)">Sin usuarios</td></tr>'; return; }
   tbody.innerHTML = users.map(u => `
-    <tr>
-      <td data-label="Nombre">${u.name || '—'}</td>
+    <tr style="${u.blocked ? 'opacity:.6' : ''}">
+      <td data-label="Nombre">
+        ${u.blocked ? '<span style="font-size:10px;background:#fee2e2;color:#dc2626;padding:1px 6px;border-radius:4px;font-weight:700;margin-right:4px">BLOQUEADO</span>' : ''}
+        ${u.name || '—'}
+      </td>
       <td data-label="Email" style="font-size:13px;word-break:break-all">${u.email || '—'}</td>
       <td data-label="Saldo"><strong>${formatUSD2(u.balance)}</strong></td>
       <td data-label="Rol">${u.role === 'admin' ? '<span class="badge badge-admin">Admin</span>' : '<span class="badge badge-active">Usuario</span>'}</td>
       <td data-label="Registro" style="color:var(--muted);font-size:12px">${formatDate(u.createdAt)}</td>
-      <td data-label="">
+      <td data-label="" style="display:flex;gap:4px;flex-wrap:wrap">
         <button class="btn btn-ghost btn-sm" onclick="openUserDetail('${u.id}')">Ver</button>
         <button class="btn btn-ghost btn-sm" onclick="openBalanceModal('${u.id}','${u.name || u.email}',${u.balance||0})">Saldo</button>
         <button class="btn btn-ghost btn-sm" onclick="toggleRole('${u.id}','${u.role}')">${u.role==='admin'?'→ Usuario':'→ Admin'}</button>
+        <button class="btn btn-sm ${u.blocked ? 'btn-success' : 'btn-danger'}" onclick="toggleBlock('${u.id}',${!!u.blocked})">${u.blocked ? '✓ Desbloquear' : '⊘ Bloquear'}</button>
       </td>
     </tr>`).join('');
 }
@@ -899,11 +936,15 @@ async function openUserDetail(userId) {
     <div class="info-row"><span class="info-label">Registrado</span><span class="info-val">${formatDate(u.createdAt)}</span></div>
   `;
   openModal('user-detail-modal');
-  const tbody = document.getElementById('user-detail-orders');
+  const ordersBody  = document.getElementById('user-detail-orders');
+  const balanceBody = document.getElementById('user-detail-balance');
   try {
-    const snap = await db.collection('orders').where('userId','==',userId).orderBy('createdAt','desc').limit(20).get();
-    const rows = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    tbody.innerHTML = rows.length
+    const [ordSnap, balSnap] = await Promise.all([
+      db.collection('orders').where('userId','==',userId).orderBy('createdAt','desc').limit(20).get(),
+      db.collection('balance_history').where('userId','==',userId).orderBy('createdAt','desc').limit(30).get(),
+    ]);
+    const rows = ordSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+    ordersBody.innerHTML = rows.length
       ? rows.map(o => `<tr>
           <td data-label="Servicio" style="font-size:12px">${o.serviceName||'—'}</td>
           <td data-label="Costo">${formatUSD2(o.charge)}</td>
@@ -911,8 +952,22 @@ async function openUserDetail(userId) {
           <td data-label="Fecha" style="font-size:11px;color:var(--muted)">${formatDate(o.createdAt)}</td>
         </tr>`).join('')
       : '<tr><td colspan="4" style="text-align:center;padding:16px;color:var(--muted)">Sin pedidos</td></tr>';
+    const brows = balSnap.docs.map(d => d.data());
+    const typeLabels = { recharge:'Recarga', order:'Pedido', adjustment:'Ajuste' };
+    balanceBody.innerHTML = brows.length
+      ? brows.map(b => {
+          const pos = b.amount >= 0;
+          return `<tr>
+            <td data-label="Tipo" style="font-size:12px">${typeLabels[b.type]||b.type}</td>
+            <td data-label="Monto" style="font-weight:700;color:${pos?'var(--green)':'var(--red)'}">${pos?'+':''}${formatUSD2(b.amount)}</td>
+            <td data-label="Descripción" style="font-size:12px;color:var(--muted)">${b.description||'—'}</td>
+            <td data-label="Fecha" style="font-size:11px;color:var(--muted)">${formatDate(b.createdAt)}</td>
+          </tr>`;
+        }).join('')
+      : '<tr><td colspan="4" style="text-align:center;padding:16px;color:var(--muted)">Sin historial</td></tr>';
   } catch(e) {
-    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;padding:16px;color:var(--muted)">${e.message}</td></tr>`;
+    ordersBody.innerHTML  = `<tr><td colspan="4" style="text-align:center;padding:16px;color:var(--muted)">${e.message}</td></tr>`;
+    balanceBody.innerHTML = `<tr><td colspan="4" style="text-align:center;padding:16px;color:var(--muted)">${e.message}</td></tr>`;
   }
 }
 
@@ -934,9 +989,22 @@ function openBalanceModal(uid, name, current) {
 }
 
 document.getElementById('balance-modal-btn').addEventListener('click', async () => {
-  const amount = parseFloat(document.getElementById('balance-modal-amount').value);
-  if (isNaN(amount) || amount < 0) { document.getElementById('balance-modal-alert').innerHTML = '<div class="alert alert-error">Monto inválido</div>'; return; }
-  await db.collection('users').doc(_balanceModalUserId).update({ balance: amount });
+  const newBalance = parseFloat(document.getElementById('balance-modal-amount').value);
+  if (isNaN(newBalance) || newBalance < 0) { document.getElementById('balance-modal-alert').innerHTML = '<div class="alert alert-error">Monto inválido</div>'; return; }
+  const u = allUsers.find(x => x.id === _balanceModalUserId);
+  const prevBalance = parseFloat(u?.balance || 0);
+  const delta = +(newBalance - prevBalance).toFixed(6);
+  const now = firebase.firestore.FieldValue.serverTimestamp();
+  const batch = db.batch();
+  batch.update(db.collection('users').doc(_balanceModalUserId), { balance: newBalance });
+  batch.set(db.collection('balance_history').doc(), {
+    userId: _balanceModalUserId,
+    type: 'adjustment',
+    amount: delta,
+    description: `Ajuste manual por admin (de ${formatUSD2(prevBalance)} a ${formatUSD2(newBalance)})`,
+    createdAt: now,
+  });
+  await batch.commit();
   toast('Saldo actualizado', 'success');
   closeModal('balance-modal');
   loadAdminUsers();
@@ -947,6 +1015,16 @@ async function toggleRole(uid, currentRole) {
   if (!confirm(`¿Cambiar rol a "${newRole}"?`)) return;
   await db.collection('users').doc(uid).update({ role: newRole });
   toast(`Rol cambiado a ${newRole}`, 'success');
+  loadAdminUsers();
+}
+
+async function toggleBlock(uid, isBlocked) {
+  const action = isBlocked ? 'desbloquear' : 'bloquear';
+  if (!confirm(`¿${action.charAt(0).toUpperCase() + action.slice(1)} este usuario?`)) return;
+  await db.collection('users').doc(uid).update({ blocked: !isBlocked });
+  const u = allUsers.find(x => x.id === uid);
+  if (u) u.blocked = !isBlocked;
+  toast(`Usuario ${isBlocked ? 'desbloqueado' : 'bloqueado'}`, isBlocked ? 'success' : 'info');
   loadAdminUsers();
 }
 
@@ -1341,8 +1419,22 @@ async function loadStats() {
     const revenue = orders.reduce((s, o) => s + (o.charge || 0), 0);
     const rechargeTotal = rechargesSnap.docs.reduce((s,d) => s + (d.data().amount || 0), 0);
 
-    document.getElementById('sk-revenue').textContent  = formatUSD2(revenue);
-    document.getElementById('sk-orders').textContent   = orders.length;
+    // Profit = revenue (client pays) - provider cost
+    // providerRate stored per 1000, charge = userRate * qty / 1000
+    const providerCost = orders.reduce((s, o) => {
+      const cost = ((o.providerRate || 0) * (o.quantity || 0)) / 1000;
+      return s + cost;
+    }, 0);
+    const profit = revenue - providerCost;
+    const avgMargin = revenue > 0 ? ((profit / revenue) * 100).toFixed(1) : 0;
+    const aov = orders.length > 0 ? (revenue / orders.length) : 0;
+
+    document.getElementById('sk-revenue').textContent   = formatUSD2(revenue);
+    document.getElementById('sk-profit').textContent    = formatUSD2(profit);
+    document.getElementById('sk-cost').textContent      = formatUSD2(providerCost);
+    document.getElementById('sk-margin').textContent    = avgMargin + '%';
+    document.getElementById('sk-aov').textContent       = formatUSD2(aov);
+    document.getElementById('sk-orders').textContent    = orders.length;
     document.getElementById('sk-recharges').textContent = formatUSD2(rechargeTotal);
     document.getElementById('sk-newusers').textContent  = usersSnap.size;
 
@@ -1423,8 +1515,9 @@ async function loadSettings() {
   document.getElementById('settings-zelle').value      = d.zelle      || '';
   document.getElementById('settings-zelle-name').value = d.zelleName  || '';
   document.getElementById('settings-usdt').value       = d.usdt       || '';
-  document.getElementById('settings-whatsapp').value      = d.whatsapp      || '';
-  document.getElementById('settings-min-recharge').value = d.minRecharge   || '5';
+  document.getElementById('settings-whatsapp').value          = d.whatsapp          || '';
+  document.getElementById('settings-min-recharge').value      = d.minRecharge       || '5';
+  document.getElementById('settings-max-active-orders').value = d.maxActiveOrders   || '10';
   document.getElementById('settings-announcement').value      = d.announcement     || '';
   document.getElementById('settings-announcement-type').value = d.announcementType || 'info';
 }
@@ -1581,8 +1674,9 @@ document.getElementById('save-payments-btn').addEventListener('click', async () 
     zelle:     document.getElementById('settings-zelle').value.trim(),
     zelleName: document.getElementById('settings-zelle-name').value.trim(),
     usdt:      document.getElementById('settings-usdt').value.trim(),
-    whatsapp:    document.getElementById('settings-whatsapp').value.trim(),
-    minRecharge: parseFloat(document.getElementById('settings-min-recharge').value) || 5,
+    whatsapp:         document.getElementById('settings-whatsapp').value.trim(),
+    minRecharge:      parseFloat(document.getElementById('settings-min-recharge').value) || 5,
+    maxActiveOrders:  parseInt(document.getElementById('settings-max-active-orders').value) || 10,
     updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
   };
   await db.collection('settings').doc('main').set(data, { merge: true });

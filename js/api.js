@@ -72,10 +72,24 @@ const Orders = (() => {
 
   // Place order: deduct balance → call provider API → save to Firestore
   async function place({ userId, service, link, quantity }) {
-    // 1. Get user balance
-    const userRef  = db.collection('users').doc(userId);
-    const userSnap = await userRef.get();
+    // 1. Get user balance + settings in parallel
+    const [userSnap, settingsSnap] = await Promise.all([
+      db.collection('users').doc(userId).get(),
+      db.collection('settings').doc('main').get(),
+    ]);
+    const userRef = db.collection('users').doc(userId);
     if (!userSnap.exists) throw new Error('Usuario no encontrado.');
+
+    // 1b. Check active order limit
+    const maxActive = (settingsSnap.exists && settingsSnap.data().maxActiveOrders) || 10;
+    const activeSnap = await db.collection('orders')
+      .where('userId', '==', userId)
+      .where('status', 'in', ['pending', 'active', 'in progress'])
+      .limit(maxActive + 1)
+      .get();
+    if (activeSnap.size >= maxActive) {
+      throw new Error(`Tienes ${activeSnap.size} pedidos activos. El límite es ${maxActive}. Espera a que se completen antes de hacer otro.`);
+    }
 
     const userData = userSnap.data();
     const balance  = parseFloat(userData.balance || 0);
@@ -102,6 +116,7 @@ const Orders = (() => {
     }
 
     // 5. Save order to Firestore
+    const now = firebase.firestore.FieldValue.serverTimestamp();
     const order = {
       userId,
       serviceId:       service.id,
@@ -116,10 +131,20 @@ const Orders = (() => {
       providerOrderId,
       refill:          service.refill || false,
       cancel:          service.cancel || false,
-      createdAt:       firebase.firestore.FieldValue.serverTimestamp(),
+      createdAt:       now,
     };
-    const ref = await db.collection('orders').add(order);
-    return { id: ref.id, ...order };
+    const batch = db.batch();
+    const orderRef = db.collection('orders').doc();
+    batch.set(orderRef, order);
+    batch.set(db.collection('balance_history').doc(), {
+      userId,
+      type: 'order',
+      amount: -charge,
+      description: `Pedido: ${service.name?.slice(0, 60) || service.id} (x${parseInt(quantity)})`,
+      createdAt: now,
+    });
+    await batch.commit();
+    return { id: orderRef.id, ...order };
   }
 
   // Fetch orders for a user

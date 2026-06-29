@@ -87,8 +87,14 @@ function showPage(pageId) {
 
 // ── Auth guard ────────────────────────────────────────
 function requireAuth(callback) {
-  auth.onAuthStateChanged(user => {
+  auth.onAuthStateChanged(async user => {
     if (!user) { window.location.href = 'login.html'; return; }
+    const snap = await db.collection('users').doc(user.uid).get();
+    if (snap.exists && snap.data().blocked) {
+      auth.signOut();
+      window.location.href = 'login.html?blocked=1';
+      return;
+    }
     callback(user);
   });
 }
