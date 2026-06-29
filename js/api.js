@@ -102,6 +102,7 @@ const Orders = (() => {
     }
 
     // 5. Save order to Firestore
+    const now = firebase.firestore.FieldValue.serverTimestamp();
     const order = {
       userId,
       serviceId:       service.id,
@@ -116,10 +117,20 @@ const Orders = (() => {
       providerOrderId,
       refill:          service.refill || false,
       cancel:          service.cancel || false,
-      createdAt:       firebase.firestore.FieldValue.serverTimestamp(),
+      createdAt:       now,
     };
-    const ref = await db.collection('orders').add(order);
-    return { id: ref.id, ...order };
+    const batch = db.batch();
+    const orderRef = db.collection('orders').doc();
+    batch.set(orderRef, order);
+    batch.set(db.collection('balance_history').doc(), {
+      userId,
+      type: 'order',
+      amount: -charge,
+      description: `Pedido: ${service.name?.slice(0, 60) || service.id} (x${parseInt(quantity)})`,
+      createdAt: now,
+    });
+    await batch.commit();
+    return { id: orderRef.id, ...order };
   }
 
   // Fetch orders for a user

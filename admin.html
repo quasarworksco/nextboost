@@ -578,6 +578,13 @@
           <tbody id="user-detail-orders"><tr><td colspan="4" style="text-align:center;padding:16px;color:var(--muted)">Cargando...</td></tr></tbody>
         </table>
       </div>
+      <div style="font-weight:700;font-size:14px;margin-bottom:10px;margin-top:20px;color:var(--navy)">Historial de saldo</div>
+      <div class="table-wrap admin-table-wrap">
+        <table>
+          <thead><tr><th>Tipo</th><th>Monto</th><th>Descripción</th><th>Fecha</th></tr></thead>
+          <tbody id="user-detail-balance"><tr><td colspan="4" style="text-align:center;padding:16px;color:var(--muted)">Cargando...</td></tr></tbody>
+        </table>
+      </div>
     </div>
   </div>
 </div>
@@ -788,9 +795,11 @@ async function loadAdminRecharges() {
 
 async function approveRecharge(rechargeId, userId, amount) {
   if (!confirm(`¿Aprobar recarga de ${formatUSD2(amount)}?`)) return;
+  const now = firebase.firestore.FieldValue.serverTimestamp();
   const batch = db.batch();
-  batch.update(db.collection('recharges').doc(rechargeId), { status: 'approved', approvedAt: firebase.firestore.FieldValue.serverTimestamp(), approvedBy: adminUser.uid });
+  batch.update(db.collection('recharges').doc(rechargeId), { status: 'approved', approvedAt: now, approvedBy: adminUser.uid });
   batch.update(db.collection('users').doc(userId), { balance: firebase.firestore.FieldValue.increment(amount) });
+  batch.set(db.collection('balance_history').doc(), { userId, type: 'recharge', amount, description: `Recarga aprobada por admin`, createdAt: now });
   await batch.commit();
   toast(`Recarga de ${formatUSD2(amount)} aprobada`, 'success');
   loadAdminRecharges();
@@ -903,11 +912,15 @@ async function openUserDetail(userId) {
     <div class="info-row"><span class="info-label">Registrado</span><span class="info-val">${formatDate(u.createdAt)}</span></div>
   `;
   openModal('user-detail-modal');
-  const tbody = document.getElementById('user-detail-orders');
+  const ordersBody  = document.getElementById('user-detail-orders');
+  const balanceBody = document.getElementById('user-detail-balance');
   try {
-    const snap = await db.collection('orders').where('userId','==',userId).orderBy('createdAt','desc').limit(20).get();
-    const rows = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    tbody.innerHTML = rows.length
+    const [ordSnap, balSnap] = await Promise.all([
+      db.collection('orders').where('userId','==',userId).orderBy('createdAt','desc').limit(20).get(),
+      db.collection('balance_history').where('userId','==',userId).orderBy('createdAt','desc').limit(30).get(),
+    ]);
+    const rows = ordSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+    ordersBody.innerHTML = rows.length
       ? rows.map(o => `<tr>
           <td data-label="Servicio" style="font-size:12px">${o.serviceName||'—'}</td>
           <td data-label="Costo">${formatUSD2(o.charge)}</td>
@@ -915,8 +928,22 @@ async function openUserDetail(userId) {
           <td data-label="Fecha" style="font-size:11px;color:var(--muted)">${formatDate(o.createdAt)}</td>
         </tr>`).join('')
       : '<tr><td colspan="4" style="text-align:center;padding:16px;color:var(--muted)">Sin pedidos</td></tr>';
+    const brows = balSnap.docs.map(d => d.data());
+    const typeLabels = { recharge:'Recarga', order:'Pedido', adjustment:'Ajuste' };
+    balanceBody.innerHTML = brows.length
+      ? brows.map(b => {
+          const pos = b.amount >= 0;
+          return `<tr>
+            <td data-label="Tipo" style="font-size:12px">${typeLabels[b.type]||b.type}</td>
+            <td data-label="Monto" style="font-weight:700;color:${pos?'var(--green)':'var(--red)'}">${pos?'+':''}${formatUSD2(b.amount)}</td>
+            <td data-label="Descripción" style="font-size:12px;color:var(--muted)">${b.description||'—'}</td>
+            <td data-label="Fecha" style="font-size:11px;color:var(--muted)">${formatDate(b.createdAt)}</td>
+          </tr>`;
+        }).join('')
+      : '<tr><td colspan="4" style="text-align:center;padding:16px;color:var(--muted)">Sin historial</td></tr>';
   } catch(e) {
-    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;padding:16px;color:var(--muted)">${e.message}</td></tr>`;
+    ordersBody.innerHTML  = `<tr><td colspan="4" style="text-align:center;padding:16px;color:var(--muted)">${e.message}</td></tr>`;
+    balanceBody.innerHTML = `<tr><td colspan="4" style="text-align:center;padding:16px;color:var(--muted)">${e.message}</td></tr>`;
   }
 }
 
@@ -938,9 +965,22 @@ function openBalanceModal(uid, name, current) {
 }
 
 document.getElementById('balance-modal-btn').addEventListener('click', async () => {
-  const amount = parseFloat(document.getElementById('balance-modal-amount').value);
-  if (isNaN(amount) || amount < 0) { document.getElementById('balance-modal-alert').innerHTML = '<div class="alert alert-error">Monto inválido</div>'; return; }
-  await db.collection('users').doc(_balanceModalUserId).update({ balance: amount });
+  const newBalance = parseFloat(document.getElementById('balance-modal-amount').value);
+  if (isNaN(newBalance) || newBalance < 0) { document.getElementById('balance-modal-alert').innerHTML = '<div class="alert alert-error">Monto inválido</div>'; return; }
+  const u = allUsers.find(x => x.id === _balanceModalUserId);
+  const prevBalance = parseFloat(u?.balance || 0);
+  const delta = +(newBalance - prevBalance).toFixed(6);
+  const now = firebase.firestore.FieldValue.serverTimestamp();
+  const batch = db.batch();
+  batch.update(db.collection('users').doc(_balanceModalUserId), { balance: newBalance });
+  batch.set(db.collection('balance_history').doc(), {
+    userId: _balanceModalUserId,
+    type: 'adjustment',
+    amount: delta,
+    description: `Ajuste manual por admin (de ${formatUSD2(prevBalance)} a ${formatUSD2(newBalance)})`,
+    createdAt: now,
+  });
+  await batch.commit();
   toast('Saldo actualizado', 'success');
   closeModal('balance-modal');
   loadAdminUsers();
