@@ -43,8 +43,12 @@
     </div>
     <div class="nav-section">
       <div class="nav-section-title">Sistema</div>
-      <div class="nav-item" data-page="services" data-title="Servicios" onclick="showPage('services');loadAdminServices()">
+      <div class="nav-item" data-page="services" data-title="Servicios del proveedor" onclick="showPage('services');loadAdminServices()">
         <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg></span> Servicios
+      </div>
+      <div class="nav-item" data-page="catalog" data-title="Mi Catálogo" onclick="showPage('catalog');loadCatalog()">
+        <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span> Mi Catálogo
+        <span class="badge badge-active ml-auto" id="catalog-count-badge" style="display:none"></span>
       </div>
       <div class="nav-item" data-page="settings" data-title="Configuración" onclick="showPage('settings');loadSettings()">
         <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span> Configuración
@@ -260,18 +264,70 @@
               <table id="services-table">
                 <thead>
                   <tr>
-                    <th style="width:40px">Act.</th>
+                    <th style="width:80px">Catálogo</th>
                     <th style="width:60px">ID</th>
-                    <th>Nombre</th>
-                    <th style="width:160px">Categoría</th>
+                    <th>Nombre proveedor</th>
+                    <th style="width:150px">Categoría</th>
                     <th style="width:110px">Costo prov.</th>
-                    <th style="width:130px">Tu precio/1k</th>
-                    <th style="width:70px">Mín</th>
-                    <th style="width:70px">Máx</th>
+                    <th style="width:130px">Precio/1k</th>
+                    <th style="width:60px">Mín</th>
+                    <th style="width:60px">Máx</th>
                   </tr>
                 </thead>
                 <tbody id="admin-services-body">
                   <tr><td colspan="8" style="text-align:center;padding:32px;color:var(--muted)">Sin servicios — sincroniza primero</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ CATALOG ═══ -->
+      <div id="page-catalog" class="page-section" style="display:none">
+        <div class="card mb-3">
+          <div class="card-body" style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+            <div>
+              <div style="font-size:15px;font-weight:700;color:var(--navy)">Mi Catálogo de Servicios</div>
+              <div style="font-size:13px;color:var(--muted);margin-top:2px">Servicios que ofreces a tus clientes con tu nombre y precio personalizado.</div>
+            </div>
+            <div style="margin-left:auto;display:flex;align-items:center;gap:12px">
+              <span style="font-size:13px;color:var(--muted)"><span id="catalog-total" style="color:var(--blue);font-weight:700">0</span> servicios activos</span>
+              <button class="btn btn-primary btn-sm" id="save-catalog-btn" onclick="saveCatalog()" style="display:none">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                Guardar cambios
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Category filter for catalog -->
+        <div class="card mb-3">
+          <div class="card-body" style="display:flex;gap:12px;flex-wrap:wrap;align-items:center">
+            <input type="text" class="input" id="cat-search" placeholder="Buscar en catálogo..." style="max-width:260px" oninput="renderCatalog()">
+            <select class="select" id="cat-category" style="max-width:220px" onchange="renderCatalog()">
+              <option value="">Todas las categorías</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-body" style="padding:0">
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th style="width:50px">ID</th>
+                    <th style="min-width:200px">Nombre para el cliente</th>
+                    <th style="min-width:160px">Categoría visible</th>
+                    <th style="width:120px">Precio/1k</th>
+                    <th style="width:70px">Mín</th>
+                    <th style="width:70px">Máx</th>
+                    <th style="width:50px"></th>
+                  </tr>
+                </thead>
+                <tbody id="catalog-body">
+                  <tr><td colspan="7" style="text-align:center;padding:32px;color:var(--muted)">No hay servicios en el catálogo. Ve a "Servicios" y agrega los que quieras ofrecer.</td></tr>
                 </tbody>
               </table>
             </div>
@@ -583,15 +639,22 @@ async function toggleRole(uid, currentRole) {
 }
 
 // ── Services ──────────────────────────────────────────
-let allAdminServices = [];
+let allAdminServices   = [];
 let pendingPriceChanges = {};
+let catalogMap         = {};  // docId → catalog entry
+let pendingCatalogChanges = {};  // docId → {displayName, displayCategory, rate}
 
 async function loadAdminServices() {
   const tbody = document.getElementById('admin-services-body');
   tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:32px"><span class="spinner"></span></td></tr>';
   try {
-    const snap = await db.collection('services').orderBy('category').orderBy('name').get();
-    allAdminServices = snap.docs.map(d => ({ docId: d.id, ...d.data() }));
+    const [svcSnap, catSnap] = await Promise.all([
+      db.collection('services').orderBy('category').orderBy('name').get(),
+      db.collection('catalog').get(),
+    ]);
+    allAdminServices = svcSnap.docs.map(d => ({ docId: d.id, ...d.data() }));
+    catalogMap = {};
+    catSnap.docs.forEach(d => { catalogMap[d.id] = { docId: d.id, ...d.data() }; });
   } catch(e) {
     tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:24px;color:var(--muted)">Error: ${e.message}</td></tr>`;
     return;
@@ -599,6 +662,7 @@ async function loadAdminServices() {
   pendingPriceChanges = {};
   populateCategoryFilter();
   renderServicesTable();
+  updateCatalogBadge();
 }
 
 function populateCategoryFilter() {
@@ -633,13 +697,15 @@ function renderServicesTable() {
     return;
   }
 
-  tbody.innerHTML = list.map(s => `
+  tbody.innerHTML = list.map(s => {
+    const inCatalog = !!catalogMap[s.docId];
+    return `
     <tr id="svc-row-${s.id}">
       <td style="text-align:center">
-        <label class="svc-toggle" style="cursor:pointer;display:inline-flex;align-items:center">
-          <input type="checkbox" ${s.active ? 'checked' : ''} onchange="toggleService('${s.docId}',this.checked)"
-            style="width:16px;height:16px;accent-color:var(--blue);cursor:pointer">
-        </label>
+        ${inCatalog
+          ? `<span style="font-size:11px;font-weight:600;color:var(--blue);background:var(--blue-xs);padding:3px 8px;border-radius:20px">En catálogo</span>`
+          : `<button class="btn btn-ghost btn-sm" style="white-space:nowrap;font-size:11px" onclick="addToCatalog('${s.docId}')">+ Agregar</button>`
+        }
       </td>
       <td style="font-family:monospace;font-size:11px;color:var(--muted)">${s.id}</td>
       <td style="min-width:220px;white-space:normal;line-height:1.4;font-size:13px">${s.name}</td>
@@ -649,14 +715,15 @@ function renderServicesTable() {
         <div style="display:flex;align-items:center;gap:6px">
           <span style="font-size:11px;color:var(--muted)">$</span>
           <input type="number" value="${parseFloat(s.rate||0).toFixed(4)}" step="0.0001" min="0"
-            style="width:90px;padding:4px 8px;border:1.5px solid var(--border);border-radius:6px;font-size:12px;font-family:'DM Sans',sans-serif;outline:none"
+            style="width:90px;padding:4px 8px;border:1.5px solid var(--border);border-radius:6px;font-size:12px;outline:none"
             onfocus="this.style.borderColor='var(--blue)'" onblur="this.style.borderColor='var(--border)'"
             onchange="markPriceChange('${s.docId}', this.value)">
         </div>
       </td>
       <td style="font-size:12px">${(s.min||0).toLocaleString()}</td>
       <td style="font-size:12px">${(s.max||0).toLocaleString()}</td>
-    </tr>`).join('');
+    </tr>`;
+  }).join('');
 }
 
 function markPriceChange(docId, value) {
@@ -737,6 +804,162 @@ async function syncProviderServices() {
   }
   btn.disabled = false;
   btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg> Sincronizar del proveedor';
+}
+
+// ── Catalog ───────────────────────────────────────────
+function updateCatalogBadge() {
+  const count = Object.keys(catalogMap).length;
+  const badge = document.getElementById('catalog-count-badge');
+  if (badge) { badge.textContent = count; badge.style.display = count ? '' : 'none'; }
+  const totalEl = document.getElementById('catalog-total');
+  if (totalEl) totalEl.textContent = count;
+}
+
+function addToCatalog(docId) {
+  const svc = allAdminServices.find(s => s.docId === docId);
+  if (!svc || catalogMap[docId]) return;
+  // add to local map immediately with defaults
+  catalogMap[docId] = {
+    docId,
+    serviceId:       svc.id,
+    displayName:     svc.name,
+    displayCategory: svc.category,
+    rate:            svc.rate,
+    providerRate:    svc.providerRate || svc.rate,
+    min:             svc.min,
+    max:             svc.max,
+    type:            svc.type,
+    refill:          svc.refill,
+    cancel:          svc.cancel,
+  };
+  pendingCatalogChanges[docId] = { ...catalogMap[docId], _new: true };
+  renderServicesTable();
+  updateCatalogBadge();
+  showSaveCatalogBtn();
+  toast(`"${svc.name.slice(0,40)}..." agregado al catálogo`, 'success');
+}
+
+function removeFromCatalog(docId) {
+  if (!catalogMap[docId]) return;
+  delete catalogMap[docId];
+  pendingCatalogChanges[docId] = { _delete: true };
+  renderCatalog();
+  renderServicesTable();
+  updateCatalogBadge();
+  showSaveCatalogBtn();
+}
+
+function showSaveCatalogBtn() {
+  const btn = document.getElementById('save-catalog-btn');
+  if (btn) btn.style.display = '';
+}
+
+function markCatalogChange(docId, field, value) {
+  if (!catalogMap[docId]) return;
+  catalogMap[docId][field] = value;
+  if (!pendingCatalogChanges[docId]) pendingCatalogChanges[docId] = {};
+  pendingCatalogChanges[docId][field] = value;
+  showSaveCatalogBtn();
+}
+
+async function loadCatalog() {
+  if (!Object.keys(catalogMap).length) {
+    // first load or coming from a different page
+    const snap = await db.collection('catalog').get();
+    catalogMap = {};
+    snap.docs.forEach(d => { catalogMap[d.id] = { docId: d.id, ...d.data() }; });
+  }
+  pendingCatalogChanges = {};
+  const cats = [...new Set(Object.values(catalogMap).map(s => s.displayCategory).filter(Boolean))].sort();
+  const sel = document.getElementById('cat-category');
+  if (sel) {
+    sel.innerHTML = '<option value="">Todas las categorías</option>' +
+      cats.map(c => `<option value="${c}">${c}</option>`).join('');
+  }
+  updateCatalogBadge();
+  renderCatalog();
+}
+
+function renderCatalog() {
+  const q   = (document.getElementById('cat-search')?.value || '').toLowerCase();
+  const cat = document.getElementById('cat-category')?.value || '';
+  const tbody = document.getElementById('catalog-body');
+  if (!tbody) return;
+
+  let list = Object.values(catalogMap).filter(s => {
+    if (cat && s.displayCategory !== cat) return false;
+    if (q && !(s.displayName||'').toLowerCase().includes(q) && !(s.displayCategory||'').toLowerCase().includes(q)) return false;
+    return true;
+  }).sort((a,b) => (a.displayCategory||'').localeCompare(b.displayCategory||'') || (a.displayName||'').localeCompare(b.displayName||''));
+
+  if (!list.length) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--muted)">${
+      Object.keys(catalogMap).length ? 'Sin resultados para esa búsqueda.' : 'Catálogo vacío — ve a Servicios y agrega los que quieras ofrecer.'
+    }</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = list.map(s => `
+    <tr>
+      <td style="font-family:monospace;font-size:11px;color:var(--muted)">${s.serviceId}</td>
+      <td>
+        <input type="text" class="catalog-input" value="${(s.displayName||'').replace(/"/g,'&quot;')}"
+          placeholder="Nombre para el cliente"
+          onchange="markCatalogChange('${s.docId}','displayName',this.value)"
+          title="Nombre que verán tus clientes">
+      </td>
+      <td>
+        <input type="text" class="catalog-input" value="${(s.displayCategory||'').replace(/"/g,'&quot;')}"
+          placeholder="Categoría (ej: Instagram · Seguidores)"
+          onchange="markCatalogChange('${s.docId}','displayCategory',this.value)">
+      </td>
+      <td>
+        <div style="display:flex;align-items:center;gap:4px">
+          <span style="font-size:11px;color:var(--muted)">$</span>
+          <input type="number" class="catalog-input" style="width:88px" value="${parseFloat(s.rate||0).toFixed(4)}" step="0.0001" min="0"
+            onchange="markCatalogChange('${s.docId}','rate',parseFloat(this.value))">
+        </div>
+      </td>
+      <td style="font-size:12px">${(s.min||0).toLocaleString()}</td>
+      <td style="font-size:12px">${(s.max||0).toLocaleString()}</td>
+      <td style="text-align:center">
+        <button onclick="removeFromCatalog('${s.docId}')" title="Quitar del catálogo"
+          style="background:none;border:none;cursor:pointer;color:var(--muted);padding:4px 6px;border-radius:4px;transition:color .15s"
+          onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='var(--muted)'">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+        </button>
+      </td>
+    </tr>`).join('');
+}
+
+async function saveCatalog() {
+  const entries = Object.entries(pendingCatalogChanges);
+  if (!entries.length) return;
+  const btn = document.getElementById('save-catalog-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Guardando...';
+
+  for (let i = 0; i < entries.length; i += 400) {
+    const batch = db.batch();
+    entries.slice(i, i + 400).forEach(([docId, changes]) => {
+      const ref = db.collection('catalog').doc(docId);
+      if (changes._delete) { batch.delete(ref); return; }
+      const { _new, ...data } = changes;
+      if (_new) {
+        // full entry for new docs
+        batch.set(ref, catalogMap[docId]);
+      } else {
+        batch.update(ref, data);
+      }
+    });
+    await batch.commit();
+  }
+
+  pendingCatalogChanges = {};
+  btn.disabled = false;
+  btn.style.display = 'none';
+  btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Guardar cambios';
+  toast('Catálogo guardado', 'success');
 }
 
 // ── Settings ──────────────────────────────────────────

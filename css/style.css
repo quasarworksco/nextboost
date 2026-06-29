@@ -784,6 +784,21 @@ section .subtitle { text-align: center; color: var(--muted); margin-bottom: 52px
   .testimonials-grid { grid-template-columns: 1fr; }
 }
 
+/* ─── CATALOG INPUTS ─────────────────────────────────────── */
+.catalog-input {
+  width: 100%;
+  padding: 5px 9px;
+  border: 1.5px solid var(--border);
+  border-radius: 6px;
+  font-size: 12px;
+  font-family: inherit;
+  color: var(--navy);
+  outline: none;
+  background: var(--white);
+  transition: border-color .15s;
+}
+.catalog-input:focus { border-color: var(--blue); }
+
 /* ─── MISC UTILITIES ─────────────────────────────────────── */
 .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
 .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }

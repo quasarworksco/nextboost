@@ -185,9 +185,31 @@ const Services = (() => {
 
   async function getAll() {
     if (_cache) return _cache;
-    const snap = await db.collection('services').orderBy('category').orderBy('name').get();
+    // Read from catalog collection (admin's curated list with custom names/prices)
+    // Fall back to services collection if catalog is empty
+    const catSnap = await db.collection('catalog').get();
+    if (!catSnap.empty) {
+      _cache = catSnap.docs.map(d => {
+        const data = d.data();
+        return {
+          id:       data.serviceId || d.id,
+          name:     data.displayName || data.name,
+          category: data.displayCategory || data.category,
+          rate:     data.rate,
+          min:      data.min,
+          max:      data.max,
+          type:     data.type,
+          refill:   data.refill,
+          cancel:   data.cancel,
+        };
+      }).sort((a,b) => parseFloat(a.rate) - parseFloat(b.rate));
+      return _cache;
+    }
+    // fallback: no catalog yet
+    const snap = await db.collection('services').get();
     if (snap.empty) return [];
-    _cache = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    _cache = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+      .sort((a,b) => parseFloat(a.rate) - parseFloat(b.rate));
     return _cache;
   }
 
