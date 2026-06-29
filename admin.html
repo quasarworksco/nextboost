@@ -318,16 +318,17 @@
                 <thead>
                   <tr>
                     <th style="width:50px">ID</th>
-                    <th style="min-width:200px">Nombre para el cliente</th>
-                    <th style="min-width:160px">Categoría visible</th>
-                    <th style="width:120px">Precio/1k</th>
+                    <th style="min-width:180px">Nombre para el cliente</th>
+                    <th style="min-width:150px">Categoría visible</th>
+                    <th style="width:110px">Te cuesta</th>
+                    <th style="width:120px">Tu precio/1k</th>
                     <th style="width:70px">Mín</th>
                     <th style="width:70px">Máx</th>
                     <th style="width:50px"></th>
                   </tr>
                 </thead>
                 <tbody id="catalog-body">
-                  <tr><td colspan="7" style="text-align:center;padding:32px;color:var(--muted)">No hay servicios en el catálogo. Ve a "Servicios" y agrega los que quieras ofrecer.</td></tr>
+                  <tr><td colspan="8" style="text-align:center;padding:32px;color:var(--muted)">No hay servicios en el catálogo. Ve a "Servicios" y agrega los que quieras ofrecer.</td></tr>
                 </tbody>
               </table>
             </div>
@@ -923,7 +924,12 @@ function renderCatalog() {
     return;
   }
 
-  tbody.innerHTML = list.map(s => `
+  tbody.innerHTML = list.map(s => {
+    const provCost = parseFloat(s.providerRate || s.rate || 0);
+    const myPrice  = parseFloat(s.rate || 0);
+    const margin   = provCost > 0 ? (((myPrice - provCost) / provCost) * 100).toFixed(0) : 0;
+    const marginColor = margin >= 0 ? 'var(--green)' : 'var(--red)';
+    return `
     <tr>
       <td data-label="ID" style="font-family:monospace;font-size:11px;color:var(--muted)">${s.serviceId}</td>
       <td data-label="Nombre cliente">
@@ -937,11 +943,18 @@ function renderCatalog() {
           placeholder="Categoría visible"
           onchange="markCatalogChange('${s.docId}','displayCategory',this.value)">
       </td>
-      <td data-label="Precio/1k">
-        <div style="display:flex;align-items:center;gap:4px">
-          <span style="font-size:11px;color:var(--muted)">$</span>
-          <input type="number" class="catalog-input" style="width:88px" value="${parseFloat(s.rate||0).toFixed(4)}" step="0.0001" min="0"
-            onchange="markCatalogChange('${s.docId}','rate',parseFloat(this.value))">
+      <td data-label="Te cuesta">
+        <span style="font-size:13px;font-weight:600;color:var(--navy)">$${provCost.toFixed(4)}</span>
+        <div style="font-size:10px;color:var(--muted)">/1000</div>
+      </td>
+      <td data-label="Tu precio/1k">
+        <div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap">
+          <div style="display:flex;align-items:center;gap:3px">
+            <span style="font-size:11px;color:var(--muted)">$</span>
+            <input type="number" class="catalog-input" style="width:88px" value="${myPrice.toFixed(4)}" step="0.0001" min="0"
+              onchange="markCatalogChange('${s.docId}','rate',parseFloat(this.value));this.closest('td').querySelector('.margin-badge').textContent=calcMarginLabel(${provCost},parseFloat(this.value))">
+          </div>
+          <span class="margin-badge" style="font-size:10px;font-weight:700;color:${marginColor};white-space:nowrap">+${margin}%</span>
         </div>
       </td>
       <td data-label="Mín" style="font-size:12px">${(s.min||0).toLocaleString()}</td>
@@ -953,7 +966,14 @@ function renderCatalog() {
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
         </button>
       </td>
-    </tr>`).join('');
+    </tr>`;
+  }).join('');
+}
+
+function calcMarginLabel(provCost, myPrice) {
+  if (!provCost) return '';
+  const pct = (((myPrice - provCost) / provCost) * 100).toFixed(0);
+  return (pct >= 0 ? '+' : '') + pct + '%';
 }
 
 async function saveCatalog() {
