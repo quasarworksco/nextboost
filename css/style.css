@@ -566,6 +566,62 @@ section .subtitle { text-align: center; color: var(--muted); margin-bottom: 52px
   box-shadow: 0 2px 8px rgba(20,56,204,.12);
 }
 
+/* ─── SERVICE CUSTOM DROPDOWN ────────────────────────────── */
+.svc-dropdown {
+  position: absolute;
+  top: calc(100% + 2px);
+  left: 0; right: 0;
+  background: var(--white);
+  border: 1.5px solid var(--border2);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-m);
+  max-height: 280px;
+  overflow-y: auto;
+  z-index: 200;
+  overscroll-behavior: contain;
+}
+.svc-item {
+  padding: 10px 14px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--border);
+  transition: background .15s;
+}
+.svc-item:last-child { border-bottom: none; }
+.svc-item:hover { background: var(--blue-xs); }
+.svc-item-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--navy);
+  white-space: normal;
+  word-break: break-word;
+  line-height: 1.4;
+  margin-bottom: 4px;
+}
+.svc-item-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+.svc-price {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--blue);
+  background: var(--blue-xs);
+  padding: 2px 7px;
+  border-radius: 20px;
+}
+.svc-range {
+  font-size: 11px;
+  color: var(--muted);
+}
+.svc-no-result {
+  padding: 14px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--muted);
+}
+
 /* ─── ORDER FORM ─────────────────────────────────────────── */
 .service-info-box {
   background: var(--off); border: 1.5px solid var(--border);

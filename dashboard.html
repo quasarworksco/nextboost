@@ -2,6 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Panel — NextBoost</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -156,17 +157,22 @@
           <div class="card">
             <div class="card-header">Nuevo pedido</div>
             <div class="card-body">
+              <!-- Category picker -->
               <div class="form-group">
                 <label>Categoría</label>
                 <select class="select" id="category-filter">
                   <option value="">Todas las categorías</option>
                 </select>
               </div>
-              <div class="form-group">
+
+              <!-- Service search + custom dropdown -->
+              <div class="form-group" style="position:relative">
                 <label>Servicio</label>
-                <select class="select" id="service-select">
-                  <option value="">— Selecciona un servicio —</option>
-                </select>
+                <input type="text" class="input" id="service-search" placeholder="Buscar servicio..." autocomplete="off" style="padding-right:36px">
+                <svg id="service-search-clear" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="position:absolute;right:12px;top:38px;cursor:pointer;display:none"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                <div id="service-dropdown" class="svc-dropdown" style="display:none"></div>
+                <!-- Hidden store of selected service -->
+                <input type="hidden" id="service-select">
               </div>
 
               <div id="service-info-box" style="display:none">
@@ -474,90 +480,140 @@ function renderRecentOrders(orders) {
 }
 
 // ── Services ──────────────────────────────────────────
+let filteredServices = [];
+let selectedService  = null;
+
 async function loadServices() {
   try {
     allServices = await Services.getAll();
+    // sort globally by price ascending
+    allServices.sort((a, b) => parseFloat(a.rate) - parseFloat(b.rate));
     const categories = [...new Set(allServices.map(s => s.category))].sort();
     const catSel = document.getElementById('category-filter');
     categories.forEach(c => { const o = document.createElement('option'); o.value = c; o.textContent = c; catSel.appendChild(o); });
-    renderServiceOptions(allServices);
+    filteredServices = allServices;
   } catch(e) { toast('Error cargando servicios: ' + e.message, 'error'); }
 }
 
-function renderServiceOptions(services) {
-  const sel = document.getElementById('service-select');
-  sel.innerHTML = '<option value="">— Selecciona un servicio —</option>';
-  services.forEach(s => {
-    const o = document.createElement('option');
-    o.value = s.id;
-    o.textContent = `[${s.id}] ${s.name} — $${parseFloat(s.rate).toFixed(4)}/1k`;
-    o.dataset.service = JSON.stringify(s);
-    sel.appendChild(o);
+function getFilteredServices() {
+  const cat   = document.getElementById('category-filter').value;
+  const q     = (document.getElementById('service-search').value || '').toLowerCase().trim();
+  let list = cat ? allServices.filter(s => s.category === cat) : allServices;
+  if (q) list = list.filter(s => s.name.toLowerCase().includes(q) || String(s.id).includes(q));
+  // always sorted by rate asc (already sorted in loadServices, filter preserves order)
+  return list;
+}
+
+function renderServiceDropdown() {
+  const dd   = document.getElementById('service-dropdown');
+  const list = getFilteredServices();
+  filteredServices = list;
+
+  if (!list.length) {
+    dd.innerHTML = '<div class="svc-no-result">Sin resultados</div>';
+    dd.style.display = 'block';
+    return;
+  }
+
+  dd.innerHTML = list.slice(0, 80).map(s =>
+    `<div class="svc-item" data-id="${s.id}">
+      <div class="svc-item-name">${s.name}</div>
+      <div class="svc-item-meta">
+        <span class="svc-price">$${parseFloat(s.rate).toFixed(4)}/1k</span>
+        <span class="svc-range">mín ${(s.min||1).toLocaleString()} · máx ${(s.max||0).toLocaleString()}</span>
+      </div>
+    </div>`
+  ).join('') + (list.length > 80 ? `<div class="svc-no-result">Mostrando 80 de ${list.length}. Filtra para ver más.</div>` : '');
+  dd.style.display = 'block';
+
+  dd.querySelectorAll('.svc-item').forEach(el => {
+    el.addEventListener('mousedown', e => {
+      e.preventDefault();
+      const id = el.dataset.id;
+      const svc = allServices.find(s => String(s.id) === id);
+      selectService(svc);
+    });
   });
 }
 
+function selectService(svc) {
+  selectedService = svc;
+  document.getElementById('service-search').value = svc ? svc.name : '';
+  document.getElementById('service-select').value  = svc ? svc.id  : '';
+  document.getElementById('service-dropdown').style.display = 'none';
+  document.getElementById('service-search-clear').style.display = svc ? 'block' : 'none';
+  updateServiceInfo();
+}
+
+document.getElementById('service-search').addEventListener('focus', () => {
+  renderServiceDropdown();
+});
+document.getElementById('service-search').addEventListener('input', function() {
+  document.getElementById('service-search-clear').style.display = this.value ? 'block' : 'none';
+  if (!this.value) { selectedService = null; document.getElementById('service-select').value = ''; updateServiceInfo(); }
+  renderServiceDropdown();
+});
+document.getElementById('service-search').addEventListener('blur', () => {
+  setTimeout(() => { document.getElementById('service-dropdown').style.display = 'none'; }, 150);
+});
+document.getElementById('service-search-clear').addEventListener('click', () => {
+  selectService(null);
+  document.getElementById('service-search').focus();
+});
+
 document.getElementById('category-filter').addEventListener('change', function() {
-  const cat = this.value;
-  renderServiceOptions(cat ? allServices.filter(s => s.category === cat) : allServices);
+  // reset selection and search when category changes
+  selectedService = null;
+  document.getElementById('service-search').value = '';
+  document.getElementById('service-select').value  = '';
+  document.getElementById('service-search-clear').style.display = 'none';
   updateServiceInfo();
 });
 
-document.getElementById('service-select').addEventListener('change', updateServiceInfo);
 document.getElementById('order-qty').addEventListener('input', updateOrderTotal);
 
 function updateServiceInfo() {
-  const sel = document.getElementById('service-select');
-  const opt = sel.options[sel.selectedIndex];
+  const s   = selectedService;
   const box = document.getElementById('service-info-box');
-  if (!opt || !opt.dataset.service) { box.style.display = 'none'; updateOrderTotal(); return; }
-  const s = JSON.parse(opt.dataset.service);
+  if (!s) { box.style.display = 'none'; updateOrderTotal(); return; }
   box.style.display = 'block';
   document.getElementById('si-rate').textContent   = `$${parseFloat(s.rate).toFixed(4)} / 1000`;
   document.getElementById('si-min').textContent    = (s.min||1).toLocaleString();
   document.getElementById('si-max').textContent    = (s.max||100000).toLocaleString();
-  document.getElementById('si-refill').textContent = s.refill ? '✅ Sí' : '❌ No';
+  document.getElementById('si-refill').textContent = s.refill ? 'Sí' : 'No';
   document.getElementById('si-type').textContent   = s.type || '—';
-  document.getElementById('order-qty').min  = s.min || 1;
-  document.getElementById('order-qty').max  = s.max || 100000;
+  document.getElementById('order-qty').min   = s.min || 1;
+  document.getElementById('order-qty').max   = s.max || 100000;
   document.getElementById('order-qty').value = s.min || 100;
   updateOrderTotal();
 }
 
 function updateOrderTotal() {
-  const sel = document.getElementById('service-select');
-  const opt = sel.options[sel.selectedIndex];
+  const s   = selectedService;
   const qty = parseInt(document.getElementById('order-qty').value) || 0;
   const totalBox = document.getElementById('order-total-box');
   const placeBtn = document.getElementById('place-order-btn');
 
-  if (!opt || !opt.dataset.service || qty < 1) { totalBox.style.display = 'none'; placeBtn.disabled = true; return; }
-  const s     = JSON.parse(opt.dataset.service);
-  const cost  = (parseFloat(s.rate) * qty) / 1000;
-  const bal   = parseFloat(userData?.balance || 0);
+  if (!s || qty < 1) { totalBox.style.display = 'none'; placeBtn.disabled = true; return; }
+  const cost = (parseFloat(s.rate) * qty) / 1000;
+  const bal  = parseFloat(userData?.balance || 0);
   totalBox.style.display = 'block';
   document.getElementById('order-total-val').textContent = formatUSD2(cost);
-  placeBtn.disabled = false;
-  if (cost > bal) {
-    document.getElementById('order-total-val').style.color = 'var(--red)';
-    placeBtn.disabled = true;
-  } else {
-    document.getElementById('order-total-val').style.color = '';
-  }
+  document.getElementById('order-total-val').style.color = cost > bal ? 'var(--red)' : '';
+  placeBtn.disabled = cost > bal;
 }
 
 document.getElementById('place-order-btn').addEventListener('click', async () => {
-  const sel  = document.getElementById('service-select');
-  const opt  = sel.options[sel.selectedIndex];
-  const link = document.getElementById('order-link').value.trim();
-  const qty  = parseInt(document.getElementById('order-qty').value);
+  const service = selectedService;
+  const link    = document.getElementById('order-link').value.trim();
+  const qty     = parseInt(document.getElementById('order-qty').value);
   const alertEl = document.getElementById('order-alert');
 
   alertEl.innerHTML = '';
-  if (!opt || !opt.dataset.service) { alertEl.innerHTML = '<div class="alert alert-error">❌ Selecciona un servicio.</div>'; return; }
-  if (!link) { alertEl.innerHTML = '<div class="alert alert-error">❌ Ingresa el enlace.</div>'; return; }
-  const service = JSON.parse(opt.dataset.service);
+  if (!service) { alertEl.innerHTML = '<div class="alert alert-error">Selecciona un servicio.</div>'; return; }
+  if (!link)    { alertEl.innerHTML = '<div class="alert alert-error">Ingresa el enlace.</div>'; return; }
   if (qty < service.min || qty > service.max) {
-    alertEl.innerHTML = `<div class="alert alert-error">❌ Cantidad fuera de rango (${service.min}–${service.max.toLocaleString()}).</div>`;
+    alertEl.innerHTML = `<div class="alert alert-error">Cantidad fuera de rango (${service.min.toLocaleString()}–${service.max.toLocaleString()}).</div>`;
     return;
   }
 
@@ -569,7 +625,7 @@ document.getElementById('place-order-btn').addEventListener('click', async () =>
     const order = await Orders.place({ userId: currentUser.uid, service, link, quantity: qty });
     const newBal = parseFloat(userData.balance) - order.charge;
     updateBalanceDisplay(newBal);
-    alertEl.innerHTML = `<div class="alert alert-success">✅ Pedido #${order.id.slice(0,8)} creado. Costo: ${formatUSD2(order.charge)}</div>`;
+    alertEl.innerHTML = `<div class="alert alert-success">Pedido #${order.id.slice(0,8)} creado. Costo: ${formatUSD2(order.charge)}</div>`;
     toast('Pedido creado exitosamente', 'success');
     await loadHomeStats();
   } catch(e) {
