@@ -25,6 +25,46 @@
   --sidebar-w: 248px;
 }
 
+/* ─── DARK MODE TOKENS ────────────────────────────────── */
+[data-theme="dark"] {
+  --white:    #1a1f2e;
+  --off:      #131720;
+  --navy:     #e8ecff;
+  --navy-m:   #c5ccf5;
+  --muted:    #7a88bb;
+  --soft:     #5a6898;
+  --border:   #252d48;
+  --border2:  #303a60;
+  --blue-xs:  #1a2050;
+  --shadow:   0 2px 20px rgba(0,0,0,.3);
+  --shadow-m: 0 6px 32px rgba(0,0,0,.4);
+  --shadow-l: 0 12px 48px rgba(0,0,0,.5);
+}
+[data-theme="dark"] body         { background: #0f1119; }
+[data-theme="dark"] .card        { background: #1a1f2e; }
+[data-theme="dark"] .stat-card   { background: #1a1f2e; }
+[data-theme="dark"] .input,
+[data-theme="dark"] .select      { background: #252d48; color: var(--navy); border-color: var(--border); }
+[data-theme="dark"] .input::placeholder { color: var(--soft); }
+[data-theme="dark"] .topbar      { background: #1a1f2e; border-color: var(--border); }
+[data-theme="dark"] .modal       { background: #1a1f2e; }
+[data-theme="dark"] .auth-card   { background: #1a1f2e; }
+[data-theme="dark"] .auth-page   { background: #0f1119; }
+[data-theme="dark"] .svc-dropdown { background: #1a1f2e; border-color: var(--border); }
+[data-theme="dark"] .svc-option:hover { background: #252d48; }
+[data-theme="dark"] .service-info-box { background: #252d48; border-color: var(--border); }
+[data-theme="dark"] th           { background: #1f2640; }
+[data-theme="dark"] tr:hover td  { background: #1f2640 !important; }
+[data-theme="dark"] .upload-area { background: #252d48; border-color: var(--border); }
+[data-theme="dark"] .btn-ghost   { color: var(--muted); }
+[data-theme="dark"] .btn-ghost:hover { background: #252d48; color: var(--navy); }
+[data-theme="dark"] .btn-outline { border-color: var(--border2); color: var(--navy); }
+[data-theme="dark"] .btn-outline:hover { background: #252d48; }
+[data-theme="dark"] code         { background: #252d48; color: #7dd3fc; }
+[data-theme="dark"] .legal-wrap  { color: var(--navy); }
+[data-theme="dark"] .legal-wrap p,
+[data-theme="dark"] .legal-wrap li { color: var(--muted); }
+
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; }
 

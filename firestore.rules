@@ -50,5 +50,20 @@ service cloud.firestore {
       allow read:   if isAuth();
       allow write:  if isAdmin();
     }
+
+    // Support tickets: users read/create own; admin reads/writes all
+    match /support_tickets/{ticketId} {
+      allow read:   if isAuth() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isAuth() && request.resource.data.userId == request.auth.uid;
+      allow update: if isAuth() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow delete: if isAdmin();
+
+      match /messages/{msgId} {
+        allow read:   if isAuth() && (get(/databases/$(database)/documents/support_tickets/$(ticketId)).data.userId == request.auth.uid || isAdmin());
+        allow create: if isAuth() && (get(/databases/$(database)/documents/support_tickets/$(ticketId)).data.userId == request.auth.uid || isAdmin());
+        allow update: if isAdmin();
+        allow delete: if isAdmin();
+      }
+    }
   }
 }

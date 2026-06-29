@@ -43,6 +43,10 @@
       <div class="nav-item" data-page="movements" data-title="Movimientos" onclick="showPage('movements');loadMovements()">
         <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></span> Movimientos
       </div>
+      <div class="nav-item" data-page="support" data-title="Soporte" onclick="showPage('support');loadTickets()">
+        <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span> Soporte
+        <span class="badge badge-pending ml-auto" id="support-unread-badge" style="display:none"></span>
+      </div>
       <div class="nav-item" data-page="api" data-title="API" onclick="showPage('api')">
         <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></span> API
       </div>
@@ -59,7 +63,12 @@
         <div class="role">Usuario</div>
       </div>
     </div>
-    <div style="padding:8px 12px">
+    <div style="padding:8px 12px;display:flex;flex-direction:column;gap:4px">
+      <button class="btn btn-ghost btn-sm btn-full" id="theme-toggle-btn" onclick="toggleTheme()" style="justify-content:flex-start;gap:8px">
+        <svg id="theme-icon-moon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        <svg id="theme-icon-sun" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+        <span id="theme-label">Modo oscuro</span>
+      </button>
       <button class="btn btn-ghost btn-sm btn-full" onclick="signOut()">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
         Cerrar sesión
@@ -422,6 +431,72 @@
           </div>
           <div style="padding:12px 20px;text-align:center">
             <button class="btn btn-ghost btn-sm" id="load-more-mov" onclick="loadMoreMovements()" style="display:none">Cargar más</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ SUPPORT ═══ -->
+      <div id="page-support" class="page-section" style="display:none">
+        <div class="grid-2" style="align-items:start;gap:24px">
+          <!-- Ticket list -->
+          <div>
+            <div class="card mb-3">
+              <div class="card-header flex items-center justify-between">
+                <span>Mis tickets</span>
+                <button class="btn btn-primary btn-sm" onclick="openNewTicketModal()">+ Nuevo ticket</button>
+              </div>
+              <div class="card-body" style="padding:0">
+                <div id="tickets-list" style="min-height:80px;padding:8px 0">
+                  <div style="text-align:center;padding:24px;color:var(--muted)">Cargando...</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Thread view -->
+          <div id="ticket-thread-wrap" style="display:none">
+            <div class="card">
+              <div class="card-header flex items-center justify-between">
+                <div>
+                  <div style="font-weight:700;font-size:15px" id="thread-title">—</div>
+                  <div id="thread-status-badge" style="margin-top:4px"></div>
+                </div>
+                <button class="btn btn-ghost btn-sm" onclick="closeThread()">✕ Cerrar</button>
+              </div>
+              <div id="thread-messages" style="padding:16px;max-height:340px;overflow-y:auto;display:flex;flex-direction:column;gap:12px"></div>
+              <div style="padding:16px;border-top:1px solid var(--border);display:flex;gap:8px" id="thread-reply-wrap">
+                <input type="text" class="input" id="thread-reply-input" placeholder="Escribe tu respuesta..." style="flex:1" onkeydown="if(event.key==='Enter')sendReply()">
+                <button class="btn btn-primary btn-sm" onclick="sendReply()">Enviar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- NEW TICKET MODAL -->
+      <div class="modal-overlay" id="new-ticket-modal">
+        <div class="modal" style="max-width:480px">
+          <div class="modal-header">
+            <span>Nuevo ticket de soporte</span>
+            <button class="modal-close">✕</button>
+          </div>
+          <div class="modal-body">
+            <div class="form-group">
+              <label>Asunto</label>
+              <select class="select" id="ticket-subject-select">
+                <option value="Problema con pedido">Problema con pedido</option>
+                <option value="Recarga no acreditada">Recarga no acreditada</option>
+                <option value="Problema de acceso">Problema de acceso</option>
+                <option value="Consulta general">Consulta general</option>
+                <option value="Solicitud de reembolso">Solicitud de reembolso</option>
+                <option value="Otro">Otro</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Descripción</label>
+              <textarea class="input" id="ticket-message" rows="4" placeholder="Describe tu problema con el mayor detalle posible..." style="resize:vertical"></textarea>
+            </div>
+            <div id="ticket-alert"></div>
+            <button class="btn btn-primary btn-full" onclick="submitTicket()">Abrir ticket</button>
           </div>
         </div>
       </div>
@@ -1177,9 +1252,160 @@ function closeWelcome() {
 document.querySelectorAll('.nav-item').forEach(item => {
   item.addEventListener('click', () => {
     const page = item.dataset.page;
-    if (page === 'orders')    loadOrdersPage();
+    if (page === 'orders') loadOrdersPage();
   });
 });
+
+// ── Support tickets ───────────────────────────────────
+let _activeTicketId = null;
+let _ticketThreadUnsub = null;
+
+async function loadTickets() {
+  const container = document.getElementById('tickets-list');
+  container.innerHTML = '<div style="text-align:center;padding:24px;color:var(--muted)"><span class="spinner"></span></div>';
+  try {
+    const snap = await db.collection('support_tickets')
+      .where('userId','==',currentUser.uid)
+      .orderBy('updatedAt','desc').limit(30).get();
+    const tickets = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+    // Unread badge (admin replied and user hasn't seen)
+    const unread = tickets.filter(t => t.hasAdminReply && !t.userSeen).length;
+    const badge = document.getElementById('support-unread-badge');
+    if (badge) { badge.textContent = unread; badge.style.display = unread > 0 ? '' : 'none'; }
+
+    if (!tickets.length) {
+      container.innerHTML = '<div style="text-align:center;padding:32px;color:var(--muted)"><div style="font-size:32px;margin-bottom:8px">💬</div><div>Sin tickets aún.<br>Abre uno si tienes algún problema.</div></div>';
+      return;
+    }
+    container.innerHTML = tickets.map(t => {
+      const isUnread = t.hasAdminReply && !t.userSeen;
+      const statusColor = t.status === 'open' ? 'var(--blue)' : t.status === 'resolved' ? 'var(--green)' : 'var(--muted)';
+      return `<div class="ticket-item ${_activeTicketId === t.id ? 'active' : ''}" onclick="openThread('${t.id}')" style="padding:14px 16px;cursor:pointer;border-bottom:1px solid var(--border);transition:background .15s;${isUnread?'background:var(--blue-xs);':''}">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+          <div style="font-weight:${isUnread?'700':'600'};font-size:14px;color:var(--navy)">${t.subject}</div>
+          <span style="font-size:11px;font-weight:600;color:${statusColor};white-space:nowrap">${t.status==='open'?'Abierto':t.status==='resolved'?'Resuelto':'Cerrado'}</span>
+        </div>
+        <div style="font-size:12px;color:var(--muted);margin-top:3px">${t.lastMessage ? t.lastMessage.slice(0,60)+'…' : ''}</div>
+        ${isUnread ? '<div style="font-size:11px;color:var(--blue);font-weight:700;margin-top:4px">● Nueva respuesta</div>' : ''}
+      </div>`;
+    }).join('');
+  } catch(e) { container.innerHTML = `<div style="text-align:center;padding:20px;color:var(--muted)">${e.message}</div>`; }
+}
+
+function openThread(ticketId) {
+  _activeTicketId = ticketId;
+  document.getElementById('ticket-thread-wrap').style.display = '';
+  document.getElementById('thread-messages').innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted)"><span class="spinner"></span></div>';
+
+  // Mark as seen
+  db.collection('support_tickets').doc(ticketId).update({ userSeen: true });
+
+  // Real-time thread listener
+  if (_ticketThreadUnsub) _ticketThreadUnsub();
+  _ticketThreadUnsub = db.collection('support_tickets').doc(ticketId)
+    .collection('messages').orderBy('createdAt','asc')
+    .onSnapshot(async snap => {
+      const ticketDoc = await db.collection('support_tickets').doc(ticketId).get();
+      const ticket = ticketDoc.data();
+      document.getElementById('thread-title').textContent = ticket.subject;
+      document.getElementById('thread-status-badge').innerHTML = ticket.status === 'resolved'
+        ? '<span class="badge badge-active">Resuelto</span>'
+        : '<span class="badge badge-pending">Abierto</span>';
+      document.getElementById('thread-reply-wrap').style.display = ticket.status === 'resolved' ? 'none' : '';
+
+      const msgs = snap.docs.map(d => d.data());
+      const el = document.getElementById('thread-messages');
+      el.innerHTML = msgs.length
+        ? msgs.map(m => {
+            const isAdmin = m.role === 'admin';
+            return `<div style="display:flex;flex-direction:column;align-items:${isAdmin?'flex-start':'flex-end'}">
+              <div style="max-width:85%;background:${isAdmin?'var(--bg2,#f4f6ff)':'var(--blue)'};color:${isAdmin?'var(--navy)':'#fff'};padding:10px 14px;border-radius:${isAdmin?'4px 14px 14px 14px':'14px 4px 14px 14px'};font-size:14px;line-height:1.5">${m.text}</div>
+              <div style="font-size:11px;color:var(--muted);margin-top:4px">${isAdmin?'Soporte':'Tú'} · ${m.createdAt ? m.createdAt.toDate().toLocaleTimeString('es',{hour:'2-digit',minute:'2-digit'}) : ''}</div>
+            </div>`;
+          }).join('')
+        : '<div style="text-align:center;padding:20px;color:var(--muted)">Sin mensajes</div>';
+      el.scrollTop = el.scrollHeight;
+    });
+  // Highlight in list
+  document.querySelectorAll('.ticket-item').forEach(el => el.style.background = '');
+}
+
+function closeThread() {
+  if (_ticketThreadUnsub) { _ticketThreadUnsub(); _ticketThreadUnsub = null; }
+  _activeTicketId = null;
+  document.getElementById('ticket-thread-wrap').style.display = 'none';
+  loadTickets();
+}
+
+async function sendReply() {
+  const input = document.getElementById('thread-reply-input');
+  const text = input.value.trim();
+  if (!text || !_activeTicketId) return;
+  input.value = '';
+  try {
+    const now = firebase.firestore.FieldValue.serverTimestamp();
+    await db.collection('support_tickets').doc(_activeTicketId)
+      .collection('messages').add({ text, role: 'user', createdAt: now });
+    await db.collection('support_tickets').doc(_activeTicketId).update({
+      lastMessage: text, updatedAt: now, userSeen: true, adminSeen: false,
+    });
+  } catch(e) { toast('Error enviando mensaje: ' + e.message, 'error'); }
+}
+
+function openNewTicketModal() { openModal('new-ticket-modal'); }
+
+async function submitTicket() {
+  const subject = document.getElementById('ticket-subject-select').value;
+  const message = document.getElementById('ticket-message').value.trim();
+  const alertEl = document.getElementById('ticket-alert');
+  if (!message) { alertEl.innerHTML = '<div class="alert alert-error">Escribe una descripción.</div>'; return; }
+
+  const btn = document.querySelector('#new-ticket-modal .btn-primary');
+  btn.disabled = true; btn.textContent = 'Enviando...';
+  try {
+    const now = firebase.firestore.FieldValue.serverTimestamp();
+    const ref = await db.collection('support_tickets').add({
+      userId:      currentUser.uid,
+      userEmail:   currentUser.email,
+      userName:    userData.name || currentUser.email,
+      subject,
+      status:      'open',
+      lastMessage: message,
+      hasAdminReply: false,
+      userSeen:    true,
+      adminSeen:   false,
+      createdAt:   now,
+      updatedAt:   now,
+    });
+    await ref.collection('messages').add({ text: message, role: 'user', createdAt: now });
+    closeModal('new-ticket-modal');
+    document.getElementById('ticket-message').value = '';
+    alertEl.innerHTML = '';
+    toast('Ticket abierto. Te responderemos pronto.', 'success');
+    loadTickets();
+    openThread(ref.id);
+  } catch(e) { alertEl.innerHTML = `<div class="alert alert-error">${e.message}</div>`; }
+  btn.disabled = false; btn.textContent = 'Abrir ticket';
+}
+
+// ── Dark mode ─────────────────────────────────────────
+function applyTheme(dark) {
+  document.documentElement.setAttribute('data-theme', dark ? 'dark' : '');
+  document.getElementById('theme-icon-moon').style.display = dark ? 'none' : '';
+  document.getElementById('theme-icon-sun').style.display  = dark ? ''     : 'none';
+  document.getElementById('theme-label').textContent       = dark ? 'Modo claro' : 'Modo oscuro';
+}
+function toggleTheme() {
+  const dark = document.documentElement.getAttribute('data-theme') !== 'dark';
+  localStorage.setItem('nb_theme', dark ? 'dark' : 'light');
+  applyTheme(dark);
+}
+// Apply saved theme immediately
+(function() {
+  const saved = localStorage.getItem('nb_theme');
+  if (saved === 'dark') applyTheme(true);
+})();
 
 // ── Movements (balance history) ───────────────────────
 let _allMovements = [];

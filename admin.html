@@ -53,6 +53,10 @@
         <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span> Mi Catálogo
         <span class="badge badge-active ml-auto" id="catalog-count-badge" style="display:none"></span>
       </div>
+      <div class="nav-item" data-page="support" data-title="Soporte" onclick="showPage('support');loadAdminTickets()">
+        <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span> Soporte
+        <span class="badge badge-pending ml-auto" id="admin-tickets-badge" style="display:none"></span>
+      </div>
       <div class="nav-item" data-page="settings" data-title="Configuración" onclick="showPage('settings');loadSettings()">
         <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span> Configuración
       </div>
@@ -66,13 +70,20 @@
         <div class="role">Administrador</div>
       </div>
     </div>
-    <div style="padding:8px 12px;display:flex;gap:8px">
-      <a href="dashboard.html" class="btn btn-ghost btn-sm" style="flex:1;justify-content:center">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Mi panel
-      </a>
-      <button class="btn btn-ghost btn-sm" onclick="signOut()" title="Cerrar sesión">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+    <div style="padding:8px 12px;display:flex;flex-direction:column;gap:4px">
+      <button class="btn btn-ghost btn-sm btn-full" onclick="toggleTheme()" style="justify-content:flex-start;gap:8px">
+        <svg id="theme-icon-moon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        <svg id="theme-icon-sun" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+        <span id="theme-label">Modo oscuro</span>
       </button>
+      <div style="display:flex;gap:6px">
+        <a href="dashboard.html" class="btn btn-ghost btn-sm" style="flex:1;justify-content:center">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Mi panel
+        </a>
+        <button class="btn btn-ghost btn-sm" onclick="signOut()" title="Cerrar sesión">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        </button>
+      </div>
     </div>
   </div>
 </aside>
@@ -409,6 +420,44 @@
       </div>
 
       <!-- ═══ SETTINGS ═══ -->
+      <!-- ═══ SUPPORT ═══ -->
+      <div id="page-support" class="page-section" style="display:none">
+        <div class="grid-2" style="align-items:start;gap:24px">
+          <!-- Ticket list -->
+          <div class="card">
+            <div class="card-header flex items-center justify-between">
+              <span>Tickets de soporte</span>
+              <select class="select" id="admin-ticket-filter" style="width:140px" onchange="loadAdminTickets()">
+                <option value="open">Abiertos</option>
+                <option value="">Todos</option>
+                <option value="resolved">Resueltos</option>
+              </select>
+            </div>
+            <div id="admin-tickets-list" style="min-height:80px"></div>
+          </div>
+          <!-- Thread -->
+          <div id="admin-thread-wrap" style="display:none">
+            <div class="card">
+              <div class="card-header flex items-center justify-between">
+                <div>
+                  <div style="font-weight:700" id="admin-thread-title">—</div>
+                  <div style="font-size:12px;color:var(--muted)" id="admin-thread-user"></div>
+                </div>
+                <div style="display:flex;gap:8px">
+                  <button class="btn btn-success btn-sm" id="admin-resolve-btn" onclick="resolveTicket()">✓ Resolver</button>
+                  <button class="btn btn-ghost btn-sm" onclick="closeAdminThread()">✕</button>
+                </div>
+              </div>
+              <div id="admin-thread-messages" style="padding:16px;max-height:340px;overflow-y:auto;display:flex;flex-direction:column;gap:12px"></div>
+              <div style="padding:16px;border-top:1px solid var(--border);display:flex;gap:8px">
+                <input type="text" class="input" id="admin-reply-input" placeholder="Responder al cliente..." style="flex:1" onkeydown="if(event.key==='Enter')sendAdminReply()">
+                <button class="btn btn-primary btn-sm" onclick="sendAdminReply()">Enviar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div id="page-settings" class="page-section" style="display:none">
         <div class="grid-2" style="align-items:start">
           <div class="card">
@@ -1391,6 +1440,117 @@ document.getElementById('save-settings-btn').addEventListener('click', async () 
     toast('Configuración guardada', 'success');
   } catch(e) { alertEl.innerHTML = `<div class="alert alert-error">${e.message}</div>`; }
 });
+
+// ── Support tickets (admin) ───────────────────────────
+let _adminActiveTicket = null;
+let _adminThreadUnsub  = null;
+
+async function loadAdminTickets() {
+  const container = document.getElementById('admin-tickets-list');
+  container.innerHTML = '<div style="text-align:center;padding:24px"><span class="spinner"></span></div>';
+  const filter = document.getElementById('admin-ticket-filter').value;
+  let q = db.collection('support_tickets').orderBy('updatedAt','desc').limit(50);
+  if (filter) q = q.where('status','==',filter);
+  const snap = await q.get();
+  const tickets = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  const unread = tickets.filter(t => !t.adminSeen && t.lastMessage).length;
+  const badge = document.getElementById('admin-tickets-badge');
+  if (badge) { badge.textContent = unread; badge.style.display = unread > 0 ? '' : 'none'; }
+  if (!tickets.length) {
+    container.innerHTML = '<div style="text-align:center;padding:32px;color:var(--muted)">Sin tickets</div>';
+    return;
+  }
+  container.innerHTML = tickets.map(t => {
+    const isUnread = !t.adminSeen;
+    return `<div onclick="openAdminThread('${t.id}')" style="padding:14px 16px;cursor:pointer;border-bottom:1px solid var(--border);${isUnread?'background:var(--blue-xs);':''}">
+      <div style="display:flex;justify-content:space-between;gap:8px">
+        <div style="font-weight:${isUnread?'700':'600'};font-size:14px;color:var(--navy)">${t.subject}</div>
+        <span style="font-size:11px;color:var(--muted);white-space:nowrap">${t.status==='open'?'Abierto':'Resuelto'}</span>
+      </div>
+      <div style="font-size:12px;color:var(--muted);margin-top:2px">${t.userEmail||t.userName||'—'}</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:2px">${(t.lastMessage||'').slice(0,50)}…</div>
+      ${isUnread?'<div style="font-size:11px;color:var(--blue);font-weight:700;margin-top:4px">● Sin respuesta</div>':''}
+    </div>`;
+  }).join('');
+}
+
+function openAdminThread(ticketId) {
+  _adminActiveTicket = ticketId;
+  document.getElementById('admin-thread-wrap').style.display = '';
+  document.getElementById('admin-thread-messages').innerHTML = '<div style="text-align:center;padding:20px"><span class="spinner"></span></div>';
+  db.collection('support_tickets').doc(ticketId).update({ adminSeen: true });
+
+  if (_adminThreadUnsub) _adminThreadUnsub();
+  _adminThreadUnsub = db.collection('support_tickets').doc(ticketId)
+    .collection('messages').orderBy('createdAt','asc')
+    .onSnapshot(async snap => {
+      const tDoc = await db.collection('support_tickets').doc(ticketId).get();
+      const t = tDoc.data();
+      document.getElementById('admin-thread-title').textContent = t.subject;
+      document.getElementById('admin-thread-user').textContent  = t.userEmail || t.userName || '—';
+      document.getElementById('admin-resolve-btn').style.display = t.status === 'resolved' ? 'none' : '';
+
+      const msgs = snap.docs.map(d => d.data());
+      const el   = document.getElementById('admin-thread-messages');
+      el.innerHTML = msgs.map(m => {
+        const isAdmin = m.role === 'admin';
+        return `<div style="display:flex;flex-direction:column;align-items:${isAdmin?'flex-end':'flex-start'}">
+          <div style="max-width:85%;background:${isAdmin?'var(--blue)':'var(--bg2,#f4f6ff)'};color:${isAdmin?'#fff':'var(--navy)'};padding:10px 14px;border-radius:${isAdmin?'14px 4px 14px 14px':'4px 14px 14px 14px'};font-size:14px;line-height:1.5">${m.text}</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px">${isAdmin?'Soporte':'Cliente'}</div>
+        </div>`;
+      }).join('');
+      el.scrollTop = el.scrollHeight;
+    });
+}
+
+async function sendAdminReply() {
+  const input = document.getElementById('admin-reply-input');
+  const text  = input.value.trim();
+  if (!text || !_adminActiveTicket) return;
+  input.value = '';
+  const now = firebase.firestore.FieldValue.serverTimestamp();
+  await db.collection('support_tickets').doc(_adminActiveTicket)
+    .collection('messages').add({ text, role: 'admin', createdAt: now });
+  await db.collection('support_tickets').doc(_adminActiveTicket).update({
+    lastMessage: text, updatedAt: now, hasAdminReply: true, adminSeen: true, userSeen: false,
+  });
+}
+
+async function resolveTicket() {
+  if (!_adminActiveTicket) return;
+  await db.collection('support_tickets').doc(_adminActiveTicket).update({ status: 'resolved', updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
+  document.getElementById('admin-resolve-btn').style.display = 'none';
+  toast('Ticket marcado como resuelto', 'success');
+  loadAdminTickets();
+}
+
+function closeAdminThread() {
+  if (_adminThreadUnsub) { _adminThreadUnsub(); _adminThreadUnsub = null; }
+  _adminActiveTicket = null;
+  document.getElementById('admin-thread-wrap').style.display = 'none';
+  loadAdminTickets();
+}
+
+// Watch for new tickets (real-time badge)
+db.collection('support_tickets').where('status','==','open').where('adminSeen','==',false)
+  .onSnapshot(snap => {
+    const badge = document.getElementById('admin-tickets-badge');
+    if (badge) { badge.textContent = snap.size; badge.style.display = snap.size > 0 ? '' : 'none'; }
+  });
+
+// ── Dark mode ─────────────────────────────────────────
+function applyTheme(dark) {
+  document.documentElement.setAttribute('data-theme', dark ? 'dark' : '');
+  document.getElementById('theme-icon-moon').style.display = dark ? 'none' : '';
+  document.getElementById('theme-icon-sun').style.display  = dark ? ''     : 'none';
+  document.getElementById('theme-label').textContent       = dark ? 'Modo claro' : 'Modo oscuro';
+}
+function toggleTheme() {
+  const dark = document.documentElement.getAttribute('data-theme') !== 'dark';
+  localStorage.setItem('nb_theme', dark ? 'dark' : 'light');
+  applyTheme(dark);
+}
+(function() { if (localStorage.getItem('nb_theme') === 'dark') applyTheme(true); })();
 
 document.getElementById('save-payments-btn').addEventListener('click', async () => {
   const btn = document.getElementById('save-payments-btn');

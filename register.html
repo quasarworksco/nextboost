@@ -41,7 +41,7 @@
         <input type="password" id="confirm" class="input" placeholder="Repite tu contraseña" required>
       </div>
       <div style="margin-bottom:16px;font-size:13px;color:var(--muted)">
-        Al registrarte aceptas nuestros <a href="#" style="color:var(--primary)">Términos de servicio</a> y <a href="#" style="color:var(--primary)">Política de privacidad</a>.
+        Al registrarte aceptas nuestros <a href="terms.html" target="_blank" style="color:var(--primary)">Términos de servicio</a> y <a href="privacy.html" target="_blank" style="color:var(--primary)">Política de privacidad</a>.
       </div>
       <button type="submit" class="btn btn-primary btn-full" id="submit-btn">
         Crear cuenta
@@ -62,6 +62,8 @@
 <script src="js/config.js"></script>
 <script src="js/app.js"></script>
 <script>
+  if (localStorage.getItem('nb_theme') === 'dark') document.documentElement.setAttribute('data-theme','dark');
+
   auth.onAuthStateChanged(user => {
     if (user) window.location.href = 'dashboard.html';
   });
