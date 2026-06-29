@@ -394,7 +394,21 @@ let userOrders  = [];
 requireAuth(async user => {
   currentUser = user;
   const snap  = await db.collection('users').doc(user.uid).get();
-  userData    = snap.data();
+
+  // Create user doc if it doesn't exist (e.g. first login after registration race)
+  if (!snap.exists) {
+    await db.collection('users').doc(user.uid).set({
+      name: user.displayName || user.email.split('@')[0],
+      email: user.email,
+      balance: 0,
+      role: 'user',
+      apiKey: null,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+    });
+    userData = { name: user.displayName || user.email.split('@')[0], email: user.email, balance: 0, role: 'user' };
+  } else {
+    userData = snap.data();
+  }
 
   document.getElementById('sidebar-name').textContent = userData.name || user.email;
   document.getElementById('user-avatar').textContent  = (userData.name || 'U')[0].toUpperCase();
