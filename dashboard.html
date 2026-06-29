@@ -39,6 +39,9 @@
       <div class="nav-item" data-page="add-funds" data-title="Recargar saldo" onclick="showPage('add-funds')">
         <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></span> Recargar saldo
       </div>
+      <div class="nav-item" data-page="movements" data-title="Movimientos" onclick="showPage('movements');loadMovements()">
+        <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></span> Movimientos
+      </div>
       <div class="nav-item" data-page="api" data-title="API" onclick="showPage('api')">
         <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></span> API
       </div>
@@ -375,6 +378,33 @@
             <div class="mt-3">
               <a href="api-docs.html" class="btn btn-primary btn-sm">Ver documentación completa →</a>
             </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ MOVEMENTS ═══ -->
+      <div id="page-movements" class="page-section" style="display:none">
+        <div class="card">
+          <div class="card-header flex items-center justify-between">
+            <span>Historial de movimientos</span>
+            <div style="display:flex;gap:6px">
+              <button class="btn btn-sm btn-ghost" id="mov-filter-all"    onclick="setMovFilter('all')">Todos</button>
+              <button class="btn btn-sm btn-ghost" id="mov-filter-credit" onclick="setMovFilter('credit')">Entradas</button>
+              <button class="btn btn-sm btn-ghost" id="mov-filter-debit"  onclick="setMovFilter('debit')">Salidas</button>
+            </div>
+          </div>
+          <div class="card-body" style="padding:0">
+            <div class="table-wrap orders-table-wrap">
+              <table>
+                <thead><tr><th>Fecha</th><th>Descripción</th><th>Tipo</th><th>Monto</th></tr></thead>
+                <tbody id="movements-body">
+                  <tr><td colspan="4" style="text-align:center;padding:24px;color:var(--muted)">Cargando...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div style="padding:12px 20px;text-align:center">
+            <button class="btn btn-ghost btn-sm" id="load-more-mov" onclick="loadMoreMovements()" style="display:none">Cargar más</button>
           </div>
         </div>
       </div>
@@ -1027,6 +1057,101 @@ document.querySelectorAll('.nav-item').forEach(item => {
     if (page === 'orders')    loadOrdersPage();
   });
 });
+
+// ── Movements (balance history) ───────────────────────
+let _allMovements = [];
+let _movFilter = 'all';
+let _movPage = 0;
+const MOV_PAGE_SIZE = 30;
+
+function setMovFilter(f) {
+  _movFilter = f;
+  _movPage = 0;
+  ['all','credit','debit'].forEach(x => {
+    const btn = document.getElementById('mov-filter-' + x);
+    btn.className = x === f ? 'btn btn-sm btn-primary' : 'btn btn-sm btn-ghost';
+  });
+  renderMovements();
+}
+
+async function loadMovements() {
+  const tbody = document.getElementById('movements-body');
+  tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:24px;color:var(--muted)">Cargando...</td></tr>';
+  _movPage = 0;
+  _movFilter = 'all';
+  ['all','credit','debit'].forEach(x => {
+    const btn = document.getElementById('mov-filter-' + x);
+    if (btn) btn.className = x === 'all' ? 'btn btn-sm btn-primary' : 'btn btn-sm btn-ghost';
+  });
+
+  try {
+    const [ordersSnap, rechargesSnap] = await Promise.all([
+      db.collection('orders').where('userId','==',currentUser.uid).orderBy('createdAt','desc').limit(200).get(),
+      db.collection('recharges').where('userId','==',currentUser.uid).orderBy('createdAt','desc').limit(100).get(),
+    ]);
+
+    const items = [];
+    ordersSnap.docs.forEach(d => {
+      const o = d.data();
+      items.push({
+        type: 'debit',
+        date: o.createdAt ? o.createdAt.toDate() : new Date(0),
+        desc: o.serviceName || 'Pedido #' + d.id.slice(0,6),
+        amount: -(o.charge || 0),
+        badge: `<span class="badge badge-${o.status||'pending'}">${o.status||'pending'}</span>`,
+      });
+    });
+    rechargesSnap.docs.forEach(d => {
+      const r = d.data();
+      if (r.status !== 'approved') return;
+      items.push({
+        type: 'credit',
+        date: r.createdAt ? r.createdAt.toDate() : new Date(0),
+        desc: 'Recarga vía ' + (r.method || 'pago'),
+        amount: +(r.amount || 0),
+        badge: '<span class="badge badge-active">aprobada</span>',
+      });
+    });
+
+    _allMovements = items.sort((a,b) => b.date - a.date);
+    renderMovements();
+  } catch(e) { tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--muted)">${e.message}</td></tr>`; }
+}
+
+function renderMovements() {
+  const filtered = _movFilter === 'all'
+    ? _allMovements
+    : _allMovements.filter(m => m.type === _movFilter);
+
+  const page = filtered.slice(0, (_movPage + 1) * MOV_PAGE_SIZE);
+  const tbody = document.getElementById('movements-body');
+
+  if (!page.length) {
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:24px;color:var(--muted)">Sin movimientos</td></tr>';
+    document.getElementById('load-more-mov').style.display = 'none';
+    return;
+  }
+
+  tbody.innerHTML = page.map(m => {
+    const color = m.amount >= 0 ? 'var(--green)' : 'var(--red,#e53e3e)';
+    const sign  = m.amount >= 0 ? '+' : '';
+    const dateStr = m.date.toLocaleDateString('es',{day:'2-digit',month:'short',year:'numeric'});
+    return `<tr>
+      <td data-label="Fecha" style="font-size:12px;color:var(--muted)">${dateStr}</td>
+      <td data-label="Descripción" style="font-size:13px">${m.desc}</td>
+      <td data-label="Tipo">${m.badge}</td>
+      <td data-label="Monto" style="font-weight:700;color:${color}">${sign}${formatUSD2(Math.abs(m.amount))}</td>
+    </tr>`;
+  }).join('');
+
+  const loadMoreBtn = document.getElementById('load-more-mov');
+  loadMoreBtn.style.display = filtered.length > page.length ? 'inline-block' : 'none';
+}
+
+function loadMoreMovements() {
+  _movPage++;
+  renderMovements();
+}
 </script>
 </body>
 </html>

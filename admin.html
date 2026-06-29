@@ -27,6 +27,9 @@
       <div class="nav-item active" data-page="overview" data-title="Resumen" onclick="showPage('overview')">
         <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg></span> Resumen
       </div>
+      <div class="nav-item" data-page="stats" data-title="Estadísticas" onclick="showPage('stats');loadStats()">
+        <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span> Estadísticas
+      </div>
     </div>
     <div class="nav-section">
       <div class="nav-section-title">Gestión</div>
@@ -147,6 +150,58 @@
                   </tbody>
                 </table>
               </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ STATS ═══ -->
+      <div id="page-stats" class="page-section" style="display:none">
+        <!-- Period selector -->
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;flex-wrap:wrap">
+          <span style="font-weight:600;color:var(--navy)">Período:</span>
+          <div style="display:flex;gap:6px">
+            <button class="btn btn-sm btn-primary" id="period-7"  onclick="setStatsPeriod(7)">7 días</button>
+            <button class="btn btn-sm btn-ghost"   id="period-30" onclick="setStatsPeriod(30)">30 días</button>
+            <button class="btn btn-sm btn-ghost"   id="period-90" onclick="setStatsPeriod(90)">90 días</button>
+          </div>
+          <span style="font-size:13px;color:var(--muted)" id="stats-range-label"></span>
+        </div>
+        <!-- KPI row -->
+        <div class="grid-4 mb-4" id="stats-kpis">
+          <div class="stat-card"><div class="stat-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><div class="stat-value" id="sk-revenue">—</div><div class="stat-label">Ingresos período</div></div>
+          <div class="stat-card"><div class="stat-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg></div><div class="stat-value" id="sk-orders">—</div><div class="stat-label">Pedidos período</div></div>
+          <div class="stat-card"><div class="stat-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></div><div class="stat-value" id="sk-recharges">—</div><div class="stat-label">Recargas aprobadas</div></div>
+          <div class="stat-card"><div class="stat-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div><div class="stat-value" id="sk-newusers">—</div><div class="stat-label">Clientes nuevos</div></div>
+        </div>
+        <!-- Chart + Top tables -->
+        <div class="grid-2 mb-4">
+          <div class="card">
+            <div class="card-header">Ingresos diarios</div>
+            <div class="card-body">
+              <div id="revenue-chart" style="display:flex;align-items:flex-end;gap:6px;height:140px;padding-bottom:24px;position:relative"></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header">Top servicios</div>
+            <div class="card-body" style="padding:0">
+              <div class="table-wrap admin-table-wrap">
+                <table>
+                  <thead><tr><th>#</th><th>Servicio</th><th>Pedidos</th><th>Ingresos</th></tr></thead>
+                  <tbody id="top-services-body"><tr><td colspan="4" style="text-align:center;padding:20px;color:var(--muted)">Cargando...</td></tr></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">Top clientes</div>
+          <div class="card-body" style="padding:0">
+            <div class="table-wrap admin-table-wrap">
+              <table>
+                <thead><tr><th>#</th><th>Cliente</th><th>Pedidos</th><th>Total gastado</th></tr></thead>
+                <tbody id="top-clients-body"><tr><td colspan="4" style="text-align:center;padding:20px;color:var(--muted)">Cargando...</td></tr></tbody>
+              </table>
             </div>
           </div>
         </div>
@@ -1076,6 +1131,106 @@ async function saveCatalog() {
 
   btn.disabled = false;
   btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Guardar cambios';
+}
+
+// ── Statistics ────────────────────────────────────────
+let _statsPeriod = 7;
+function setStatsPeriod(days) {
+  _statsPeriod = days;
+  [7,30,90].forEach(d => {
+    const btn = document.getElementById('period-'+d);
+    btn.className = d === days ? 'btn btn-sm btn-primary' : 'btn btn-sm btn-ghost';
+  });
+  loadStats();
+}
+
+async function loadStats() {
+  const days = _statsPeriod;
+  const since = new Date(); since.setDate(since.getDate() - days);
+  const sinceTs = firebase.firestore.Timestamp.fromDate(since);
+
+  const label = `${since.toLocaleDateString('es',{day:'2-digit',month:'short'})} – hoy`;
+  document.getElementById('stats-range-label').textContent = label;
+
+  try {
+    const [ordersSnap, rechargesSnap, usersSnap] = await Promise.all([
+      db.collection('orders').where('createdAt','>=',sinceTs).get(),
+      db.collection('recharges').where('status','==','approved').where('createdAt','>=',sinceTs).get(),
+      db.collection('users').where('createdAt','>=',sinceTs).get(),
+    ]);
+
+    const orders = ordersSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+    const revenue = orders.reduce((s, o) => s + (o.charge || 0), 0);
+    const rechargeTotal = rechargesSnap.docs.reduce((s,d) => s + (d.data().amount || 0), 0);
+
+    document.getElementById('sk-revenue').textContent  = formatUSD2(revenue);
+    document.getElementById('sk-orders').textContent   = orders.length;
+    document.getElementById('sk-recharges').textContent = formatUSD2(rechargeTotal);
+    document.getElementById('sk-newusers').textContent  = usersSnap.size;
+
+    // Daily revenue chart
+    const dayMap = {};
+    for (let i = days - 1; i >= 0; i--) {
+      const d = new Date(); d.setDate(d.getDate() - i);
+      const key = d.toISOString().slice(0,10);
+      dayMap[key] = 0;
+    }
+    orders.forEach(o => {
+      if (!o.createdAt) return;
+      const key = o.createdAt.toDate().toISOString().slice(0,10);
+      if (key in dayMap) dayMap[key] += (o.charge || 0);
+    });
+    const chartEl = document.getElementById('revenue-chart');
+    const vals = Object.values(dayMap);
+    const maxVal = Math.max(...vals, 0.01);
+    const keys = Object.keys(dayMap);
+    chartEl.innerHTML = keys.map((k, i) => {
+      const pct = Math.max((dayMap[k] / maxVal) * 100, 2).toFixed(1);
+      const label = days <= 14 ? k.slice(5).replace('-','/') : (i % 5 === 0 ? k.slice(5).replace('-','/') : '');
+      return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:default" title="${k}: ${formatUSD2(dayMap[k])}">
+        <div style="font-size:10px;color:var(--blue);font-weight:600;min-height:14px">${dayMap[k] > 0 ? formatUSD2(dayMap[k]) : ''}</div>
+        <div style="width:100%;background:var(--blue);border-radius:4px 4px 0 0;height:${pct}%;min-height:3px;opacity:.8;transition:opacity .2s" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=.8"></div>
+        <div style="font-size:9px;color:var(--muted);white-space:nowrap">${label}</div>
+      </div>`;
+    }).join('');
+
+    // Top services
+    const svcMap = {};
+    orders.forEach(o => {
+      const k = o.serviceName || String(o.serviceId);
+      if (!svcMap[k]) svcMap[k] = { orders: 0, revenue: 0 };
+      svcMap[k].orders++;
+      svcMap[k].revenue += (o.charge || 0);
+    });
+    const topSvc = Object.entries(svcMap).sort((a,b) => b[1].revenue - a[1].revenue).slice(0,8);
+    document.getElementById('top-services-body').innerHTML = topSvc.length
+      ? topSvc.map(([name, d], i) => `<tr>
+          <td data-label="#">${i+1}</td>
+          <td data-label="Servicio" style="font-size:12px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${name}</td>
+          <td data-label="Pedidos">${d.orders}</td>
+          <td data-label="Ingresos"><strong>${formatUSD2(d.revenue)}</strong></td>
+        </tr>`).join('')
+      : '<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--muted)">Sin datos</td></tr>';
+
+    // Top clients
+    const clientMap = {};
+    orders.forEach(o => {
+      const k = o.userId;
+      if (!clientMap[k]) clientMap[k] = { email: o.userEmail || k?.slice(0,8) || '—', orders: 0, spent: 0 };
+      clientMap[k].orders++;
+      clientMap[k].spent += (o.charge || 0);
+    });
+    const topClients = Object.entries(clientMap).sort((a,b) => b[1].spent - a[1].spent).slice(0,10);
+    document.getElementById('top-clients-body').innerHTML = topClients.length
+      ? topClients.map(([uid, d], i) => `<tr>
+          <td data-label="#">${i+1}</td>
+          <td data-label="Cliente" style="font-size:12px">${d.email}</td>
+          <td data-label="Pedidos">${d.orders}</td>
+          <td data-label="Total gastado"><strong>${formatUSD2(d.spent)}</strong></td>
+        </tr>`).join('')
+      : '<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--muted)">Sin datos</td></tr>';
+
+  } catch(e) { toast('Error cargando estadísticas: ' + e.message, 'error'); }
 }
 
 // ── Settings ──────────────────────────────────────────
