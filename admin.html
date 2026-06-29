@@ -957,15 +957,36 @@ let pendingPriceChanges = {};
 let catalogMap         = {};  // docId → catalog entry
 let pendingCatalogChanges = {};  // docId → {displayName, displayCategory, rate}
 
-async function loadAdminServices() {
+const ADMIN_SVC_KEY = 'nb_admin_svc_cache';
+const ADMIN_SVC_TTL = 24 * 60 * 60 * 1000; // 24 hours
+
+function _saveAdminSvcCache(svcs) {
+  try { localStorage.setItem(ADMIN_SVC_KEY, JSON.stringify({ ts: Date.now(), data: svcs })); } catch(e) {}
+}
+function _loadAdminSvcCache() {
+  try {
+    const raw = localStorage.getItem(ADMIN_SVC_KEY);
+    if (!raw) return null;
+    const p = JSON.parse(raw);
+    if (Date.now() - p.ts > ADMIN_SVC_TTL) { localStorage.removeItem(ADMIN_SVC_KEY); return null; }
+    return p.data;
+  } catch(e) { return null; }
+}
+
+async function loadAdminServices(forceRefresh) {
   const tbody = document.getElementById('admin-services-body');
   tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:32px"><span class="spinner"></span></td></tr>';
   try {
-    const [svcSnap, catSnap] = await Promise.all([
-      db.collection('services').orderBy('category').orderBy('name').get(),
-      db.collection('catalog').get(),
-    ]);
-    allAdminServices = svcSnap.docs.map(d => ({ docId: d.id, ...d.data() }));
+    const cached = !forceRefresh && _loadAdminSvcCache();
+    if (cached) {
+      allAdminServices = cached;
+    } else {
+      const svcSnap = await db.collection('services').orderBy('category').orderBy('name').get();
+      allAdminServices = svcSnap.docs.map(d => ({ docId: d.id, ...d.data() }));
+      _saveAdminSvcCache(allAdminServices);
+    }
+    // Catalog always fresh (small collection, changes when admin edits)
+    const catSnap = await db.collection('catalog').get();
     catalogMap = {};
     catSnap.docs.forEach(d => { catalogMap[d.id] = { docId: d.id, ...d.data() }; });
   } catch(e) {
@@ -1067,6 +1088,7 @@ async function savePendingPrices() {
   }
   await batch.commit();
   pendingPriceChanges = {};
+  localStorage.removeItem(ADMIN_SVC_KEY);
   btn.style.display = 'none';
   toast(`${entries.length} precios guardados`, 'success');
 }
@@ -1108,9 +1130,10 @@ async function syncProviderServices() {
     const settingsSnap = await db.collection('settings').doc('main').get();
     const markup = (settingsSnap.exists && settingsSnap.data().markup) ? settingsSnap.data().markup : APP.markup;
     const count = await Services.syncFromProvider(markup);
+    localStorage.removeItem(ADMIN_SVC_KEY);
     status.innerHTML = `<span style="color:var(--green)">${count} servicios sincronizados</span>`;
     toast(`${count} servicios sincronizados`, 'success');
-    loadAdminServices();
+    loadAdminServices(true);
   } catch(e) {
     status.innerHTML = `<span style="color:var(--red)">${e.message}</span>`;
     toast('Error: ' + e.message, 'error');
@@ -1288,6 +1311,7 @@ async function saveCatalog() {
       await batch.commit();
     }
     pendingCatalogChanges = {};
+    Services.clearCache(); // invalidate client-side catalog cache
     btn.style.display = 'none';
     toast('Catálogo guardado correctamente', 'success');
   } catch(e) {

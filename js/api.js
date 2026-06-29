@@ -181,15 +181,40 @@ const Orders = (() => {
 
 const Services = (() => {
 
-  let _cache = null;
+  const CATALOG_KEY = 'nb_catalog_cache';
+  const CATALOG_TTL = 6 * 60 * 60 * 1000; // 6 hours
+  let _memCache = null;
+
+  function _saveToStorage(data) {
+    try {
+      localStorage.setItem(CATALOG_KEY, JSON.stringify({ ts: Date.now(), data }));
+    } catch(e) {}
+  }
+
+  function _loadFromStorage() {
+    try {
+      const raw = localStorage.getItem(CATALOG_KEY);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      if (Date.now() - parsed.ts > CATALOG_TTL) { localStorage.removeItem(CATALOG_KEY); return null; }
+      return parsed.data;
+    } catch(e) { return null; }
+  }
+
+  function clearCache() {
+    _memCache = null;
+    try { localStorage.removeItem(CATALOG_KEY); } catch(e) {}
+  }
 
   async function getAll() {
-    if (_cache) return _cache;
+    if (_memCache) return _memCache;
+    const stored = _loadFromStorage();
+    if (stored) { _memCache = stored; return _memCache; }
+
     // Read from catalog collection (admin's curated list with custom names/prices)
-    // Fall back to services collection if catalog is empty
     const catSnap = await db.collection('catalog').get();
     if (!catSnap.empty) {
-      _cache = catSnap.docs.map(d => {
+      _memCache = catSnap.docs.map(d => {
         const data = d.data();
         return {
           id:       data.serviceId || d.id,
@@ -203,16 +228,15 @@ const Services = (() => {
           cancel:   data.cancel,
         };
       }).sort((a,b) => parseFloat(a.rate) - parseFloat(b.rate));
-      return _cache;
+      _saveToStorage(_memCache);
+      return _memCache;
     }
-    // No catalog configured — show nothing to clients
     return [];
   }
 
   // Admin: sync services from provider API and save to Firestore
   async function syncFromProvider(markup) {
     const raw = await SmmAPI.getServices();
-    // get existing doc IDs to know which are new
     const existingSnap = await db.collection('services').get();
     const existingIds  = new Set(existingSnap.docs.map(d => d.id));
 
@@ -235,18 +259,16 @@ const Services = (() => {
           updatedAt:    firebase.firestore.FieldValue.serverTimestamp(),
         };
         if (!existingIds.has(docId)) {
-          // New service — set defaults
           batch.set(ref, { ...base, rate: userRate, active: true });
         } else {
-          // Existing — update metadata only, keep admin's rate/active
           batch.update(ref, base);
         }
       });
       await batch.commit();
     }
-    _cache = null;
+    clearCache();
     return raw.length;
   }
 
-  return { getAll, syncFromProvider };
+  return { getAll, syncFromProvider, clearCache };
 })();
