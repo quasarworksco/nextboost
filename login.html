@@ -82,7 +82,7 @@
     } catch (err) {
       const msg = err.code === 'auth/wrong-password' || err.code === 'auth/user-not-found'
         ? 'Correo o contraseña incorrectos.' : err.message;
-      alertEl.innerHTML = `<div class="alert alert-error">❌ ${msg}</div>`;
+      alertEl.innerHTML = `<div class="alert alert-error">${msg}</div>`;
       btnEl.disabled = false;
       btnEl.innerHTML = 'Iniciar sesión';
     }

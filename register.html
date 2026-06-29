@@ -100,7 +100,7 @@
       let msg = err.message;
       if (err.code === 'auth/email-already-in-use') msg = 'Este correo ya está registrado.';
       if (err.code === 'auth/weak-password')        msg = 'La contraseña debe tener al menos 6 caracteres.';
-      alertEl.innerHTML = `<div class="alert alert-error">❌ ${msg}</div>`;
+      alertEl.innerHTML = `<div class="alert alert-error">${msg}</div>`;
       btnEl.disabled = false;
       btnEl.innerHTML = 'Crear cuenta';
     }
