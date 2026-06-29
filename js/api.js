@@ -194,26 +194,38 @@ const Services = (() => {
   // Admin: sync services from provider API and save to Firestore
   async function syncFromProvider(markup) {
     const raw = await SmmAPI.getServices();
-    const batch = db.batch();
-    raw.forEach(s => {
-      const userRate = +(parseFloat(s.rate) * markup).toFixed(6);
-      const ref = db.collection('services').doc(String(s.service));
-      batch.set(ref, {
-        id:          s.service,
-        name:        s.name,
-        category:    s.category,
-        type:        s.type,
-        providerRate: parseFloat(s.rate),
-        rate:        userRate,
-        min:         parseInt(s.min),
-        max:         parseInt(s.max),
-        refill:      s.refill || false,
-        cancel:      s.cancel || false,
-        active:      true,
-        updatedAt:   firebase.firestore.FieldValue.serverTimestamp(),
+    // get existing doc IDs to know which are new
+    const existingSnap = await db.collection('services').select().get();
+    const existingIds  = new Set(existingSnap.docs.map(d => d.id));
+
+    for (let i = 0; i < raw.length; i += 400) {
+      const batch = db.batch();
+      raw.slice(i, i + 400).forEach(s => {
+        const docId    = String(s.service);
+        const userRate = +(parseFloat(s.rate) * markup).toFixed(6);
+        const ref      = db.collection('services').doc(docId);
+        const base = {
+          id:           s.service,
+          name:         s.name,
+          category:     s.category,
+          type:         s.type,
+          providerRate: parseFloat(s.rate),
+          min:          parseInt(s.min),
+          max:          parseInt(s.max),
+          refill:       s.refill || false,
+          cancel:       s.cancel || false,
+          updatedAt:    firebase.firestore.FieldValue.serverTimestamp(),
+        };
+        if (!existingIds.has(docId)) {
+          // New service — set defaults
+          batch.set(ref, { ...base, rate: userRate, active: true });
+        } else {
+          // Existing — update metadata only, keep admin's rate/active
+          batch.update(ref, base);
+        }
       });
-    });
-    await batch.commit();
+      await batch.commit();
+    }
     _cache = null;
     return raw.length;
   }
