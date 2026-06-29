@@ -134,6 +134,27 @@ function signOut() {
   auth.signOut().then(() => window.location.href = 'login.html');
 }
 
+// ── Auto-logout after 10 min inactivity ───────────────
+(function initAutoLogout() {
+  const TIMEOUT_MS = 10 * 60 * 1000;
+  let timer;
+
+  function reset() {
+    clearTimeout(timer);
+    timer = setTimeout(() => {
+      auth.signOut().then(() => {
+        window.location.href = 'login.html?expired=1';
+      });
+    }, TIMEOUT_MS);
+  }
+
+  ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll', 'click'].forEach(ev => {
+    document.addEventListener(ev, reset, { passive: true });
+  });
+
+  reset();
+})();
+
 // ── Debounce ──────────────────────────────────────────
 function debounce(fn, ms) {
   let t;

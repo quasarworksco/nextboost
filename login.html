@@ -50,6 +50,12 @@
 <script src="js/config.js"></script>
 <script src="js/app.js"></script>
 <script>
+  // Show session expired message
+  if (new URLSearchParams(location.search).get('expired') === '1') {
+    document.getElementById('alert-box').innerHTML =
+      '<div class="alert alert-warning">Tu sesión cerró por inactividad. Inicia sesión de nuevo.</div>';
+  }
+
   // If already logged in, redirect
   auth.onAuthStateChanged(async user => {
     if (!user) return;
