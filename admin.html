@@ -10,7 +10,7 @@
 <body>
 
 <div class="loading-overlay" id="loading-overlay">
-  <div class="logo" style="font-size:28px;font-weight:800">Next<span style="color:var(--accent)">Boost</span></div>
+  <div class="logo" style="font-size:28px">Next<span>Boost</span></div>
   <div class="spinner" style="width:32px;height:32px"></div>
 </div>
 
@@ -18,49 +18,53 @@
 <aside class="sidebar" id="sidebar">
   <div class="sidebar-logo">
     <a href="index.html" class="logo" style="text-decoration:none;display:block">Next<span>Boost</span></a>
-    <div style="font-size:11px;color:var(--primary);margin-top:4px;font-weight:600">⚡ Panel Admin</div>
+    <div class="sub">Panel Admin</div>
   </div>
   <nav class="sidebar-nav">
     <div class="nav-section">
       <div class="nav-section-title">Dashboard</div>
       <div class="nav-item active" data-page="overview" data-title="Resumen" onclick="showPage('overview')">
-        <span class="nav-icon">📊</span> Resumen
+        <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg></span> Resumen
       </div>
     </div>
     <div class="nav-section">
       <div class="nav-section-title">Gestión</div>
       <div class="nav-item" data-page="recharges" data-title="Recargas" onclick="showPage('recharges');loadAdminRecharges()">
-        <span class="nav-icon">💳</span> Recargas
+        <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></span> Recargas
         <span class="badge badge-pending ml-auto" id="pending-recharges-badge" style="display:none"></span>
       </div>
       <div class="nav-item" data-page="orders" data-title="Pedidos" onclick="showPage('orders');loadAdminOrders()">
-        <span class="nav-icon">📦</span> Pedidos
+        <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg></span> Pedidos
       </div>
       <div class="nav-item" data-page="users" data-title="Usuarios" onclick="showPage('users');loadAdminUsers()">
-        <span class="nav-icon">👥</span> Usuarios
+        <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span> Usuarios
       </div>
     </div>
     <div class="nav-section">
       <div class="nav-section-title">Sistema</div>
       <div class="nav-item" data-page="services" data-title="Servicios" onclick="showPage('services');loadAdminServices()">
-        <span class="nav-icon">🛍️</span> Servicios
+        <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg></span> Servicios
       </div>
       <div class="nav-item" data-page="settings" data-title="Configuración" onclick="showPage('settings');loadSettings()">
-        <span class="nav-icon">⚙️</span> Configuración
+        <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span> Configuración
       </div>
     </div>
   </nav>
   <div class="sidebar-footer">
     <div class="sidebar-user">
-      <div class="avatar" style="background:linear-gradient(135deg,var(--primary),var(--accent))">A</div>
+      <div class="avatar">A</div>
       <div class="user-info">
         <div class="name" id="sidebar-name">Admin</div>
-        <div class="role" style="color:var(--primary)">Administrador</div>
+        <div class="role">Administrador</div>
       </div>
     </div>
     <div style="padding:8px 12px;display:flex;gap:8px">
-      <a href="dashboard.html" class="btn btn-ghost btn-sm" style="flex:1;justify-content:center">👤 Mi panel</a>
-      <button class="btn btn-ghost btn-sm" onclick="signOut()">🚪</button>
+      <a href="dashboard.html" class="btn btn-ghost btn-sm" style="flex:1;justify-content:center">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Mi panel
+      </a>
+      <button class="btn btn-ghost btn-sm" onclick="signOut()" title="Cerrar sesión">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      </button>
     </div>
   </div>
 </aside>
@@ -70,11 +74,16 @@
   <div class="main-content">
     <div class="topbar">
       <div style="display:flex;align-items:center;gap:12px">
-        <button class="hamburger" id="hamburger">☰</button>
+        <button class="hamburger" id="hamburger">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
         <div class="topbar-title" id="page-title">Resumen</div>
       </div>
       <div class="topbar-right">
-        <div class="balance-chip">🏦 Proveedor: <span id="provider-balance">—</span></div>
+        <div class="balance-chip">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle;margin-right:4px"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+          Proveedor: <span id="provider-balance">—</span>
+        </div>
       </div>
     </div>
 
@@ -84,22 +93,22 @@
       <div id="page-overview" class="page-section">
         <div class="grid-4 mb-4">
           <div class="stat-card">
-            <div class="stat-icon">👥</div>
+            <div class="stat-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
             <div class="stat-value" id="stat-users">—</div>
             <div class="stat-label">Usuarios registrados</div>
           </div>
           <div class="stat-card">
-            <div class="stat-icon">📦</div>
+            <div class="stat-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg></div>
             <div class="stat-value" id="stat-orders">—</div>
             <div class="stat-label">Pedidos totales</div>
           </div>
           <div class="stat-card">
-            <div class="stat-icon">💰</div>
+            <div class="stat-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
             <div class="stat-value" id="stat-revenue">—</div>
             <div class="stat-label">Revenue total</div>
           </div>
           <div class="stat-card">
-            <div class="stat-icon">⏳</div>
+            <div class="stat-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></div>
             <div class="stat-value" id="stat-pending">—</div>
             <div class="stat-label">Recargas pendientes</div>
           </div>
@@ -170,7 +179,7 @@
         <div class="card">
           <div class="card-header flex items-center justify-between">
             <span>Todos los pedidos</span>
-            <button class="btn btn-ghost btn-sm" onclick="syncAllOrders()">🔄 Sincronizar estados</button>
+            <button class="btn btn-ghost btn-sm" onclick="syncAllOrders()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg> Sincronizar estados</button>
           </div>
           <div class="card-body" style="padding:0">
             <div class="table-wrap">
@@ -215,7 +224,7 @@
           <div class="card-body">
             <p style="color:var(--muted);font-size:14px;margin-bottom:16px">Descarga la lista completa del proveedor y la guarda en Firestore con el markup configurado.</p>
             <div style="display:flex;gap:10px;align-items:center">
-              <button class="btn btn-primary" id="sync-services-btn" onclick="syncProviderServices()">🔄 Sincronizar servicios</button>
+              <button class="btn btn-primary" id="sync-services-btn" onclick="syncProviderServices()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg> Sincronizar servicios</button>
               <div id="sync-status"></div>
             </div>
           </div>
@@ -240,7 +249,7 @@
           <div class="card">
             <div class="card-header">Configuración del proveedor</div>
             <div class="card-body">
-              <div class="alert alert-success mb-3">✅ API key segura en <strong>Cloudflare Worker</strong> — nunca visible en el navegador.</div>
+              <div class="alert alert-success mb-3">API key segura en <strong>Cloudflare Worker</strong> — nunca visible en el navegador.</div>
               <div class="form-group">
                 <label>Worker URL <span style="color:var(--green);font-size:11px">● Activo</span></label>
                 <input type="url" class="input" id="settings-api-url" readonly style="opacity:.6;cursor:default" tabindex="-1">
@@ -346,7 +355,7 @@ async function loadOverview() {
   const pendingDocs = rechargesSnap.docs.map(d => ({ id: d.id, ...d.data() }));
   const rechargesTbody = document.getElementById('overview-recharges-body');
   if (!pendingDocs.length) {
-    rechargesTbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--muted)">Sin recargas pendientes ✅</td></tr>';
+    rechargesTbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--muted)">Sin recargas pendientes</td></tr>';
   } else {
     rechargesTbody.innerHTML = pendingDocs.slice(0,5).map(r => `
       <tr>
@@ -436,7 +445,7 @@ async function approveRecharge(rechargeId, userId, amount) {
   batch.update(db.collection('recharges').doc(rechargeId), { status: 'approved', approvedAt: firebase.firestore.FieldValue.serverTimestamp(), approvedBy: adminUser.uid });
   batch.update(db.collection('users').doc(userId), { balance: firebase.firestore.FieldValue.increment(amount) });
   await batch.commit();
-  toast(`✅ Recarga de ${formatUSD2(amount)} aprobada`, 'success');
+  toast(`Recarga de ${formatUSD2(amount)} aprobada`, 'success');
   loadAdminRecharges();
   loadOverview();
 }
@@ -474,7 +483,7 @@ async function syncAllOrders() {
     await loadAdminOrders();
     toast('Estados sincronizados', 'success');
   } catch(e) { toast('Error: ' + e.message, 'error'); }
-  btn.disabled = false; btn.innerHTML = '🔄 Sincronizar estados';
+  btn.disabled = false; btn.innerHTML = 'Sincronizar estados';
 }
 
 // ── Users ─────────────────────────────────────────────
@@ -498,7 +507,7 @@ function renderUsersTable(users) {
       <td style="color:var(--muted);font-size:12px">${formatDate(u.createdAt)}</td>
       <td>
         <button class="btn btn-ghost btn-sm" onclick="openBalanceModal('${u.id}','${u.name || u.email}',${u.balance||0})">💰 Saldo</button>
-        <button class="btn btn-ghost btn-sm" onclick="toggleRole('${u.id}','${u.role}')">${u.role==='admin'?'👤 Usuario':'⚡ Admin'}</button>
+        <button class="btn btn-ghost btn-sm" onclick="toggleRole('${u.id}','${u.role}')">${u.role==='admin'?'Usuario':'Admin'}</button>
       </td>
     </tr>`).join('');
 }
@@ -522,7 +531,7 @@ function openBalanceModal(uid, name, current) {
 
 document.getElementById('balance-modal-btn').addEventListener('click', async () => {
   const amount = parseFloat(document.getElementById('balance-modal-amount').value);
-  if (isNaN(amount) || amount < 0) { document.getElementById('balance-modal-alert').innerHTML = '<div class="alert alert-error">❌ Monto inválido</div>'; return; }
+  if (isNaN(amount) || amount < 0) { document.getElementById('balance-modal-alert').innerHTML = '<div class="alert alert-error">Monto inválido</div>'; return; }
   await db.collection('users').doc(_balanceModalUserId).update({ balance: amount });
   toast('Saldo actualizado', 'success');
   closeModal('balance-modal');
@@ -551,7 +560,7 @@ async function loadAdminServices() {
       <td><strong>$${parseFloat(s.rate).toFixed(4)}</strong></td>
       <td>${(s.min||0).toLocaleString()}</td>
       <td>${(s.max||0).toLocaleString()}</td>
-      <td>${s.refill ? '✅' : '—'}</td>
+      <td>${s.refill ? 'Sí' : '—'}</td>
       <td>${s.active ? '<span class="badge badge-completed">Activo</span>' : '<span class="badge badge-canceled">Inactivo</span>'}</td>
     </tr>`).join('');
 }
@@ -565,14 +574,14 @@ async function syncProviderServices() {
     const settingsSnap = await db.collection('settings').doc('main').get();
     const markup = (settingsSnap.exists && settingsSnap.data().markup) ? settingsSnap.data().markup : APP.markup;
     const count = await Services.syncFromProvider(markup);
-    status.innerHTML = `<span style="color:var(--green)">✅ ${count} servicios sincronizados</span>`;
+    status.innerHTML = `<span style="color:var(--green)">${count} servicios sincronizados</span>`;
     toast(`${count} servicios sincronizados`, 'success');
     loadAdminServices();
   } catch(e) {
-    status.innerHTML = `<span style="color:var(--red)">❌ ${e.message}</span>`;
+    status.innerHTML = `<span style="color:var(--red)">${e.message}</span>`;
     toast('Error: ' + e.message, 'error');
   }
-  btn.disabled = false; btn.innerHTML = '🔄 Sincronizar servicios';
+  btn.disabled = false; btn.innerHTML = 'Sincronizar servicios';
 }
 
 // ── Settings ──────────────────────────────────────────
@@ -596,10 +605,10 @@ document.getElementById('save-settings-btn').addEventListener('click', async () 
       markup,
       updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
     }, { merge: true });
-    alertEl.innerHTML = '<div class="alert alert-success">✅ Markup guardado.</div>';
+    alertEl.innerHTML = '<div class="alert alert-success">Markup guardado.</div>';
     setTimeout(() => alertEl.innerHTML = '', 3000);
     toast('Configuración guardada', 'success');
-  } catch(e) { alertEl.innerHTML = `<div class="alert alert-error">❌ ${e.message}</div>`; }
+  } catch(e) { alertEl.innerHTML = `<div class="alert alert-error">${e.message}</div>`; }
 });
 
 document.getElementById('save-payments-btn').addEventListener('click', async () => {
