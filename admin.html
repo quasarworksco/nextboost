@@ -873,16 +873,20 @@ function renderUsersTable(users) {
   const tbody = document.getElementById('admin-users-body');
   if (!users.length) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--muted)">Sin usuarios</td></tr>'; return; }
   tbody.innerHTML = users.map(u => `
-    <tr>
-      <td data-label="Nombre">${u.name || '—'}</td>
+    <tr style="${u.blocked ? 'opacity:.6' : ''}">
+      <td data-label="Nombre">
+        ${u.blocked ? '<span style="font-size:10px;background:#fee2e2;color:#dc2626;padding:1px 6px;border-radius:4px;font-weight:700;margin-right:4px">BLOQUEADO</span>' : ''}
+        ${u.name || '—'}
+      </td>
       <td data-label="Email" style="font-size:13px;word-break:break-all">${u.email || '—'}</td>
       <td data-label="Saldo"><strong>${formatUSD2(u.balance)}</strong></td>
       <td data-label="Rol">${u.role === 'admin' ? '<span class="badge badge-admin">Admin</span>' : '<span class="badge badge-active">Usuario</span>'}</td>
       <td data-label="Registro" style="color:var(--muted);font-size:12px">${formatDate(u.createdAt)}</td>
-      <td data-label="">
+      <td data-label="" style="display:flex;gap:4px;flex-wrap:wrap">
         <button class="btn btn-ghost btn-sm" onclick="openUserDetail('${u.id}')">Ver</button>
         <button class="btn btn-ghost btn-sm" onclick="openBalanceModal('${u.id}','${u.name || u.email}',${u.balance||0})">Saldo</button>
         <button class="btn btn-ghost btn-sm" onclick="toggleRole('${u.id}','${u.role}')">${u.role==='admin'?'→ Usuario':'→ Admin'}</button>
+        <button class="btn btn-sm ${u.blocked ? 'btn-success' : 'btn-danger'}" onclick="toggleBlock('${u.id}',${!!u.blocked})">${u.blocked ? '✓ Desbloquear' : '⊘ Bloquear'}</button>
       </td>
     </tr>`).join('');
 }
@@ -947,6 +951,16 @@ async function toggleRole(uid, currentRole) {
   if (!confirm(`¿Cambiar rol a "${newRole}"?`)) return;
   await db.collection('users').doc(uid).update({ role: newRole });
   toast(`Rol cambiado a ${newRole}`, 'success');
+  loadAdminUsers();
+}
+
+async function toggleBlock(uid, isBlocked) {
+  const action = isBlocked ? 'desbloquear' : 'bloquear';
+  if (!confirm(`¿${action.charAt(0).toUpperCase() + action.slice(1)} este usuario?`)) return;
+  await db.collection('users').doc(uid).update({ blocked: !isBlocked });
+  const u = allUsers.find(x => x.id === uid);
+  if (u) u.blocked = !isBlocked;
+  toast(`Usuario ${isBlocked ? 'desbloqueado' : 'bloqueado'}`, isBlocked ? 'success' : 'info');
   loadAdminUsers();
 }
 

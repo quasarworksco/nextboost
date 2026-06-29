@@ -62,6 +62,10 @@
     document.getElementById('alert-box').innerHTML =
       '<div class="alert alert-warning">Tu sesión cerró por inactividad. Inicia sesión de nuevo.</div>';
   }
+  if (new URLSearchParams(location.search).get('blocked') === '1') {
+    document.getElementById('alert-box').innerHTML =
+      '<div class="alert alert-error">Tu cuenta ha sido suspendida. Contacta al soporte para más información.</div>';
+  }
 
   // If already logged in, redirect
   auth.onAuthStateChanged(async user => {
