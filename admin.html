@@ -399,11 +399,15 @@ async function loadAdminRecharges() {
   const tbody  = document.getElementById('admin-recharges-body');
   tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px"><span class="spinner"></span></td></tr>';
 
-  let query = db.collection('recharges').orderBy('createdAt','desc').limit(100);
-  if (filter) query = query.where('status','==',filter);
-
-  const snap = await query.get();
-  allRecharges = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  try {
+    // Filter first, then orderBy — avoids requiring a composite index in Firestore
+    let query = db.collection('recharges').where('status','==',filter).orderBy('createdAt','desc').limit(100);
+    const snap = await query.get();
+    allRecharges = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  } catch (err) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--muted)">Error al cargar: ${err.message}</td></tr>`;
+    return;
+  }
 
   if (!allRecharges.length) {
     tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--muted)">Sin registros</td></tr>';
