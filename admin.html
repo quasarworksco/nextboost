@@ -126,7 +126,7 @@
               <button class="btn btn-ghost btn-sm" onclick="showPage('recharges');loadAdminRecharges()">Ver todas</button>
             </div>
             <div class="card-body" style="padding:0">
-              <div class="table-wrap">
+              <div class="table-wrap admin-table-wrap">
                 <table>
                   <thead><tr><th>Usuario</th><th>Monto</th><th>Método</th><th>Acción</th></tr></thead>
                   <tbody id="overview-recharges-body">
@@ -139,7 +139,7 @@
           <div class="card">
             <div class="card-header">Pedidos recientes</div>
             <div class="card-body" style="padding:0">
-              <div class="table-wrap">
+              <div class="table-wrap admin-table-wrap">
                 <table>
                   <thead><tr><th>Usuario</th><th>Servicio</th><th>Costo</th><th>Estado</th></tr></thead>
                   <tbody id="overview-orders-body">
@@ -167,7 +167,7 @@
             </div>
           </div>
           <div class="card-body" style="padding:0">
-            <div class="table-wrap">
+            <div class="table-wrap admin-table-wrap">
               <table>
                 <thead><tr><th>Usuario</th><th>Monto</th><th>Método</th><th>Remitente / Ref.</th><th>Comprobante</th><th>Estado</th><th>Fecha</th><th>Acciones</th></tr></thead>
                 <tbody id="admin-recharges-body">
@@ -187,7 +187,7 @@
             <button class="btn btn-ghost btn-sm" onclick="syncAllOrders()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg> Sincronizar estados</button>
           </div>
           <div class="card-body" style="padding:0">
-            <div class="table-wrap">
+            <div class="table-wrap admin-table-wrap">
               <table>
                 <thead><tr><th>#</th><th>Usuario</th><th>Servicio</th><th>Cant.</th><th>Costo</th><th>Estado</th><th>Fecha</th></tr></thead>
                 <tbody id="admin-orders-body">
@@ -210,7 +210,7 @@
         </div>
         <div class="card">
           <div class="card-body" style="padding:0">
-            <div class="table-wrap">
+            <div class="table-wrap admin-table-wrap">
               <table>
                 <thead><tr><th>Nombre</th><th>Email</th><th>Saldo</th><th>Rol</th><th>Registrado</th><th>Acciones</th></tr></thead>
                 <tbody id="admin-users-body">
@@ -260,7 +260,7 @@
         <!-- Table -->
         <div class="card">
           <div class="card-body" style="padding:0">
-            <div class="table-wrap">
+            <div class="table-wrap admin-table-wrap">
               <table id="services-table">
                 <thead>
                   <tr>
@@ -313,7 +313,7 @@
 
         <div class="card">
           <div class="card-body" style="padding:0">
-            <div class="table-wrap">
+            <div class="table-wrap admin-table-wrap">
               <table>
                 <thead>
                   <tr>
@@ -461,12 +461,12 @@ async function loadOverview() {
   } else {
     rechargesTbody.innerHTML = pendingDocs.slice(0,5).map(r => `
       <tr>
-        <td>${r.userName || r.userEmail}</td>
-        <td><strong>${formatUSD2(r.amount)}</strong></td>
-        <td>${r.method}</td>
-        <td>
-          <button class="btn btn-success btn-sm" onclick="approveRecharge('${r.id}','${r.userId}',${r.amount})">✓</button>
-          <button class="btn btn-danger btn-sm" onclick="rejectRecharge('${r.id}')">✗</button>
+        <td data-label="Usuario">${r.userName || r.userEmail}</td>
+        <td data-label="Monto"><strong>${formatUSD2(r.amount)}</strong></td>
+        <td data-label="Método">${r.method}</td>
+        <td data-label="">
+          <button class="btn btn-success btn-sm" onclick="approveRecharge('${r.id}','${r.userId}',${r.amount})">✓ Aprobar</button>
+          <button class="btn btn-danger btn-sm" onclick="rejectRecharge('${r.id}')">✗ Rechazar</button>
         </td>
       </tr>`).join('');
   }
@@ -479,10 +479,10 @@ async function loadOverview() {
   } else {
     ordersTbody.innerHTML = recentOrders.map(o => `
       <tr>
-        <td style="font-size:12px">${o.userEmail || o.userId?.slice(0,8)}</td>
-        <td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${o.serviceName||'—'}</td>
-        <td>${formatUSD2(o.charge)}</td>
-        <td>${statusBadge(o.status)}</td>
+        <td data-label="Usuario" style="font-size:12px">${o.userEmail || o.userId?.slice(0,8)}</td>
+        <td data-label="Servicio">${o.serviceName||'—'}</td>
+        <td data-label="Costo">${formatUSD2(o.charge)}</td>
+        <td data-label="Estado">${statusBadge(o.status)}</td>
       </tr>`).join('');
   }
 }
@@ -526,17 +526,17 @@ async function loadAdminRecharges() {
   }
   tbody.innerHTML = allRecharges.map(r => `
     <tr>
-      <td>
+      <td data-label="Usuario">
         <strong style="font-size:13px">${r.userName || '—'}</strong><br>
         <span style="font-size:11px;color:var(--muted)">${r.userEmail || ''}</span>
       </td>
-      <td><strong>${formatUSD2(r.amount)}</strong></td>
-      <td style="font-size:12px">${r.method}</td>
-      <td style="font-size:12px">
+      <td data-label="Monto"><strong>${formatUSD2(r.amount)}</strong></td>
+      <td data-label="Método" style="font-size:12px">${r.method}</td>
+      <td data-label="Remitente" style="font-size:12px">
         ${r.senderName && r.senderName !== '—' ? `<div style="font-weight:600;color:var(--navy)">${r.senderName}</div>` : ''}
-        <div style="font-family:monospace;color:var(--muted);font-size:11px;max-width:140px;overflow:hidden;text-overflow:ellipsis">${r.reference || '—'}</div>
+        <div style="font-family:monospace;color:var(--muted);font-size:11px;word-break:break-all">${r.reference || '—'}</div>
       </td>
-      <td style="text-align:center">
+      <td data-label="Comprobante">
         ${r.screenshotUrl
           ? `<a href="${r.screenshotUrl}" target="_blank" style="display:inline-block">
                <img src="${r.screenshotUrl}" style="width:52px;height:40px;object-fit:cover;border-radius:6px;border:1.5px solid var(--border);cursor:zoom-in">
@@ -544,13 +544,13 @@ async function loadAdminRecharges() {
           : `<span style="font-size:11px;color:var(--muted)">Sin imagen</span>`
         }
       </td>
-      <td>${statusBadge(r.status)}</td>
-      <td style="color:var(--muted);font-size:12px">${formatDate(r.createdAt)}</td>
-      <td style="white-space:nowrap">
+      <td data-label="Estado">${statusBadge(r.status)}</td>
+      <td data-label="Fecha" style="color:var(--muted);font-size:12px">${formatDate(r.createdAt)}</td>
+      <td data-label="">
         ${r.status === 'pending' ? `
           <button class="btn btn-success btn-sm" onclick="approveRecharge('${r.id}','${r.userId}',${r.amount})">✓ Aprobar</button>
           <button class="btn btn-danger btn-sm" onclick="rejectRecharge('${r.id}')">✗ Rechazar</button>
-        ` : '—'}
+        ` : '<span style="color:var(--muted);font-size:12px">—</span>'}
       </td>
     </tr>`).join('');
 }
@@ -581,13 +581,13 @@ async function loadAdminOrders() {
   allOrders = snap.docs.map(d => ({ id: d.id, ...d.data() }));
   tbody.innerHTML = allOrders.map(o => `
     <tr>
-      <td style="font-family:monospace;font-size:11px">${o.id.slice(0,8)}</td>
-      <td style="font-size:12px">${o.userId?.slice(0,10)}...</td>
-      <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${o.serviceName||'—'}</td>
-      <td>${(o.quantity||0).toLocaleString()}</td>
-      <td>${formatUSD2(o.charge)}</td>
-      <td>${statusBadge(o.status)}</td>
-      <td style="color:var(--muted);font-size:12px">${formatDate(o.createdAt)}</td>
+      <td data-label="#" style="font-family:monospace;font-size:11px">${o.id.slice(0,8)}</td>
+      <td data-label="Usuario" style="font-size:12px">${o.userEmail || o.userId?.slice(0,10)+'...'}</td>
+      <td data-label="Servicio">${o.serviceName||'—'}</td>
+      <td data-label="Cant.">${(o.quantity||0).toLocaleString()}</td>
+      <td data-label="Costo">${formatUSD2(o.charge)}</td>
+      <td data-label="Estado">${statusBadge(o.status)}</td>
+      <td data-label="Fecha" style="color:var(--muted);font-size:12px">${formatDate(o.createdAt)}</td>
     </tr>`).join('') || '<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--muted)">Sin pedidos</td></tr>';
 }
 
@@ -616,14 +616,14 @@ function renderUsersTable(users) {
   if (!users.length) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--muted)">Sin usuarios</td></tr>'; return; }
   tbody.innerHTML = users.map(u => `
     <tr>
-      <td>${u.name || '—'}</td>
-      <td style="font-size:13px">${u.email || '—'}</td>
-      <td><strong>${formatUSD2(u.balance)}</strong></td>
-      <td>${u.role === 'admin' ? '<span class="badge badge-admin">Admin</span>' : '<span class="badge badge-active">Usuario</span>'}</td>
-      <td style="color:var(--muted);font-size:12px">${formatDate(u.createdAt)}</td>
-      <td>
-        <button class="btn btn-ghost btn-sm" onclick="openBalanceModal('${u.id}','${u.name || u.email}',${u.balance||0})">💰 Saldo</button>
-        <button class="btn btn-ghost btn-sm" onclick="toggleRole('${u.id}','${u.role}')">${u.role==='admin'?'Usuario':'Admin'}</button>
+      <td data-label="Nombre">${u.name || '—'}</td>
+      <td data-label="Email" style="font-size:13px;word-break:break-all">${u.email || '—'}</td>
+      <td data-label="Saldo"><strong>${formatUSD2(u.balance)}</strong></td>
+      <td data-label="Rol">${u.role === 'admin' ? '<span class="badge badge-admin">Admin</span>' : '<span class="badge badge-active">Usuario</span>'}</td>
+      <td data-label="Registro" style="color:var(--muted);font-size:12px">${formatDate(u.createdAt)}</td>
+      <td data-label="">
+        <button class="btn btn-ghost btn-sm" onclick="openBalanceModal('${u.id}','${u.name || u.email}',${u.balance||0})">Saldo</button>
+        <button class="btn btn-ghost btn-sm" onclick="toggleRole('${u.id}','${u.role}')">${u.role==='admin'?'→ Usuario':'→ Admin'}</button>
       </td>
     </tr>`).join('');
 }
@@ -725,17 +725,17 @@ function renderServicesTable() {
     const inCatalog = !!catalogMap[s.docId];
     return `
     <tr id="svc-row-${s.id}">
-      <td style="text-align:center">
+      <td data-label="Catálogo" style="text-align:center">
         ${inCatalog
           ? `<span style="font-size:11px;font-weight:600;color:var(--blue);background:var(--blue-xs);padding:3px 8px;border-radius:20px">En catálogo</span>`
           : `<button class="btn btn-ghost btn-sm" style="white-space:nowrap;font-size:11px" onclick="addToCatalog('${s.docId}')">+ Agregar</button>`
         }
       </td>
-      <td style="font-family:monospace;font-size:11px;color:var(--muted)">${s.id}</td>
-      <td style="min-width:220px;white-space:normal;line-height:1.4;font-size:13px">${s.name}</td>
-      <td style="font-size:12px;color:var(--muted)">${s.category}</td>
-      <td style="font-size:12px;color:var(--muted)">$${parseFloat(s.providerRate||s.rate||0).toFixed(4)}</td>
-      <td>
+      <td data-label="ID" style="font-family:monospace;font-size:11px;color:var(--muted)">${s.id}</td>
+      <td data-label="Nombre" style="font-size:13px;line-height:1.4">${s.name}</td>
+      <td data-label="Categoría" style="font-size:12px;color:var(--muted)">${s.category}</td>
+      <td data-label="Costo prov." style="font-size:12px;color:var(--muted)">$${parseFloat(s.providerRate||s.rate||0).toFixed(4)}</td>
+      <td data-label="Precio/1k">
         <div style="display:flex;align-items:center;gap:6px">
           <span style="font-size:11px;color:var(--muted)">$</span>
           <input type="number" value="${parseFloat(s.rate||0).toFixed(4)}" step="0.0001" min="0"
@@ -744,8 +744,8 @@ function renderServicesTable() {
             onchange="markPriceChange('${s.docId}', this.value)">
         </div>
       </td>
-      <td style="font-size:12px">${(s.min||0).toLocaleString()}</td>
-      <td style="font-size:12px">${(s.max||0).toLocaleString()}</td>
+      <td data-label="Mín" style="font-size:12px">${(s.min||0).toLocaleString()}</td>
+      <td data-label="Máx" style="font-size:12px">${(s.max||0).toLocaleString()}</td>
     </tr>`;
   }).join('');
 }
@@ -925,28 +925,28 @@ function renderCatalog() {
 
   tbody.innerHTML = list.map(s => `
     <tr>
-      <td style="font-family:monospace;font-size:11px;color:var(--muted)">${s.serviceId}</td>
-      <td>
+      <td data-label="ID" style="font-family:monospace;font-size:11px;color:var(--muted)">${s.serviceId}</td>
+      <td data-label="Nombre cliente">
         <input type="text" class="catalog-input" value="${(s.displayName||'').replace(/"/g,'&quot;')}"
           placeholder="Nombre para el cliente"
           onchange="markCatalogChange('${s.docId}','displayName',this.value)"
           title="Nombre que verán tus clientes">
       </td>
-      <td>
+      <td data-label="Categoría">
         <input type="text" class="catalog-input" value="${(s.displayCategory||'').replace(/"/g,'&quot;')}"
-          placeholder="Categoría (ej: Instagram · Seguidores)"
+          placeholder="Categoría visible"
           onchange="markCatalogChange('${s.docId}','displayCategory',this.value)">
       </td>
-      <td>
+      <td data-label="Precio/1k">
         <div style="display:flex;align-items:center;gap:4px">
           <span style="font-size:11px;color:var(--muted)">$</span>
           <input type="number" class="catalog-input" style="width:88px" value="${parseFloat(s.rate||0).toFixed(4)}" step="0.0001" min="0"
             onchange="markCatalogChange('${s.docId}','rate',parseFloat(this.value))">
         </div>
       </td>
-      <td style="font-size:12px">${(s.min||0).toLocaleString()}</td>
-      <td style="font-size:12px">${(s.max||0).toLocaleString()}</td>
-      <td style="text-align:center">
+      <td data-label="Mín" style="font-size:12px">${(s.min||0).toLocaleString()}</td>
+      <td data-label="Máx" style="font-size:12px">${(s.max||0).toLocaleString()}</td>
+      <td data-label="">
         <button onclick="removeFromCatalog('${s.docId}')" title="Quitar del catálogo"
           style="background:none;border:none;cursor:pointer;color:var(--muted);padding:4px 6px;border-radius:4px;transition:color .15s"
           onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='var(--muted)'">

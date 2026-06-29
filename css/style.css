@@ -1128,6 +1128,62 @@ section .subtitle { text-align: center; color: var(--muted); margin-bottom: 52px
     flex-shrink: 0;
   }
 
+  /* ── Admin tables → card list on mobile ── */
+  .admin-table-wrap { overflow: visible; }
+  .admin-table-wrap table,
+  .admin-table-wrap thead,
+  .admin-table-wrap tbody,
+  .admin-table-wrap th,
+  .admin-table-wrap td,
+  .admin-table-wrap tr { display: block; width: 100%; }
+  .admin-table-wrap thead { display: none; }
+  .admin-table-wrap tbody tr {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 10px;
+    padding: 12px 14px;
+    position: relative;
+  }
+  .admin-table-wrap tbody td {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 4px 0;
+    font-size: 13px;
+    border: none;
+    max-width: 100%;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: unset;
+    word-break: break-word;
+  }
+  .admin-table-wrap tbody td::before {
+    content: attr(data-label);
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    min-width: 90px;
+    flex-shrink: 0;
+    margin-right: 8px;
+  }
+  .admin-table-wrap tbody td:empty { display: none; }
+  .admin-table-wrap tbody td[data-label=""]::before { display: none; }
+  .admin-table-wrap tbody td[data-label=""] {
+    justify-content: flex-end;
+    padding-top: 8px;
+    border-top: 1px solid var(--border);
+    margin-top: 4px;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  /* Screenshot thumbnail smaller on mobile */
+  .admin-table-wrap tbody td img { width: 44px; height: 34px; }
+  /* Catalog inputs full width on mobile */
+  .catalog-input { width: 100% !important; }
+
   /* General table fallback (API docs etc) */
   td { max-width: 100%; white-space: normal; }
   .table-wrap { border-radius: 0; overflow-x: auto; }
