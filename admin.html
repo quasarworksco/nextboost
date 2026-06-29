@@ -978,32 +978,36 @@ function calcMarginLabel(provCost, myPrice) {
 
 async function saveCatalog() {
   const entries = Object.entries(pendingCatalogChanges);
-  if (!entries.length) return;
+  if (!entries.length) { toast('Sin cambios pendientes', 'info'); return; }
   const btn = document.getElementById('save-catalog-btn');
   btn.disabled = true;
   btn.innerHTML = '<span class="spinner"></span> Guardando...';
 
-  for (let i = 0; i < entries.length; i += 400) {
-    const batch = db.batch();
-    entries.slice(i, i + 400).forEach(([docId, changes]) => {
-      const ref = db.collection('catalog').doc(docId);
-      if (changes._delete) { batch.delete(ref); return; }
-      const { _new, ...data } = changes;
-      if (_new) {
-        // full entry for new docs
-        batch.set(ref, catalogMap[docId]);
-      } else {
-        batch.update(ref, data);
-      }
-    });
-    await batch.commit();
+  try {
+    for (let i = 0; i < entries.length; i += 400) {
+      const batch = db.batch();
+      entries.slice(i, i + 400).forEach(([docId, changes]) => {
+        const ref = db.collection('catalog').doc(docId);
+        if (changes._delete) { batch.delete(ref); return; }
+        const { _new, ...data } = changes;
+        if (_new) {
+          batch.set(ref, catalogMap[docId]);
+        } else {
+          // merge to avoid overwriting fields not in this change set
+          batch.set(ref, catalogMap[docId], { merge: true });
+        }
+      });
+      await batch.commit();
+    }
+    pendingCatalogChanges = {};
+    btn.style.display = 'none';
+    toast('Catálogo guardado correctamente', 'success');
+  } catch(e) {
+    toast('Error al guardar: ' + e.message, 'error');
   }
 
-  pendingCatalogChanges = {};
   btn.disabled = false;
-  btn.style.display = 'none';
   btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Guardar cambios';
-  toast('Catálogo guardado', 'success');
 }
 
 // ── Settings ──────────────────────────────────────────
