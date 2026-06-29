@@ -627,6 +627,8 @@ let currentUser = null;
 let userData    = null;
 let allServices = [];
 let userOrders  = [];
+let _ordersLoaded = false;
+let _cachedRecharges = null;
 
 // ── Auth ──────────────────────────────────────────────
 requireAuth(async user => {
@@ -680,15 +682,14 @@ requireAuth(async user => {
     _prevBalance = newBal;
   });
 
-  // Real-time recharge status listener
+  // Real-time recharge status listener — skip initial snapshot to avoid false notifications
+  let _rechargeListenerReady = false;
   db.collection('recharges').where('userId','==',user.uid).where('status','==','approved')
     .onSnapshot(snap => {
+      if (!_rechargeListenerReady) { _rechargeListenerReady = true; return; }
       snap.docChanges().forEach(change => {
-        if (change.type === 'added' || change.type === 'modified') {
-          const r = change.doc.data();
-          if (change.type === 'added') {
-            showRechargeApprovedNotification(r.amount || 0);
-          }
+        if (change.type === 'added') {
+          showRechargeApprovedNotification(change.doc.data().amount || 0);
         }
       });
     });
@@ -711,7 +712,8 @@ function showRechargeApprovedNotification(amount) {
     });
   }
   toast(`✅ Recarga de $${parseFloat(amount).toFixed(2)} aprobada`, 'success');
-  loadRechargeHistory();
+  _cachedRecharges = null;
+  loadRechargeHistory(true);
 }
 
 // Request notification permission (for recharge alerts)
@@ -730,8 +732,9 @@ function updateBalanceDisplay(bal) {
 
 // ── Home stats ────────────────────────────────────────
 async function loadHomeStats() {
-  const orders = await Orders.getForUser(currentUser.uid, 200);
+  const orders = await Orders.getForUser(currentUser.uid, 100);
   userOrders = orders;
+  _ordersLoaded = true;
   const completed = orders.filter(o => o.status === 'completed').length;
   const spent     = orders.reduce((s, o) => s + (o.charge || 0), 0);
   const active    = orders.filter(o => ['pending','active','in progress'].includes((o.status||'').toLowerCase())).length;
@@ -930,6 +933,7 @@ document.getElementById('place-order-btn').addEventListener('click', async () =>
     updateBalanceDisplay(newBal);
     alertEl.innerHTML = `<div class="alert alert-success">Pedido #${order.id.slice(0,8)} creado. Costo: ${formatUSD2(order.charge)}</div>`;
     toast('Pedido creado exitosamente', 'success');
+    _ordersLoaded = false;
     await loadHomeStats();
   } catch(e) {
     alertEl.innerHTML = `<div class="alert alert-error">❌ ${e.message}</div>`;
@@ -959,9 +963,11 @@ function applyOrderFilters() {
 
 async function loadOrdersPage() {
   const tbody = document.getElementById('orders-body');
+  if (_ordersLoaded) { applyOrderFilters(); return; }
   tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:24px;color:var(--muted)"><span class="spinner"></span></td></tr>';
   const orders = await Orders.getForUser(currentUser.uid, 200);
   userOrders = orders;
+  _ordersLoaded = true;
   applyOrderFilters();
 }
 
@@ -988,6 +994,7 @@ document.getElementById('sync-orders-btn').addEventListener('click', async () =>
   btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>';
   try {
     await Orders.syncStatus(userOrders);
+    _ordersLoaded = false; // force re-fetch after sync
     await loadOrdersPage();
     toast('Estados actualizados', 'success');
   } catch(e) { toast('Error: ' + e.message, 'error'); }
@@ -1053,6 +1060,7 @@ async function requestCancel(orderId, providerOrderId) {
     await db.collection('orders').doc(orderId).update({ status: 'canceled' });
     toast('Pedido cancelado', 'success');
     closeModal('order-detail-modal');
+    _ordersLoaded = false;
     await loadOrdersPage();
   } catch(e) { toast('Error: ' + e.message, 'error'); btn.disabled = false; btn.textContent = '✕ Cancelar pedido'; }
 }
@@ -1214,27 +1222,34 @@ document.getElementById('recharge-btn').addEventListener('click', async () => {
     document.getElementById('upload-progress').style.display    = 'none';
     screenshotUrl = '';
     toast('Solicitud de recarga enviada', 'success');
-    loadRechargeHistory();
+    _cachedRecharges = null;
+    loadRechargeHistory(true);
   } catch(e) { alertEl.innerHTML = `<div class="alert alert-error">${e.message}</div>`; }
 
   btn.disabled = false; btn.innerHTML = 'Enviar solicitud';
 });
 
-async function loadRechargeHistory() {
+async function loadRechargeHistory(forceRefresh) {
+  if (!forceRefresh && _cachedRecharges) {
+    renderRechargeHistory(_cachedRecharges);
+    return;
+  }
   const snap = await db.collection('recharges')
     .where('userId', '==', currentUser.uid)
-    .orderBy('createdAt', 'desc').limit(20).get();
+    .orderBy('createdAt', 'desc').limit(50).get();
+  _cachedRecharges = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  renderRechargeHistory(_cachedRecharges);
+}
+
+function renderRechargeHistory(recharges) {
   const tbody = document.getElementById('recharge-history-body');
-  if (snap.empty) { tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--muted)">Sin recargas</td></tr>'; return; }
-  tbody.innerHTML = snap.docs.map(d => {
-    const r = d.data();
-    return `<tr>
-      <td data-label="Monto"><strong>${formatUSD2(r.amount)}</strong></td>
-      <td data-label="Método">${r.method}</td>
-      <td data-label="Estado">${statusBadge(r.status)}</td>
-      <td data-label="Fecha" style="color:var(--muted);font-size:12px">${formatDate(r.createdAt)}</td>
-    </tr>`;
-  }).join('');
+  if (!recharges.length) { tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--muted)">Sin recargas</td></tr>'; return; }
+  tbody.innerHTML = recharges.slice(0, 20).map(r => `<tr>
+    <td data-label="Monto"><strong>${formatUSD2(r.amount)}</strong></td>
+    <td data-label="Método">${r.method}</td>
+    <td data-label="Estado">${statusBadge(r.status)}</td>
+    <td data-label="Fecha" style="color:var(--muted);font-size:12px">${formatDate(r.createdAt)}</td>
+  </tr>`).join('');
 }
 
 // ── API key ───────────────────────────────────────────
@@ -1482,24 +1497,26 @@ async function loadMovements() {
   });
 
   try {
-    const [ordersSnap, rechargesSnap] = await Promise.all([
-      db.collection('orders').where('userId','==',currentUser.uid).orderBy('createdAt','desc').limit(200).get(),
-      db.collection('recharges').where('userId','==',currentUser.uid).orderBy('createdAt','desc').limit(100).get(),
-    ]);
+    // Reuse in-memory orders if already loaded (avoids duplicate read)
+    const ordersSource = _ordersLoaded ? userOrders : await Orders.getForUser(currentUser.uid, 200).then(o => { userOrders = o; _ordersLoaded = true; return o; });
+
+    // Reuse cached recharges if available
+    if (!_cachedRecharges) {
+      const snap = await db.collection('recharges').where('userId','==',currentUser.uid).orderBy('createdAt','desc').limit(50).get();
+      _cachedRecharges = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    }
 
     const items = [];
-    ordersSnap.docs.forEach(d => {
-      const o = d.data();
+    ordersSource.forEach(o => {
       items.push({
         type: 'debit',
         date: o.createdAt ? o.createdAt.toDate() : new Date(0),
-        desc: o.serviceName || 'Pedido #' + d.id.slice(0,6),
+        desc: o.serviceName || 'Pedido #' + o.id.slice(0,6),
         amount: -(o.charge || 0),
         badge: `<span class="badge badge-${o.status||'pending'}">${o.status||'pending'}</span>`,
       });
     });
-    rechargesSnap.docs.forEach(d => {
-      const r = d.data();
+    _cachedRecharges.forEach(r => {
       if (r.status !== 'approved') return;
       items.push({
         type: 'credit',

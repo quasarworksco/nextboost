@@ -610,9 +610,9 @@ requireAdmin(async (user, data) => {
 // ── Overview ──────────────────────────────────────────
 async function loadOverview() {
   const [usersSnap, ordersSnap, rechargesSnap] = await Promise.all([
-    db.collection('users').get(),
-    db.collection('orders').orderBy('createdAt','desc').limit(200).get(),
-    db.collection('recharges').where('status','==','pending').get(),
+    db.collection('users').limit(2000).get(),
+    db.collection('orders').orderBy('createdAt','desc').limit(50).get(),
+    db.collection('recharges').where('status','==','pending').limit(100).get(),
   ]);
 
   document.getElementById('stat-users').textContent   = usersSnap.size;
