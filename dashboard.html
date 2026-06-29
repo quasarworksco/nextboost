@@ -525,10 +525,16 @@ function renderRecentOrders(orders) {
 let filteredServices = [];
 let selectedService  = null;
 
+const ALLOWED_PLATFORMS = ['facebook','instagram','tiktok','youtube','spotify','telegram','twitter','twitch','tráfico web','trafico web','web traffic','traffic'];
+
 async function loadServices() {
   try {
-    allServices = await Services.getAll();
-    // sort globally by price ascending
+    const raw = await Services.getAll();
+    // Filter to allowed platforms only
+    allServices = raw.filter(s => {
+      const cat = (s.category || '').toLowerCase();
+      return ALLOWED_PLATFORMS.some(p => cat.includes(p));
+    });
     allServices.sort((a, b) => parseFloat(a.rate) - parseFloat(b.rate));
     const categories = [...new Set(allServices.map(s => s.category))].sort();
     const catSel = document.getElementById('category-filter');
