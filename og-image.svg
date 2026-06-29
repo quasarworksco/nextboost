@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0c1445"/>
+      <stop offset="100%" style="stop-color:#162068"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#1438cc"/>
+      <stop offset="100%" style="stop-color:#4d78ff"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bg)"/>
+
+  <!-- Decorative circles -->
+  <circle cx="1050" cy="100" r="200" fill="#1438cc" opacity="0.15"/>
+  <circle cx="150"  cy="530" r="160" fill="#4d78ff" opacity="0.10"/>
+  <circle cx="980"  cy="520" r="120" fill="#4d78ff" opacity="0.08"/>
+
+  <!-- Accent bar top -->
+  <rect x="0" y="0" width="1200" height="5" fill="url(#accent)"/>
+
+  <!-- Logo box -->
+  <rect x="80" y="200" width="84" height="84" rx="20" fill="#1438cc"/>
+  <text x="122" y="258" font-family="Arial Black, sans-serif" font-weight="900" font-size="38" fill="#ffffff" text-anchor="middle" letter-spacing="-1">NB</text>
+
+  <!-- Brand name -->
+  <text x="184" y="256" font-family="Arial Black, sans-serif" font-weight="900" font-size="64" fill="#ffffff" letter-spacing="-2">Next</text>
+  <text x="382" y="256" font-family="Arial Black, sans-serif" font-weight="900" font-size="64" fill="#4d78ff" letter-spacing="-2">Boost</text>
+
+  <!-- Tagline -->
+  <text x="80" y="318" font-family="Arial, sans-serif" font-weight="400" font-size="26" fill="#8b9cc8" letter-spacing="0.5">Panel SMM Profesional</text>
+
+  <!-- Divider -->
+  <rect x="80" y="355" width="120" height="4" rx="2" fill="url(#accent)"/>
+
+  <!-- Description -->
+  <text x="80" y="410" font-family="Arial, sans-serif" font-size="28" fill="#c5ccf5">Seguidores · Likes · Vistas · Reproducciones</text>
+  <text x="80" y="454" font-family="Arial, sans-serif" font-size="24" fill="#6b7db3">Instagram · TikTok · YouTube · Spotify · Telegram · y más</text>
+
+  <!-- Price badge -->
+  <rect x="80" y="490" width="300" height="56" rx="14" fill="#1438cc"/>
+  <text x="230" y="524" font-family="Arial Black, sans-serif" font-weight="900" font-size="22" fill="#ffffff" text-anchor="middle">Desde $0.001 por 1000</text>
+
+  <!-- Right illustration - stat cards -->
+  <rect x="740" y="160" width="380" height="90" rx="16" fill="#1a2050" opacity="0.8"/>
+  <text x="770" y="200" font-family="Arial, sans-serif" font-size="15" fill="#6b7db3">Seguidores Instagram</text>
+  <text x="770" y="230" font-family="Arial Black, sans-serif" font-weight="900" font-size="28" fill="#4d78ff">+10,000</text>
+  <circle cx="1085" cy="205" r="26" fill="#1438cc" opacity="0.6"/>
+  <text x="1085" y="213" font-family="Arial, sans-serif" font-size="13" fill="#ffffff" text-anchor="middle">✓</text>
+
+  <rect x="740" y="270" width="380" height="90" rx="16" fill="#1a2050" opacity="0.8"/>
+  <text x="770" y="310" font-family="Arial, sans-serif" font-size="15" fill="#6b7db3">Views TikTok</text>
+  <text x="770" y="340" font-family="Arial Black, sans-serif" font-weight="900" font-size="28" fill="#4d78ff">+50,000</text>
+  <circle cx="1085" cy="315" r="26" fill="#1438cc" opacity="0.6"/>
+  <text x="1085" y="323" font-family="Arial, sans-serif" font-size="13" fill="#ffffff" text-anchor="middle">✓</text>
+
+  <rect x="740" y="380" width="380" height="90" rx="16" fill="#1a2050" opacity="0.8"/>
+  <text x="770" y="420" font-family="Arial, sans-serif" font-size="15" fill="#6b7db3">Suscriptores YouTube</text>
+  <text x="770" y="450" font-family="Arial Black, sans-serif" font-weight="900" font-size="28" fill="#4d78ff">+5,000</text>
+  <circle cx="1085" cy="425" r="26" fill="#1438cc" opacity="0.6"/>
+  <text x="1085" y="433" font-family="Arial, sans-serif" font-size="13" fill="#ffffff" text-anchor="middle">✓</text>
+
+  <!-- URL -->
+  <text x="80" y="590" font-family="Arial, sans-serif" font-size="20" fill="#3a4a7a">nextboostdgp.pages.dev</text>
+</svg>

@@ -6,6 +6,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Panel — NextBoost</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#1438cc">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -93,6 +95,12 @@
           <span id="balance-display">$0.00</span>
         </div>
       </div>
+    </div>
+
+    <!-- Announcement banner (hidden by default, JS shows if admin set one) -->
+    <div id="announcement-banner" style="display:none;padding:10px 24px;font-size:14px;font-weight:500;display:none;align-items:center;justify-content:space-between;gap:12px">
+      <span id="announcement-text"></span>
+      <button onclick="this.parentElement.style.display='none'" style="background:none;border:none;cursor:pointer;font-size:18px;opacity:.6;line-height:1">✕</button>
     </div>
 
     <div class="page">
@@ -877,14 +885,25 @@ function updateOrderTotal() {
   const qty = parseInt(document.getElementById('order-qty').value) || 0;
   const totalBox = document.getElementById('order-total-box');
   const placeBtn = document.getElementById('place-order-btn');
+  const alertEl  = document.getElementById('order-alert');
 
   if (!s || qty < 1) { totalBox.style.display = 'none'; placeBtn.disabled = true; return; }
   const cost = (parseFloat(s.rate) * qty) / 1000;
   const bal  = parseFloat(userData?.balance || 0);
   totalBox.style.display = 'block';
   document.getElementById('order-total-val').textContent = formatUSD2(cost);
-  document.getElementById('order-total-val').style.color = cost > bal ? 'var(--red)' : '';
-  placeBtn.disabled = cost > bal;
+  const noFunds = cost > bal;
+  document.getElementById('order-total-val').style.color = noFunds ? 'var(--red)' : 'var(--green,#16a34a)';
+  placeBtn.disabled = noFunds;
+  if (noFunds) {
+    const needed = (cost - bal).toFixed(4);
+    alertEl.innerHTML = `<div class="alert alert-warning" style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
+      <span>Saldo insuficiente. Necesitas <strong>$${needed}</strong> más.</span>
+      <button class="btn btn-primary btn-sm" onclick="showPage('add-funds')">Recargar ahora</button>
+    </div>`;
+  } else {
+    if (alertEl.querySelector('.alert-warning')) alertEl.innerHTML = '';
+  }
 }
 
 document.getElementById('place-order-btn').addEventListener('click', async () => {
@@ -991,6 +1010,19 @@ function showOrderDetail(orderId) {
       <div class="info-row"><span class="info-label">Estado</span><span class="info-val">${statusBadge(o.status)}</span></div>
       ${o.remains !== null && o.remains !== undefined ? `<div class="info-row"><span class="info-label">Restantes</span><span class="info-val">${o.remains}</span></div>` : ''}
       ${o.startCount !== null && o.startCount !== undefined ? `<div class="info-row"><span class="info-label">Inicio</span><span class="info-val">${o.startCount}</span></div>` : ''}
+      ${(o.startCount !== null && o.startCount !== undefined && o.quantity) ? (() => {
+        const delivered = Math.max(0, parseInt(o.startCount||0) - parseInt(o.remains||0));
+        const pct = Math.min(100, Math.round((delivered / parseInt(o.quantity)) * 100));
+        return `<div style="margin-top:8px">
+          <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:6px">
+            <span>Progreso de entrega</span><span>${pct}%</span>
+          </div>
+          <div style="background:var(--border);border-radius:99px;height:8px;overflow:hidden">
+            <div style="width:${pct}%;height:100%;background:${pct===100?'var(--green)':'var(--blue)'};border-radius:99px;transition:width .5s"></div>
+          </div>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px">${delivered.toLocaleString()} de ${parseInt(o.quantity).toLocaleString()} entregados</div>
+        </div>`;
+      })() : ''}
       <div class="info-row"><span class="info-label">ID proveedor</span><span class="info-val" style="font-family:monospace">${o.providerOrderId||'—'}</span></div>
       <div class="info-row"><span class="info-label">Fecha</span><span class="info-val">${formatDate(o.createdAt)}</span></div>
     </div>
@@ -1042,6 +1074,22 @@ async function loadPaymentSettings() {
   amountInput.min         = min;
   amountInput.placeholder = min.toFixed(2);
   updatePaymentInstructions();
+
+  // Show announcement if admin set one
+  const msg  = paySettings.announcement || '';
+  const type = paySettings.announcementType || 'info';
+  const banner = document.getElementById('announcement-banner');
+  if (msg && banner) {
+    const colors = {
+      info:    { bg:'var(--blue-xs)',  color:'var(--blue)',   border:'var(--border2)' },
+      warning: { bg:'#fef9ee',         color:'#b45309',       border:'#fde68a' },
+      success: { bg:'#f0fdf4',         color:'#16a34a',       border:'#bbf7d0' },
+      error:   { bg:'#fef2f2',         color:'#dc2626',       border:'#fecaca' },
+    };
+    const c = colors[type] || colors.info;
+    banner.style.cssText = `display:flex;padding:10px 24px;font-size:14px;font-weight:500;align-items:center;justify-content:space-between;gap:12px;background:${c.bg};color:${c.color};border-bottom:1px solid ${c.border}`;
+    document.getElementById('announcement-text').textContent = msg;
+  }
 }
 
 function updatePaymentInstructions() {

@@ -511,6 +511,28 @@
             </div>
           </div>
         </div>
+
+        <!-- Announcement card -->
+        <div class="card mt-4">
+          <div class="card-header">Anuncio para usuarios</div>
+          <div class="card-body">
+            <div class="form-group">
+              <label>Mensaje (déjalo vacío para desactivar)</label>
+              <input type="text" class="input" id="settings-announcement" placeholder="Ej: Mantenimiento programado el sábado 22:00 UTC...">
+            </div>
+            <div class="form-group">
+              <label>Tipo</label>
+              <select class="select" id="settings-announcement-type">
+                <option value="info">Info (azul)</option>
+                <option value="warning">Aviso (amarillo)</option>
+                <option value="success">Positivo (verde)</option>
+                <option value="error">Urgente (rojo)</option>
+              </select>
+            </div>
+            <div id="settings-announce-alert"></div>
+            <button class="btn btn-outline" id="save-announcement-btn">Publicar anuncio</button>
+          </div>
+        </div>
       </div>
 
     </div>
@@ -1425,6 +1447,8 @@ async function loadSettings() {
   document.getElementById('settings-usdt').value       = d.usdt       || '';
   document.getElementById('settings-whatsapp').value      = d.whatsapp      || '';
   document.getElementById('settings-min-recharge').value = d.minRecharge   || '5';
+  document.getElementById('settings-announcement').value      = d.announcement     || '';
+  document.getElementById('settings-announcement-type').value = d.announcementType || 'info';
 }
 
 document.getElementById('save-settings-btn').addEventListener('click', async () => {
@@ -1537,6 +1561,25 @@ db.collection('support_tickets').where('status','==','open').where('adminSeen','
     const badge = document.getElementById('admin-tickets-badge');
     if (badge) { badge.textContent = snap.size; badge.style.display = snap.size > 0 ? '' : 'none'; }
   });
+
+document.getElementById('save-announcement-btn').addEventListener('click', async () => {
+  const btn  = document.getElementById('save-announcement-btn');
+  const msg  = document.getElementById('settings-announcement').value.trim();
+  const type = document.getElementById('settings-announcement-type').value;
+  const alertEl = document.getElementById('settings-announce-alert');
+  btn.disabled = true; btn.textContent = 'Publicando...';
+  try {
+    await db.collection('settings').doc('main').set({
+      announcement:     msg,
+      announcementType: type,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    }, { merge: true });
+    alertEl.innerHTML = `<div class="alert alert-success">${msg ? 'Anuncio publicado.' : 'Anuncio eliminado.'}</div>`;
+    setTimeout(() => alertEl.innerHTML = '', 3000);
+    toast(msg ? 'Anuncio publicado para todos los usuarios' : 'Anuncio eliminado', 'success');
+  } catch(e) { alertEl.innerHTML = `<div class="alert alert-error">${e.message}</div>`; }
+  btn.disabled = false; btn.textContent = 'Publicar anuncio';
+});
 
 // ── Dark mode ─────────────────────────────────────────
 function applyTheme(dark) {
