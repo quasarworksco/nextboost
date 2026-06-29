@@ -39,9 +39,15 @@ service cloud.firestore {
       allow write:  if isAdmin();
     }
 
-    // Settings: admin only
+    // Catalog: public read, admin write
+    match /catalog/{docId} {
+      allow read:   if true;
+      allow write:  if isAdmin();
+    }
+
+    // Settings: authenticated users read (for payment data), admin write
     match /settings/{doc} {
-      allow read:   if isAdmin();
+      allow read:   if isAuth();
       allow write:  if isAdmin();
     }
   }
