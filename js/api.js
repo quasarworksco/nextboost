@@ -1,5 +1,5 @@
 // ══════════════════════════════════════════════════════
-// NexBoost — SMM Provider API wrapper
+// NextBoost — SMM Provider API wrapper
 // Compatible with any JustAnotherPanel-style API
 // (fansfull.com, justanotherpanel.com, etc.)
 // ══════════════════════════════════════════════════════

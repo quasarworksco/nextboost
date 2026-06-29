@@ -1,5 +1,5 @@
 // ══════════════════════════════════════════════════════
-// NexBoost — Shared utilities (auth, toast, helpers)
+// NextBoost — Shared utilities (auth, toast, helpers)
 // ══════════════════════════════════════════════════════
 
 // ── Toast notifications ───────────────────────────────

@@ -1,5 +1,5 @@
 /**
- * NexBoost — Cloudflare Worker proxy for JustAnotherPanel API
+ * NextBoost — Cloudflare Worker proxy for JustAnotherPanel API
  *
  * This worker sits between the browser and JAP so the API key
  * never leaves Cloudflare's servers.
@@ -7,7 +7,7 @@
  * Deploy: wrangler deploy
  * Set secret: wrangler secret put JAP_API_KEY
  *
- * Your panel calls:  POST https://api.nexboost.io/v2
+ * Your panel calls:  POST https://api.nextboost.io/v2
  * Worker forwards:   POST https://justanotherpanel.com/api/v2
  */
 
@@ -27,7 +27,7 @@ export default {
       }));
     }
 
-    // ── Read body sent by NexBoost panel ───────────
+    // ── Read body sent by NextBoost panel ───────────
     let body;
     try {
       body = await request.formData();

@@ -8,7 +8,7 @@ const firebaseConfig = {
 };
 
 const APP = {
-  name:     "NexBoost",
+  name:     "NextBoost",
   tagline:  "Panel SMM Profesional",
   currency: "USD",
   markup:   1.5,
