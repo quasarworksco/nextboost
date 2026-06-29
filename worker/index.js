@@ -31,7 +31,7 @@ export default {
     // ── Verify the request comes from NexBoost ──────
     // (Optional extra security — can be removed if hosting on same domain)
     const origin = request.headers.get('Origin') || '';
-    const allowed = [PANEL_URL, 'http://localhost', 'http://127.0.0.1'];
+    const allowed = [PANEL_URL, 'https://nextboost.pages.dev', 'http://localhost', 'http://127.0.0.1'];
     if (!allowed.some(a => origin.startsWith(a))) {
       return cors(new Response(JSON.stringify({ error: 'Forbidden' }), {
         status: 403, headers: { 'Content-Type': 'application/json' }
