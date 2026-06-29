@@ -181,9 +181,28 @@
         <!-- KPI row -->
         <div class="grid-4 mb-4" id="stats-kpis">
           <div class="stat-card"><div class="stat-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><div class="stat-value" id="sk-revenue">—</div><div class="stat-label">Ingresos período</div></div>
+          <div class="stat-card"><div class="stat-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></div><div class="stat-value" id="sk-profit" style="color:var(--green)">—</div><div class="stat-label">Ganancia neta</div></div>
           <div class="stat-card"><div class="stat-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg></div><div class="stat-value" id="sk-orders">—</div><div class="stat-label">Pedidos período</div></div>
           <div class="stat-card"><div class="stat-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></div><div class="stat-value" id="sk-recharges">—</div><div class="stat-label">Recargas aprobadas</div></div>
-          <div class="stat-card"><div class="stat-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div><div class="stat-value" id="sk-newusers">—</div><div class="stat-label">Clientes nuevos</div></div>
+        </div>
+        <!-- Profit detail row -->
+        <div class="grid-4 mb-4">
+          <div class="stat-card" style="border-left:3px solid var(--green)">
+            <div class="stat-value" id="sk-cost" style="font-size:18px;color:var(--muted)">—</div>
+            <div class="stat-label">Costo proveedor</div>
+          </div>
+          <div class="stat-card" style="border-left:3px solid var(--blue)">
+            <div class="stat-value" id="sk-margin" style="font-size:18px;color:var(--blue)">—</div>
+            <div class="stat-label">Margen promedio</div>
+          </div>
+          <div class="stat-card" style="border-left:3px solid var(--blue)">
+            <div class="stat-value" id="sk-newusers">—</div>
+            <div class="stat-label">Clientes nuevos</div>
+          </div>
+          <div class="stat-card" style="border-left:3px solid var(--blue)">
+            <div class="stat-value" id="sk-aov" style="font-size:18px">—</div>
+            <div class="stat-label">Ticket promedio</div>
+          </div>
         </div>
         <!-- Chart + Top tables -->
         <div class="grid-2 mb-4">
@@ -1400,8 +1419,22 @@ async function loadStats() {
     const revenue = orders.reduce((s, o) => s + (o.charge || 0), 0);
     const rechargeTotal = rechargesSnap.docs.reduce((s,d) => s + (d.data().amount || 0), 0);
 
-    document.getElementById('sk-revenue').textContent  = formatUSD2(revenue);
-    document.getElementById('sk-orders').textContent   = orders.length;
+    // Profit = revenue (client pays) - provider cost
+    // providerRate stored per 1000, charge = userRate * qty / 1000
+    const providerCost = orders.reduce((s, o) => {
+      const cost = ((o.providerRate || 0) * (o.quantity || 0)) / 1000;
+      return s + cost;
+    }, 0);
+    const profit = revenue - providerCost;
+    const avgMargin = revenue > 0 ? ((profit / revenue) * 100).toFixed(1) : 0;
+    const aov = orders.length > 0 ? (revenue / orders.length) : 0;
+
+    document.getElementById('sk-revenue').textContent   = formatUSD2(revenue);
+    document.getElementById('sk-profit').textContent    = formatUSD2(profit);
+    document.getElementById('sk-cost').textContent      = formatUSD2(providerCost);
+    document.getElementById('sk-margin').textContent    = avgMargin + '%';
+    document.getElementById('sk-aov').textContent       = formatUSD2(aov);
+    document.getElementById('sk-orders').textContent    = orders.length;
     document.getElementById('sk-recharges').textContent = formatUSD2(rechargeTotal);
     document.getElementById('sk-newusers').textContent  = usersSnap.size;
 
