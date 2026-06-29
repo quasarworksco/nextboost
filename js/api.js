@@ -80,14 +80,9 @@ const Orders = (() => {
     const userData = userSnap.data();
     const balance  = parseFloat(userData.balance || 0);
 
-    // 2. Calculate cost (provider cost × markup from settings)
-    const settingsSnap = await db.collection('settings').doc('main').get();
-    const settings     = settingsSnap.exists ? settingsSnap.data() : {};
-    const markup       = parseFloat(settings.markup || APP.markup);
-
-    const servicesSnap = await db.collection('services').doc(String(service.id)).get();
-    const providerRate = parseFloat(service.rate);  // per 1000
-    const userRate     = +(providerRate * markup).toFixed(6);
+    // 2. Calculate cost using the catalog rate (already set by admin, no markup needed)
+    const providerRate = parseFloat(service.rate);  // per 1000 — this is the client-facing rate
+    const userRate     = providerRate;
     const charge       = +((userRate * quantity) / 1000).toFixed(6);
 
     if (balance < charge) throw new Error(`Saldo insuficiente. Necesitas $${charge.toFixed(4)}, tienes $${balance.toFixed(4)}.`);
@@ -234,40 +229,10 @@ const Services = (() => {
     return [];
   }
 
-  // Admin: sync services from provider API and save to Firestore
-  async function syncFromProvider(markup) {
-    const raw = await SmmAPI.getServices();
-    const existingSnap = await db.collection('services').get();
-    const existingIds  = new Set(existingSnap.docs.map(d => d.id));
-
-    for (let i = 0; i < raw.length; i += 400) {
-      const batch = db.batch();
-      raw.slice(i, i + 400).forEach(s => {
-        const docId    = String(s.service);
-        const userRate = +(parseFloat(s.rate) * markup).toFixed(6);
-        const ref      = db.collection('services').doc(docId);
-        const base = {
-          id:           s.service,
-          name:         s.name,
-          category:     s.category,
-          type:         s.type,
-          providerRate: parseFloat(s.rate),
-          min:          parseInt(s.min),
-          max:          parseInt(s.max),
-          refill:       s.refill || false,
-          cancel:       s.cancel || false,
-          updatedAt:    firebase.firestore.FieldValue.serverTimestamp(),
-        };
-        if (!existingIds.has(docId)) {
-          batch.set(ref, { ...base, rate: userRate, active: true });
-        } else {
-          batch.update(ref, base);
-        }
-      });
-      await batch.commit();
-    }
+  // Kept for backward compatibility — no longer writes to Firestore
+  async function syncFromProvider() {
     clearCache();
-    return raw.length;
+    return 0;
   }
 
   return { getAll, syncFromProvider, clearCache };
