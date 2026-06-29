@@ -4,7 +4,10 @@
   <meta charset="UTF-8">
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Crear cuenta — NextBoost</title>
+  <title>Crear cuenta gratis — NextBoost SMM Panel</title>
+  <meta name="description" content="Crea tu cuenta gratis en NextBoost y empieza a crecer en Instagram, TikTok, YouTube y más redes sociales desde $0.001 por 1000.">
+  <meta property="og:title" content="Crear cuenta — NextBoost">
+  <meta property="og:description" content="Panel SMM profesional. Seguidores, likes, vistas. Precios desde $0.001.">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
 </head>
@@ -16,6 +19,7 @@
     </div>
     <h2>Crear cuenta gratis</h2>
     <p>Empieza a impulsar tus redes sociales hoy</p>
+    <div id="platform-badge" style="display:none;margin-bottom:16px;background:var(--blue-xs);border:1.5px solid var(--blue);border-radius:10px;padding:8px 14px;font-size:13px;color:var(--blue);font-weight:600;text-align:center"></div>
 
     <div id="alert-box"></div>
 
@@ -62,6 +66,14 @@
     if (user) window.location.href = 'dashboard.html';
   });
 
+  // Show platform badge if coming from landing
+  const _platform = new URLSearchParams(location.search).get('platform');
+  if (_platform) {
+    const badge = document.getElementById('platform-badge');
+    badge.textContent = '📲 Regístrate para ver servicios de ' + _platform;
+    badge.style.display = 'block';
+  }
+
   const form    = document.getElementById('register-form');
   const alertEl = document.getElementById('alert-box');
   const btnEl   = document.getElementById('submit-btn');
@@ -96,7 +108,9 @@
         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
       });
 
-      window.location.href = 'dashboard.html';
+      const platformParam = new URLSearchParams(location.search).get('platform');
+      const dest = platformParam ? `dashboard.html?platform=${encodeURIComponent(platformParam)}` : 'dashboard.html';
+      window.location.href = dest;
     } catch (err) {
       let msg = err.message;
       if (err.code === 'auth/email-already-in-use') msg = 'Este correo ya está registrado.';

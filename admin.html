@@ -213,6 +213,7 @@
           <div class="card-header flex items-center justify-between">
             <span>Solicitudes de recarga</span>
             <div style="display:flex;gap:8px">
+              <button class="btn btn-ghost btn-sm" onclick="exportRechargesCSV()">⬇ CSV</button>
               <select class="select" id="recharge-filter" style="width:160px" onchange="loadAdminRecharges()">
                 <option value="pending">Pendientes</option>
                 <option value="approved">Aprobadas</option>
@@ -239,7 +240,10 @@
         <div class="card">
           <div class="card-header flex items-center justify-between">
             <span>Todos los pedidos</span>
-            <button class="btn btn-ghost btn-sm" onclick="syncAllOrders()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg> Sincronizar estados</button>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-ghost btn-sm" onclick="exportOrdersCSV()">⬇ CSV</button>
+              <button class="btn btn-ghost btn-sm" onclick="syncAllOrders()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg> Sincronizar</button>
+            </div>
           </div>
           <div class="card-body" style="padding:0">
             <div class="table-wrap admin-table-wrap">
@@ -470,6 +474,26 @@
       <div id="balance-modal-alert"></div>
       <div style="display:flex;gap:10px;margin-top:8px">
         <button class="btn btn-primary btn-full" id="balance-modal-btn">Aplicar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- User detail modal -->
+<div class="modal-overlay" id="user-detail-modal">
+  <div class="modal" style="max-width:600px">
+    <div class="modal-header">
+      <span id="user-detail-title">Detalle del usuario</span>
+      <button class="modal-close">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="user-detail-info" class="service-info-box mb-3"></div>
+      <div style="font-weight:700;font-size:14px;margin-bottom:10px;color:var(--navy)">Últimos pedidos</div>
+      <div class="table-wrap admin-table-wrap">
+        <table>
+          <thead><tr><th>Servicio</th><th>Costo</th><th>Estado</th><th>Fecha</th></tr></thead>
+          <tbody id="user-detail-orders"><tr><td colspan="4" style="text-align:center;padding:16px;color:var(--muted)">Cargando...</td></tr></tbody>
+        </table>
       </div>
     </div>
   </div>
@@ -746,10 +770,40 @@ function renderUsersTable(users) {
       <td data-label="Rol">${u.role === 'admin' ? '<span class="badge badge-admin">Admin</span>' : '<span class="badge badge-active">Usuario</span>'}</td>
       <td data-label="Registro" style="color:var(--muted);font-size:12px">${formatDate(u.createdAt)}</td>
       <td data-label="">
+        <button class="btn btn-ghost btn-sm" onclick="openUserDetail('${u.id}')">Ver</button>
         <button class="btn btn-ghost btn-sm" onclick="openBalanceModal('${u.id}','${u.name || u.email}',${u.balance||0})">Saldo</button>
         <button class="btn btn-ghost btn-sm" onclick="toggleRole('${u.id}','${u.role}')">${u.role==='admin'?'→ Usuario':'→ Admin'}</button>
       </td>
     </tr>`).join('');
+}
+
+async function openUserDetail(userId) {
+  const u = allUsers.find(x => x.id === userId);
+  if (!u) return;
+  document.getElementById('user-detail-title').textContent = u.name || u.email;
+  document.getElementById('user-detail-info').innerHTML = `
+    <div class="info-row"><span class="info-label">Nombre</span><span class="info-val">${u.name||'—'}</span></div>
+    <div class="info-row"><span class="info-label">Email</span><span class="info-val">${u.email||'—'}</span></div>
+    <div class="info-row"><span class="info-label">Saldo</span><span class="info-val"><strong>${formatUSD2(u.balance)}</strong></span></div>
+    <div class="info-row"><span class="info-label">Rol</span><span class="info-val">${u.role||'user'}</span></div>
+    <div class="info-row"><span class="info-label">Registrado</span><span class="info-val">${formatDate(u.createdAt)}</span></div>
+  `;
+  openModal('user-detail-modal');
+  const tbody = document.getElementById('user-detail-orders');
+  try {
+    const snap = await db.collection('orders').where('userId','==',userId).orderBy('createdAt','desc').limit(20).get();
+    const rows = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    tbody.innerHTML = rows.length
+      ? rows.map(o => `<tr>
+          <td data-label="Servicio" style="font-size:12px">${o.serviceName||'—'}</td>
+          <td data-label="Costo">${formatUSD2(o.charge)}</td>
+          <td data-label="Estado">${statusBadge(o.status)}</td>
+          <td data-label="Fecha" style="font-size:11px;color:var(--muted)">${formatDate(o.createdAt)}</td>
+        </tr>`).join('')
+      : '<tr><td colspan="4" style="text-align:center;padding:16px;color:var(--muted)">Sin pedidos</td></tr>';
+  } catch(e) {
+    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;padding:16px;color:var(--muted)">${e.message}</td></tr>`;
+  }
 }
 
 function filterUsers(q) {
@@ -1131,6 +1185,41 @@ async function saveCatalog() {
 
   btn.disabled = false;
   btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Guardar cambios';
+}
+
+// ── CSV Export ────────────────────────────────────────
+function downloadCSV(rows, headers, filename) {
+  const escape = v => `"${String(v ?? '').replace(/"/g, '""')}"`;
+  const lines  = [headers.map(escape).join(','), ...rows.map(r => r.map(escape).join(','))];
+  const blob   = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
+  const url    = URL.createObjectURL(blob);
+  const a      = Object.assign(document.createElement('a'), { href: url, download: filename });
+  document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+}
+
+function exportOrdersCSV() {
+  if (!allOrders.length) { toast('Sin datos para exportar', 'error'); return; }
+  downloadCSV(
+    allOrders.map(o => [
+      o.id, o.userId, o.userEmail||'', o.serviceName||'', o.serviceId||'',
+      o.quantity||0, o.charge||0, o.status||'', o.providerOrderId||'',
+      o.createdAt ? o.createdAt.toDate().toISOString() : '',
+    ]),
+    ['ID','UserID','Email','Servicio','ServiceID','Cantidad','Costo','Estado','ProviderID','Fecha'],
+    `nextboost-orders-${new Date().toISOString().slice(0,10)}.csv`
+  );
+}
+
+function exportRechargesCSV() {
+  if (!allRecharges.length) { toast('Sin datos para exportar', 'error'); return; }
+  downloadCSV(
+    allRecharges.map(r => [
+      r.id, r.userId, r.userEmail||r.userName||'', r.amount||0, r.method||'',
+      r.status||'', r.reference||'', r.createdAt ? r.createdAt.toDate().toISOString() : '',
+    ]),
+    ['ID','UserID','Email/Nombre','Monto','Método','Estado','Referencia','Fecha'],
+    `nextboost-recharges-${new Date().toISOString().slice(0,10)}.csv`
+  );
 }
 
 // ── Statistics ────────────────────────────────────────

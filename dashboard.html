@@ -232,10 +232,26 @@
 
       <!-- ═══ MY ORDERS ═══ -->
       <div id="page-orders" class="page-section" style="display:none">
+        <!-- Search + filter bar -->
+        <div class="card mb-3">
+          <div class="card-body" style="padding:12px 16px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+            <input type="text" class="input" id="orders-search" placeholder="Buscar servicio..." style="max-width:220px;margin:0" oninput="applyOrderFilters()">
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+              <button class="btn btn-sm btn-primary"  id="of-all"       onclick="setOrderFilter('')">Todos</button>
+              <button class="btn btn-sm btn-ghost"    id="of-pending"   onclick="setOrderFilter('pending')">Pendiente</button>
+              <button class="btn btn-sm btn-ghost"    id="of-active"    onclick="setOrderFilter('active')">Activo</button>
+              <button class="btn btn-sm btn-ghost"    id="of-completed" onclick="setOrderFilter('completed')">Completado</button>
+              <button class="btn btn-sm btn-ghost"    id="of-partial"   onclick="setOrderFilter('partial')">Parcial</button>
+              <button class="btn btn-sm btn-ghost"    id="of-canceled"  onclick="setOrderFilter('canceled')">Cancelado</button>
+            </div>
+            <button class="btn btn-ghost btn-sm" id="sync-orders-btn" style="margin-left:auto">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg> Actualizar
+            </button>
+          </div>
+        </div>
         <div class="card">
           <div class="card-header flex items-center justify-between">
-            <span>Mis pedidos</span>
-            <button class="btn btn-ghost btn-sm" id="sync-orders-btn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg> Actualizar estados</button>
+            <span>Mis pedidos <span id="orders-count-label" style="font-size:13px;font-weight:400;color:var(--muted)"></span></span>
           </div>
           <div class="card-body" style="padding:0">
             <div class="table-wrap orders-table-wrap">
@@ -773,58 +789,108 @@ document.getElementById('place-order-btn').addEventListener('click', async () =>
 });
 
 // ── Orders page ───────────────────────────────────────
+let _orderFilter = '';
+function setOrderFilter(status) {
+  _orderFilter = status;
+  ['all','pending','active','completed','partial','canceled'].forEach(s => {
+    const btn = document.getElementById('of-' + (s === '' ? 'all' : s));
+    if (btn) btn.className = s === status ? 'btn btn-sm btn-primary' : 'btn btn-sm btn-ghost';
+  });
+  applyOrderFilters();
+}
+function applyOrderFilters() {
+  const q = (document.getElementById('orders-search').value || '').toLowerCase().trim();
+  let list = userOrders;
+  if (_orderFilter) list = list.filter(o => (o.status||'').toLowerCase() === _orderFilter);
+  if (q) list = list.filter(o => (o.serviceName||'').toLowerCase().includes(q) || o.id.includes(q));
+  renderOrdersTable(list);
+}
+
 async function loadOrdersPage() {
   const tbody = document.getElementById('orders-body');
   tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:24px;color:var(--muted)"><span class="spinner"></span></td></tr>';
-  const orders = await Orders.getForUser(currentUser.uid, 100);
+  const orders = await Orders.getForUser(currentUser.uid, 200);
   userOrders = orders;
-  renderOrdersTable(orders);
+  applyOrderFilters();
 }
 
 function renderOrdersTable(orders) {
   const tbody = document.getElementById('orders-body');
+  const label = document.getElementById('orders-count-label');
+  if (label) label.textContent = orders.length ? `(${orders.length})` : '';
   if (!orders.length) { tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:24px;color:var(--muted)">Sin pedidos aún</td></tr>'; return; }
   tbody.innerHTML = orders.map(o => `
     <tr>
       <td data-label="#" style="font-family:monospace;font-size:11px">${o.id.slice(0,8)}</td>
       <td data-label="Servicio">${o.serviceName||'—'}</td>
-      <td data-label="Enlace"><a href="${o.link}" target="_blank" style="font-size:12px;color:var(--blue);word-break:break-all">${o.link||'—'}</a></td>
+      <td data-label="Enlace"><a href="${o.link}" target="_blank" style="font-size:12px;color:var(--blue);word-break:break-all">${(o.link||'—').slice(0,30)}${(o.link||'').length>30?'…':''}</a></td>
       <td data-label="Cant.">${(o.quantity||0).toLocaleString()}</td>
       <td data-label="Costo">${formatUSD2(o.charge)}</td>
       <td data-label="Estado">${statusBadge(o.status)}</td>
       <td data-label="Fecha" style="color:var(--muted);font-size:12px">${formatDate(o.createdAt)}</td>
-      <td><button class="btn btn-ghost btn-sm" onclick="showOrderDetail('${o.id}')">Ver</button></td>
+      <td data-label=""><button class="btn btn-ghost btn-sm" onclick="showOrderDetail('${o.id}')">Ver</button></td>
     </tr>`).join('');
 }
 
 document.getElementById('sync-orders-btn').addEventListener('click', async () => {
   const btn = document.getElementById('sync-orders-btn');
-  btn.disabled = true; btn.textContent = 'Sincronizando...';
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>';
   try {
     await Orders.syncStatus(userOrders);
     await loadOrdersPage();
     toast('Estados actualizados', 'success');
   } catch(e) { toast('Error: ' + e.message, 'error'); }
-  btn.disabled = false; btn.innerHTML = 'Actualizar estados';
+  btn.disabled = false;
+  btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg> Actualizar';
 });
 
 function showOrderDetail(orderId) {
   const o = userOrders.find(x => x.id === orderId);
   if (!o) return;
+  const canRefill = o.refill && o.providerOrderId && ['completed','partial'].includes((o.status||'').toLowerCase());
+  const canCancel = o.cancel && o.providerOrderId && ['pending','active'].includes((o.status||'').toLowerCase());
   document.getElementById('order-detail-body').innerHTML = `
     <div class="service-info-box">
       <div class="info-row"><span class="info-label">ID</span><span class="info-val" style="font-family:monospace;font-size:12px">${o.id}</span></div>
       <div class="info-row"><span class="info-label">Servicio</span><span class="info-val">${o.serviceName}</span></div>
-      <div class="info-row"><span class="info-label">Enlace</span><span class="info-val"><a href="${o.link}" target="_blank">${o.link}</a></span></div>
+      <div class="info-row"><span class="info-label">Enlace</span><span class="info-val"><a href="${o.link}" target="_blank" style="word-break:break-all">${o.link}</a></span></div>
       <div class="info-row"><span class="info-label">Cantidad</span><span class="info-val">${(o.quantity||0).toLocaleString()}</span></div>
       <div class="info-row"><span class="info-label">Costo</span><span class="info-val">${formatUSD2(o.charge)}</span></div>
       <div class="info-row"><span class="info-label">Estado</span><span class="info-val">${statusBadge(o.status)}</span></div>
-      ${o.remains ? `<div class="info-row"><span class="info-label">Restantes</span><span class="info-val">${o.remains}</span></div>` : ''}
+      ${o.remains !== null && o.remains !== undefined ? `<div class="info-row"><span class="info-label">Restantes</span><span class="info-val">${o.remains}</span></div>` : ''}
+      ${o.startCount !== null && o.startCount !== undefined ? `<div class="info-row"><span class="info-label">Inicio</span><span class="info-val">${o.startCount}</span></div>` : ''}
       <div class="info-row"><span class="info-label">ID proveedor</span><span class="info-val" style="font-family:monospace">${o.providerOrderId||'—'}</span></div>
       <div class="info-row"><span class="info-label">Fecha</span><span class="info-val">${formatDate(o.createdAt)}</span></div>
     </div>
+    ${canRefill || canCancel ? `<div style="display:flex;gap:8px;margin-top:16px">
+      ${canRefill ? `<button class="btn btn-outline btn-sm" id="refill-btn-${o.id}" onclick="requestRefill('${o.id}','${o.providerOrderId}')">🔄 Solicitar Refill</button>` : ''}
+      ${canCancel ? `<button class="btn btn-danger btn-sm" id="cancel-btn-${o.id}" onclick="requestCancel('${o.id}','${o.providerOrderId}')">✕ Cancelar pedido</button>` : ''}
+    </div>` : ''}
   `;
   openModal('order-detail-modal');
+}
+
+async function requestRefill(orderId, providerOrderId) {
+  const btn = document.getElementById('refill-btn-' + orderId);
+  btn.disabled = true; btn.textContent = 'Solicitando...';
+  try {
+    await SmmAPI.refill(providerOrderId);
+    toast('Refill solicitado al proveedor', 'success');
+    btn.textContent = '✓ Refill solicitado';
+  } catch(e) { toast('Error: ' + e.message, 'error'); btn.disabled = false; btn.textContent = '🔄 Solicitar Refill'; }
+}
+
+async function requestCancel(orderId, providerOrderId) {
+  if (!confirm('¿Seguro que deseas cancelar este pedido?')) return;
+  const btn = document.getElementById('cancel-btn-' + orderId);
+  btn.disabled = true; btn.textContent = 'Cancelando...';
+  try {
+    await SmmAPI.cancel(providerOrderId);
+    await db.collection('orders').doc(orderId).update({ status: 'canceled' });
+    toast('Pedido cancelado', 'success');
+    closeModal('order-detail-modal');
+    await loadOrdersPage();
+  } catch(e) { toast('Error: ' + e.message, 'error'); btn.disabled = false; btn.textContent = '✕ Cancelar pedido'; }
 }
 
 // ── Add funds ─────────────────────────────────────────
