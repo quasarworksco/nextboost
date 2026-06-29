@@ -205,12 +205,8 @@ const Services = (() => {
       }).sort((a,b) => parseFloat(a.rate) - parseFloat(b.rate));
       return _cache;
     }
-    // fallback: no catalog yet
-    const snap = await db.collection('services').get();
-    if (snap.empty) return [];
-    _cache = snap.docs.map(d => ({ id: d.id, ...d.data() }))
-      .sort((a,b) => parseFloat(a.rate) - parseFloat(b.rate));
-    return _cache;
+    // No catalog configured — show nothing to clients
+    return [];
   }
 
   // Admin: sync services from provider API and save to Firestore
