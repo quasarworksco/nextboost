@@ -1189,6 +1189,61 @@ section .subtitle { text-align: center; color: var(--muted); margin-bottom: 52px
   .table-wrap { border-radius: 0; overflow-x: auto; }
 }
 
+/* ── Platform cards (landing page) ── */
+.platforms-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 16px;
+  margin-top: 32px;
+}
+.platform-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 16px 20px;
+  background: #fff;
+  border: 1.5px solid var(--border);
+  border-radius: 16px;
+  text-decoration: none;
+  color: var(--navy);
+  transition: transform .18s, box-shadow .18s, border-color .18s;
+  cursor: pointer;
+}
+.platform-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(67,97,238,.12);
+  border-color: var(--blue);
+}
+.platform-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+  flex-shrink: 0;
+}
+.platform-name {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 4px;
+  text-align: center;
+}
+.platform-sub {
+  font-size: 11px;
+  color: var(--muted);
+  text-align: center;
+  line-height: 1.4;
+}
+@media (max-width: 600px) {
+  .platforms-grid { grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .platform-card  { padding: 16px 8px 14px; border-radius: 12px; }
+  .platform-icon  { width: 42px; height: 42px; border-radius: 10px; }
+  .platform-name  { font-size: 12px; }
+  .platform-sub   { font-size: 10px; }
+}
+
 /* sidebar backdrop (JS adds this class) */
 .sidebar-backdrop { display: none; }
 

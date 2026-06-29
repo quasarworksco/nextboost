@@ -591,6 +591,12 @@ async function loadServices() {
     const categories = [...new Set(allServices.map(s => s.category))].sort();
     const catSel = document.getElementById('category-filter');
     categories.forEach(c => { const o = document.createElement('option'); o.value = c; o.textContent = c; catSel.appendChild(o); });
+    // Pre-select category from ?platform= URL param
+    const urlPlatform = new URLSearchParams(location.search).get('platform');
+    if (urlPlatform) {
+      const match = categories.find(c => c.toLowerCase().includes(urlPlatform.toLowerCase()));
+      if (match) { catSel.value = match; showSection('nueva-orden'); }
+    }
     filteredServices = allServices;
   } catch(e) { toast('Error cargando servicios: ' + e.message, 'error'); }
 }
