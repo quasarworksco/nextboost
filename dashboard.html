@@ -751,6 +751,10 @@ async function loadPaymentSettings() {
     const snap = await db.collection('settings').doc('main').get();
     paySettings = snap.exists ? snap.data() : {};
   } catch(e) { paySettings = {}; }
+  const min = parseFloat(paySettings.minRecharge) || 5;
+  const amountInput = document.getElementById('recharge-amount');
+  amountInput.min         = min;
+  amountInput.placeholder = min.toFixed(2);
   updatePaymentInstructions();
 }
 
@@ -847,7 +851,8 @@ document.getElementById('recharge-btn').addEventListener('click', async () => {
   const alertEl = document.getElementById('recharge-alert');
   alertEl.innerHTML = '';
 
-  if (!amount || amount < 5) { alertEl.innerHTML = '<div class="alert alert-error">El monto mínimo es $5.00</div>'; return; }
+  const minRecharge = parseFloat(paySettings.minRecharge) || 5;
+  if (!amount || amount < minRecharge) { alertEl.innerHTML = `<div class="alert alert-error">El monto mínimo es $${minRecharge.toFixed(2)}</div>`; return; }
 
   const btn = document.getElementById('recharge-btn');
   btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Enviando...';
