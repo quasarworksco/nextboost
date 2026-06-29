@@ -26,7 +26,7 @@ const APP = {
 // Store the real key in Firestore > settings/main.smmApiKey
 // to keep it out of public source code.
 const PROVIDER = {
-  url: "https://justanotherpanel.com/api",  // swap for any JAP-compatible panel
+  url: "https://justanotherpanel.com/api/v2",  // swap for any JAP-compatible panel
   // key is loaded from Firestore at runtime by admin setup
 };
 

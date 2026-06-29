@@ -46,19 +46,28 @@ const SmmAPI = (() => {
     return _call(params);
   }
 
-  // Get status of one or multiple orders
+  // Get status — single order uses `order`, multiple uses `orders`
   async function getStatus(orderIds) {
-    const ids = Array.isArray(orderIds) ? orderIds.join(',') : orderIds;
-    return _call({ action: 'status', orders: ids });
+    const arr = Array.isArray(orderIds) ? orderIds : [orderIds];
+    if (arr.length === 1) return _call({ action: 'status', order: arr[0] });
+    return _call({ action: 'status', orders: arr.join(',') });
   }
 
-  // Request refill
+  // Request refill — single uses `order`, multiple uses `orders`
   async function refill(orderIds) {
-    const ids = Array.isArray(orderIds) ? orderIds.join(',') : orderIds;
-    return _call({ action: 'refill', orders: ids });
+    const arr = Array.isArray(orderIds) ? orderIds : [orderIds];
+    if (arr.length === 1) return _call({ action: 'refill', order: arr[0] });
+    return _call({ action: 'refill', orders: arr.join(',') });
   }
 
-  // Cancel orders
+  // Get refill status
+  async function refillStatus(refillIds) {
+    const arr = Array.isArray(refillIds) ? refillIds : [refillIds];
+    if (arr.length === 1) return _call({ action: 'refill_status', refill: arr[0] });
+    return _call({ action: 'refill_status', refills: arr.join(',') });
+  }
+
+  // Cancel orders (always comma-separated list)
   async function cancel(orderIds) {
     const ids = Array.isArray(orderIds) ? orderIds.join(',') : orderIds;
     return _call({ action: 'cancel', orders: ids });
@@ -69,7 +78,7 @@ const SmmAPI = (() => {
     return _call({ action: 'balance' });
   }
 
-  return { init, getServices, addOrder, getStatus, refill, cancel, getBalance };
+  return { init, getServices, addOrder, getStatus, refill, refillStatus, cancel, getBalance };
 })();
 
 // ══════════════════════════════════════════════════════
@@ -159,14 +168,22 @@ const Orders = (() => {
     if (!orders.length) return;
     const withProvider = orders.filter(o => o.providerOrderId);
     if (!withProvider.length) return;
+
     const ids     = withProvider.map(o => o.providerOrderId);
+    // For multiple orders JAP returns { "providerId": { charge, status, ... } }
     const results = await SmmAPI.getStatus(ids);
-    const batch   = db.batch();
+
+    const batch = db.batch();
     withProvider.forEach(o => {
-      const r = results[o.providerOrderId];
+      // Single-order response has status directly; multi-order keyed by provider ID
+      const r = ids.length === 1 ? results : results[o.providerOrderId];
       if (r && !r.error) {
         const ref = db.collection('orders').doc(o.id);
-        batch.update(ref, { status: (r.status || 'pending').toLowerCase(), remains: r.remains, startCount: r.start_count });
+        batch.update(ref, {
+          status:     (r.status || 'pending').toLowerCase(),
+          remains:    r.remains    || null,
+          startCount: r.start_count || null,
+        });
       }
     });
     await batch.commit();
