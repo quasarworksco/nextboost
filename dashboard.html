@@ -253,9 +253,10 @@
                 <div class="form-group">
                   <label>Método de pago</label>
                   <select class="select" id="pay-method">
-                    <option value="binance">Binance Pay</option>
-                    <option value="zelle">Zelle</option>
-                    <option value="usdt">USDT TRC20</option>
+                    <option value="binance">Binance Pay — Instantáneo</option>
+                    <option value="zelle">Zelle — 1-2 horas</option>
+                    <option value="usdt">USDT TRC20 — Instantáneo</option>
+                    <option value="paypal">PayPal — A consultar</option>
                   </select>
                 </div>
                 <div class="form-group">
@@ -636,9 +637,10 @@ function showOrderDetail(orderId) {
 
 // ── Add funds ─────────────────────────────────────────
 const paymentDetails = {
-  binance: { title: '₿ Binance Pay', detail: 'ID Binance: <strong>XXXXXXXXX</strong><br>Envía exactamente el monto indicado y adjunta el ID de transacción.' },
-  zelle:   { title: '💵 Zelle', detail: 'Zelle: <strong>pagos@nextboost.io</strong><br>Nombre: NextBoost. Anota el número de confirmación.' },
-  usdt:    { title: '🪙 USDT TRC20', detail: 'Dirección: <strong>T...</strong><br>Red: TRC20 (Tron). Incluye el hash de la transacción.' },
+  binance: { title: 'Binance Pay', detail: 'ID Binance: <strong>XXXXXXXXX</strong><br>Envía exactamente el monto indicado y adjunta el ID de transacción.' },
+  zelle:   { title: 'Zelle', detail: 'Zelle: <strong>pagos@nextboost.io</strong><br>Nombre: NextBoost. Anota el número de confirmación.' },
+  usdt:    { title: 'USDT TRC20', detail: 'Dirección: <strong>T...</strong><br>Red: TRC20 (Tron). Incluye el hash de la transacción.' },
+  paypal:  { title: 'PayPal', detail: 'PayPal requiere coordinación previa. Escríbenos antes de realizar el pago para darte la cuenta correcta y evitar inconvenientes.' },
 };
 
 function initPaymentInstructions() {
@@ -659,8 +661,8 @@ document.getElementById('recharge-btn').addEventListener('click', async () => {
   const alertEl = document.getElementById('recharge-alert');
   alertEl.innerHTML = '';
 
-  if (!amount || amount < 5) { alertEl.innerHTML = '<div class="alert alert-error">❌ El monto mínimo es $5.00</div>'; return; }
-  if (!ref) { alertEl.innerHTML = '<div class="alert alert-error">❌ Ingresa la referencia de pago.</div>'; return; }
+  if (!amount || amount < 5) { alertEl.innerHTML = '<div class="alert alert-error">El monto mínimo es $5.00</div>'; return; }
+  if (!ref) { alertEl.innerHTML = '<div class="alert alert-error">Ingresa la referencia de pago.</div>'; return; }
 
   const btn = document.getElementById('recharge-btn');
   btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Enviando...';

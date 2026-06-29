@@ -195,7 +195,7 @@ const Services = (() => {
   async function syncFromProvider(markup) {
     const raw = await SmmAPI.getServices();
     // get existing doc IDs to know which are new
-    const existingSnap = await db.collection('services').select().get();
+    const existingSnap = await db.collection('services').get();
     const existingIds  = new Set(existingSnap.docs.map(d => d.id));
 
     for (let i = 0; i < raw.length; i += 400) {
