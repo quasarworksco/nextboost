@@ -22,12 +22,15 @@ const APP = {
   markup:   1.5,
 };
 
-// ── Provider API (JustAnotherPanel-compatible) ────────
-// Store the real key in Firestore > settings/main.smmApiKey
-// to keep it out of public source code.
+// ── Provider API — routed through Cloudflare Worker ──
+// The Worker holds the real JAP API key as a secret.
+// The browser NEVER sees the JAP key.
+//
+// After deploying the worker, paste its URL here:
+//   wrangler deploy  →  https://nexboost-api.<subdomain>.workers.dev
+// Or with custom domain: https://api.nexboost.io
 const PROVIDER = {
-  url: "https://justanotherpanel.com/api/v2",  // swap for any JAP-compatible panel
-  // key is loaded from Firestore at runtime by admin setup
+  url: "https://nexboost-api.YOUR_SUBDOMAIN.workers.dev",
 };
 
 // ── Firebase init ─────────────────────────────────────

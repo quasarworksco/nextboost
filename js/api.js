@@ -5,33 +5,16 @@
 // ══════════════════════════════════════════════════════
 
 const SmmAPI = (() => {
-  let _apiKey = null;
-  let _apiUrl = null;
-
-  // Load provider credentials from Firestore settings (admin-only doc)
-  async function init() {
-    try {
-      const snap = await db.collection('settings').doc('main').get();
-      if (snap.exists) {
-        const d = snap.data();
-        _apiKey = d.smmApiKey || null;
-        _apiUrl = d.smmApiUrl || PROVIDER.url;
-      }
-    } catch (e) {
-      console.warn('SmmAPI: could not load settings', e);
-    }
-  }
-
+  // The Cloudflare Worker injects the JAP key — we never send it from the browser.
   async function _call(params) {
-    if (!_apiKey) await init();
-    if (!_apiKey) throw new Error('API key not configured. Go to Admin > Settings.');
-
-    const body = new URLSearchParams({ key: _apiKey, ...params });
-    const res  = await fetch(_apiUrl, { method: 'POST', body });
+    const body = new URLSearchParams(params); // no 'key' — Worker adds it
+    const res  = await fetch(PROVIDER.url, { method: 'POST', body });
     const data = await res.json();
     if (data.error) throw new Error(data.error);
     return data;
   }
+
+  async function init() {} // no-op (kept for backward compatibility)
 
   // List all services from provider
   async function getServices() {

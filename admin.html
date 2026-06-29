@@ -238,19 +238,16 @@
       <div id="page-settings" class="page-section" style="display:none">
         <div class="grid-2" style="align-items:start">
           <div class="card">
-            <div class="card-header">Configuración del proveedor API</div>
+            <div class="card-header">Configuración del proveedor</div>
             <div class="card-body">
-              <div class="alert alert-warning mb-3">⚠️ Esta clave es privada. Solo el admin puede verla y modificarla.</div>
+              <div class="alert alert-success mb-3">✅ La API key de JAP vive en el <strong>Cloudflare Worker</strong> como secret — nunca llega al navegador.</div>
               <div class="form-group">
-                <label>URL del proveedor API</label>
-                <input type="url" class="input" id="settings-api-url" placeholder="https://justanotherpanel.com/api">
+                <label>URL del Worker (Cloudflare)</label>
+                <input type="url" class="input" id="settings-api-url" placeholder="https://nexboost-api.tu-subdomain.workers.dev">
+                <div style="font-size:12px;color:var(--muted);margin-top:4px">Actualiza también <code>PROVIDER.url</code> en <code>js/config.js</code></div>
               </div>
               <div class="form-group">
-                <label>API Key del proveedor</label>
-                <input type="text" class="input" id="settings-api-key" placeholder="Tu clave del proveedor">
-              </div>
-              <div class="form-group">
-                <label>Markup (ej: 1.5 = 50% ganancia)</label>
+                <label>Markup (ej: 1.5 = 50% ganancia sobre costo de JAP)</label>
                 <input type="number" class="input" id="settings-markup" placeholder="1.5" min="1" step="0.1">
               </div>
               <div id="settings-alert"></div>
@@ -590,7 +587,6 @@ async function loadSettings() {
 document.getElementById('save-settings-btn').addEventListener('click', async () => {
   const data = {
     smmApiUrl: document.getElementById('settings-api-url').value.trim(),
-    smmApiKey: document.getElementById('settings-api-key').value.trim(),
     markup:    parseFloat(document.getElementById('settings-markup').value) || 1.5,
     updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
   };
@@ -599,7 +595,6 @@ document.getElementById('save-settings-btn').addEventListener('click', async () 
     await db.collection('settings').doc('main').set(data, { merge: true });
     alertEl.innerHTML = '<div class="alert alert-success">✅ Configuración guardada.</div>';
     toast('Configuración guardada', 'success');
-    await SmmAPI.init();
     checkProviderBalance();
   } catch(e) { alertEl.innerHTML = `<div class="alert alert-error">❌ ${e.message}</div>`; }
 });
