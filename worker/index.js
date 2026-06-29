@@ -11,8 +11,7 @@
  * Worker forwards:   POST https://justanotherpanel.com/api/v2
  */
 
-const JAP_URL    = 'https://justanotherpanel.com/api/v2';
-const PANEL_URL  = 'https://nexboost.io'; // change to your domain
+const JAP_URL = 'https://justanotherpanel.com/api/v2';
 
 export default {
   async fetch(request, env) {
@@ -25,16 +24,6 @@ export default {
     if (request.method !== 'POST') {
       return cors(new Response(JSON.stringify({ error: 'Method not allowed' }), {
         status: 405, headers: { 'Content-Type': 'application/json' }
-      }));
-    }
-
-    // ── Verify the request comes from NexBoost ──────
-    // (Optional extra security — can be removed if hosting on same domain)
-    const origin = request.headers.get('Origin') || '';
-    const allowed = [PANEL_URL, 'https://nextboost.pages.dev', 'http://localhost', 'http://127.0.0.1'];
-    if (!allowed.some(a => origin.startsWith(a))) {
-      return cors(new Response(JSON.stringify({ error: 'Forbidden' }), {
-        status: 403, headers: { 'Content-Type': 'application/json' }
       }));
     }
 
