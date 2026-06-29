@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin — NextBoost</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="loading-overlay" id="loading-overlay">
+  <div class="logo" style="font-size:28px">Next<span>Boost</span></div>
+  <div class="spinner" style="width:32px;height:32px"></div>
+</div>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <a href="index.html" class="logo" style="text-decoration:none;display:block">Next<span>Boost</span></a>
+    <div class="sub">Panel Admin</div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section">
+      <div class="nav-section-title">Dashboard</div>
+      <div class="nav-item active" data-page="overview" data-title="Resumen" onclick="showPage('overview')">
+        <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg></span> Resumen
+      </div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-section-title">Gestión</div>
+      <div class="nav-item" data-page="recharges" data-title="Recargas" onclick="showPage('recharges');loadAdminRecharges()">
+        <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></span> Recargas
+        <span class="badge badge-pending ml-auto" id="pending-recharges-badge" style="display:none"></span>
+      </div>
+      <div class="nav-item" data-page="orders" data-title="Pedidos" onclick="showPage('orders');loadAdminOrders()">
+        <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg></span> Pedidos
+      </div>
+      <div class="nav-item" data-page="users" data-title="Usuarios" onclick="showPage('users');loadAdminUsers()">
+        <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span> Usuarios
+      </div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-section-title">Sistema</div>
+      <div class="nav-item" data-page="services" data-title="Servicios del proveedor" onclick="showPage('services');loadAdminServices()">
+        <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg></span> Servicios
+      </div>
+      <div class="nav-item" data-page="catalog" data-title="Mi Catálogo" onclick="showPage('catalog');loadCatalog()">
+        <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span> Mi Catálogo
+        <span class="badge badge-active ml-auto" id="catalog-count-badge" style="display:none"></span>
+      </div>
+      <div class="nav-item" data-page="settings" data-title="Configuración" onclick="showPage('settings');loadSettings()">
+        <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span> Configuración
+      </div>
+    </div>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="sidebar-user">
+      <div class="avatar">A</div>
+      <div class="user-info">
+        <div class="name" id="sidebar-name">Admin</div>
+        <div class="role">Administrador</div>
+      </div>
+    </div>
+    <div style="padding:8px 12px;display:flex;gap:8px">
+      <a href="dashboard.html" class="btn btn-ghost btn-sm" style="flex:1;justify-content:center">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Mi panel
+      </a>
+      <button class="btn btn-ghost btn-sm" onclick="signOut()" title="Cerrar sesión">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      </button>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="layout">
+  <div class="main-content">
+    <div class="topbar">
+      <div style="display:flex;align-items:center;gap:12px">
+        <button class="hamburger" id="hamburger">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+        <div class="topbar-title" id="page-title">Resumen</div>
+      </div>
+      <div class="topbar-right">
+        <div class="balance-chip">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle;margin-right:4px"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+          Proveedor: <span id="provider-balance">—</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="page">
+
+      <!-- ═══ OVERVIEW ═══ -->
+      <div id="page-overview" class="page-section">
+        <div class="grid-4 mb-4">
+          <div class="stat-card">
+            <div class="stat-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+            <div class="stat-value" id="stat-users">—</div>
+            <div class="stat-label">Usuarios registrados</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg></div>
+            <div class="stat-value" id="stat-orders">—</div>
+            <div class="stat-label">Pedidos totales</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+            <div class="stat-value" id="stat-revenue">—</div>
+            <div class="stat-label">Revenue total</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></div>
+            <div class="stat-value" id="stat-pending">—</div>
+            <div class="stat-label">Recargas pendientes</div>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header flex items-center justify-between">
+              <span>Recargas pendientes</span>
+              <button class="btn btn-ghost btn-sm" onclick="showPage('recharges');loadAdminRecharges()">Ver todas</button>
+            </div>
+            <div class="card-body" style="padding:0">
+              <div class="table-wrap">
+                <table>
+                  <thead><tr><th>Usuario</th><th>Monto</th><th>Método</th><th>Acción</th></tr></thead>
+                  <tbody id="overview-recharges-body">
+                    <tr><td colspan="4" style="text-align:center;padding:20px;color:var(--muted)">Cargando...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header">Pedidos recientes</div>
+            <div class="card-body" style="padding:0">
+              <div class="table-wrap">
+                <table>
+                  <thead><tr><th>Usuario</th><th>Servicio</th><th>Costo</th><th>Estado</th></tr></thead>
+                  <tbody id="overview-orders-body">
+                    <tr><td colspan="4" style="text-align:center;padding:20px;color:var(--muted)">Cargando...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ RECHARGES ═══ -->
+      <div id="page-recharges" class="page-section" style="display:none">
+        <div class="card">
+          <div class="card-header flex items-center justify-between">
+            <span>Solicitudes de recarga</span>
+            <div style="display:flex;gap:8px">
+              <select class="select" id="recharge-filter" style="width:160px" onchange="loadAdminRecharges()">
+                <option value="pending">Pendientes</option>
+                <option value="approved">Aprobadas</option>
+                <option value="rejected">Rechazadas</option>
+                <option value="">Todas</option>
+              </select>
+            </div>
+          </div>
+          <div class="card-body" style="padding:0">
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Usuario</th><th>Monto</th><th>Método</th><th>Referencia</th><th>Estado</th><th>Fecha</th><th>Acciones</th></tr></thead>
+                <tbody id="admin-recharges-body">
+                  <tr><td colspan="7" style="text-align:center;padding:24px;color:var(--muted)">Cargando...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ ORDERS ═══ -->
+      <div id="page-orders" class="page-section" style="display:none">
+        <div class="card">
+          <div class="card-header flex items-center justify-between">
+            <span>Todos los pedidos</span>
+            <button class="btn btn-ghost btn-sm" onclick="syncAllOrders()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg> Sincronizar estados</button>
+          </div>
+          <div class="card-body" style="padding:0">
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>#</th><th>Usuario</th><th>Servicio</th><th>Cant.</th><th>Costo</th><th>Estado</th><th>Fecha</th></tr></thead>
+                <tbody id="admin-orders-body">
+                  <tr><td colspan="7" style="text-align:center;padding:24px;color:var(--muted)">Cargando...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ USERS ═══ -->
+      <div id="page-users" class="page-section" style="display:none">
+        <div class="card mb-3">
+          <div class="card-body">
+            <div style="display:flex;gap:10px">
+              <input type="text" class="input" id="user-search" placeholder="Buscar por nombre o email..." style="max-width:320px" oninput="filterUsers(this.value)">
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-body" style="padding:0">
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Nombre</th><th>Email</th><th>Saldo</th><th>Rol</th><th>Registrado</th><th>Acciones</th></tr></thead>
+                <tbody id="admin-users-body">
+                  <tr><td colspan="6" style="text-align:center;padding:24px;color:var(--muted)">Cargando...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ SERVICES ═══ -->
+      <div id="page-services" class="page-section" style="display:none">
+        <!-- Sync bar -->
+        <div class="card mb-3">
+          <div class="card-body" style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+            <button class="btn btn-primary" id="sync-services-btn" onclick="syncProviderServices()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+              Sincronizar del proveedor
+            </button>
+            <div id="sync-status" style="font-size:13px;color:var(--muted)"></div>
+            <div style="margin-left:auto;font-size:13px;color:var(--muted)">
+              <span id="svc-count-active" style="color:var(--blue);font-weight:700">0</span> activos /
+              <span id="svc-count-total">0</span> total
+            </div>
+          </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="card mb-3">
+          <div class="card-body" style="display:flex;gap:12px;flex-wrap:wrap;align-items:center">
+            <input type="text" class="input" id="svc-search" placeholder="Buscar servicio..." style="max-width:280px" oninput="renderServicesTable()">
+            <select class="select" id="svc-category" style="max-width:220px" onchange="renderServicesTable()">
+              <option value="">Todas las categorías</option>
+            </select>
+            <select class="select" id="svc-sort" style="max-width:180px" onchange="renderServicesTable()">
+              <option value="price-asc">Precio: menor a mayor</option>
+              <option value="price-desc">Precio: mayor a menor</option>
+              <option value="name-asc">Nombre A-Z</option>
+              <option value="active">Solo activos</option>
+            </select>
+            <button class="btn btn-ghost btn-sm" onclick="toggleAllServices(true)">Activar todos</button>
+            <button class="btn btn-ghost btn-sm" onclick="toggleAllServices(false)">Desactivar todos</button>
+          </div>
+        </div>
+
+        <!-- Table -->
+        <div class="card">
+          <div class="card-body" style="padding:0">
+            <div class="table-wrap">
+              <table id="services-table">
+                <thead>
+                  <tr>
+                    <th style="width:80px">Catálogo</th>
+                    <th style="width:60px">ID</th>
+                    <th>Nombre proveedor</th>
+                    <th style="width:150px">Categoría</th>
+                    <th style="width:110px">Costo prov.</th>
+                    <th style="width:130px">Precio/1k</th>
+                    <th style="width:60px">Mín</th>
+                    <th style="width:60px">Máx</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-services-body">
+                  <tr><td colspan="8" style="text-align:center;padding:32px;color:var(--muted)">Sin servicios — sincroniza primero</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ CATALOG ═══ -->
+      <div id="page-catalog" class="page-section" style="display:none">
+        <div class="card mb-3">
+          <div class="card-body" style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+            <div>
+              <div style="font-size:15px;font-weight:700;color:var(--navy)">Mi Catálogo de Servicios</div>
+              <div style="font-size:13px;color:var(--muted);margin-top:2px">Servicios que ofreces a tus clientes con tu nombre y precio personalizado.</div>
+            </div>
+            <div style="margin-left:auto;display:flex;align-items:center;gap:12px">
+              <span style="font-size:13px;color:var(--muted)"><span id="catalog-total" style="color:var(--blue);font-weight:700">0</span> servicios activos</span>
+              <button class="btn btn-primary btn-sm" id="save-catalog-btn" onclick="saveCatalog()" style="display:none">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                Guardar cambios
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Category filter for catalog -->
+        <div class="card mb-3">
+          <div class="card-body" style="display:flex;gap:12px;flex-wrap:wrap;align-items:center">
+            <input type="text" class="input" id="cat-search" placeholder="Buscar en catálogo..." style="max-width:260px" oninput="renderCatalog()">
+            <select class="select" id="cat-category" style="max-width:220px" onchange="renderCatalog()">
+              <option value="">Todas las categorías</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-body" style="padding:0">
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th style="width:50px">ID</th>
+                    <th style="min-width:200px">Nombre para el cliente</th>
+                    <th style="min-width:160px">Categoría visible</th>
+                    <th style="width:120px">Precio/1k</th>
+                    <th style="width:70px">Mín</th>
+                    <th style="width:70px">Máx</th>
+                    <th style="width:50px"></th>
+                  </tr>
+                </thead>
+                <tbody id="catalog-body">
+                  <tr><td colspan="7" style="text-align:center;padding:32px;color:var(--muted)">No hay servicios en el catálogo. Ve a "Servicios" y agrega los que quieras ofrecer.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ SETTINGS ═══ -->
+      <div id="page-settings" class="page-section" style="display:none">
+        <div class="grid-2" style="align-items:start">
+          <div class="card">
+            <div class="card-header">Configuración del proveedor</div>
+            <div class="card-body">
+              <div class="alert alert-success mb-3">API key segura en <strong>Cloudflare Worker</strong> — nunca visible en el navegador.</div>
+              <div class="form-group">
+                <label>Worker URL <span style="color:var(--green);font-size:11px">● Activo</span></label>
+                <input type="url" class="input" id="settings-api-url" readonly style="opacity:.6;cursor:default" tabindex="-1">
+              </div>
+              <div class="form-group">
+                <label>Markup de precios (ej: 1.5 = 50% de ganancia)</label>
+                <input type="number" class="input" id="settings-markup" placeholder="1.5" min="1.0" step="0.1">
+                <div style="font-size:12px;color:var(--muted);margin-top:4px">Se aplica al sincronizar servicios desde el proveedor.</div>
+              </div>
+              <div id="settings-alert"></div>
+              <button class="btn btn-primary" id="save-settings-btn">Guardar markup</button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header">Métodos de pago</div>
+            <div class="card-body">
+              <div class="form-group">
+                <label>Binance Pay ID</label>
+                <input type="text" class="input" id="settings-binance" placeholder="Tu Binance Pay ID">
+              </div>
+              <div class="form-group">
+                <label>Zelle (email o teléfono)</label>
+                <input type="text" class="input" id="settings-zelle" placeholder="tu@email.com">
+              </div>
+              <div class="form-group">
+                <label>Dirección USDT TRC20</label>
+                <input type="text" class="input" id="settings-usdt" placeholder="T...">
+              </div>
+              <button class="btn btn-primary" id="save-payments-btn">Guardar pagos</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- MODALS -->
+<!-- Adjust balance modal -->
+<div class="modal-overlay" id="balance-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <span>Ajustar saldo</span>
+      <button class="modal-close">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Usuario: <strong id="balance-modal-user"></strong></label>
+      </div>
+      <div class="form-group">
+        <label>Nuevo saldo (USD)</label>
+        <input type="number" class="input" id="balance-modal-amount" placeholder="0.00" step="0.01" min="0">
+      </div>
+      <div id="balance-modal-alert"></div>
+      <div style="display:flex;gap:10px;margin-top:8px">
+        <button class="btn btn-primary btn-full" id="balance-modal-btn">Aplicar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="js/config.js"></script>
+<script src="js/app.js"></script>
+<script src="js/api.js"></script>
+<script>
+let adminUser = null;
+let allUsers  = [];
+let allOrders = [];
+let allRecharges = [];
+
+requireAdmin(async (user, data) => {
+  adminUser = user;
+  document.getElementById('sidebar-name').textContent = data.name || user.email;
+  document.getElementById('loading-overlay').style.display = 'none';
+  initSidebar();
+  loadOverview();
+  checkProviderBalance();
+  watchPendingRecharges();
+});
+
+// ── Overview ──────────────────────────────────────────
+async function loadOverview() {
+  const [usersSnap, ordersSnap, rechargesSnap] = await Promise.all([
+    db.collection('users').get(),
+    db.collection('orders').orderBy('createdAt','desc').limit(200).get(),
+    db.collection('recharges').where('status','==','pending').get(),
+  ]);
+
+  document.getElementById('stat-users').textContent   = usersSnap.size;
+  document.getElementById('stat-orders').textContent  = ordersSnap.size;
+  document.getElementById('stat-pending').textContent = rechargesSnap.size;
+
+  const revenue = ordersSnap.docs.reduce((s, d) => s + (d.data().charge || 0), 0);
+  document.getElementById('stat-revenue').textContent = formatUSD2(revenue);
+
+  // Pending recharges
+  const pendingDocs = rechargesSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+  const rechargesTbody = document.getElementById('overview-recharges-body');
+  if (!pendingDocs.length) {
+    rechargesTbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--muted)">Sin recargas pendientes</td></tr>';
+  } else {
+    rechargesTbody.innerHTML = pendingDocs.slice(0,5).map(r => `
+      <tr>
+        <td>${r.userName || r.userEmail}</td>
+        <td><strong>${formatUSD2(r.amount)}</strong></td>
+        <td>${r.method}</td>
+        <td>
+          <button class="btn btn-success btn-sm" onclick="approveRecharge('${r.id}','${r.userId}',${r.amount})">✓</button>
+          <button class="btn btn-danger btn-sm" onclick="rejectRecharge('${r.id}')">✗</button>
+        </td>
+      </tr>`).join('');
+  }
+
+  // Recent orders
+  const recentOrders = ordersSnap.docs.slice(0,5).map(d => ({ id: d.id, ...d.data() }));
+  const ordersTbody  = document.getElementById('overview-orders-body');
+  if (!recentOrders.length) {
+    ordersTbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--muted)">Sin pedidos</td></tr>';
+  } else {
+    ordersTbody.innerHTML = recentOrders.map(o => `
+      <tr>
+        <td style="font-size:12px">${o.userEmail || o.userId?.slice(0,8)}</td>
+        <td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${o.serviceName||'—'}</td>
+        <td>${formatUSD2(o.charge)}</td>
+        <td>${statusBadge(o.status)}</td>
+      </tr>`).join('');
+  }
+}
+
+// ── Provider balance ──────────────────────────────────
+async function checkProviderBalance() {
+  try {
+    const res = await SmmAPI.getBalance();
+    document.getElementById('provider-balance').textContent = formatUSD2(res.balance);
+  } catch(e) { document.getElementById('provider-balance').textContent = '$—'; }
+}
+
+// ── Pending badge ─────────────────────────────────────
+function watchPendingRecharges() {
+  db.collection('recharges').where('status','==','pending').onSnapshot(snap => {
+    const badge = document.getElementById('pending-recharges-badge');
+    if (snap.size > 0) { badge.textContent = snap.size; badge.style.display = 'inline-flex'; }
+    else { badge.style.display = 'none'; }
+  });
+}
+
+// ── Recharges ─────────────────────────────────────────
+async function loadAdminRecharges() {
+  const filter = document.getElementById('recharge-filter').value;
+  const tbody  = document.getElementById('admin-recharges-body');
+  tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px"><span class="spinner"></span></td></tr>';
+
+  try {
+    // Filter first, then orderBy — avoids requiring a composite index in Firestore
+    let query = db.collection('recharges').where('status','==',filter).orderBy('createdAt','desc').limit(100);
+    const snap = await query.get();
+    allRecharges = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  } catch (err) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--muted)">Error al cargar: ${err.message}</td></tr>`;
+    return;
+  }
+
+  if (!allRecharges.length) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--muted)">Sin registros</td></tr>';
+    return;
+  }
+  tbody.innerHTML = allRecharges.map(r => `
+    <tr>
+      <td>${r.userName || '—'}<br><span style="font-size:11px;color:var(--muted)">${r.userEmail || ''}</span></td>
+      <td><strong>${formatUSD2(r.amount)}</strong></td>
+      <td>${r.method}</td>
+      <td style="font-family:monospace;font-size:12px;max-width:160px;overflow:hidden;text-overflow:ellipsis">${r.reference}</td>
+      <td>${statusBadge(r.status)}</td>
+      <td style="color:var(--muted);font-size:12px">${formatDate(r.createdAt)}</td>
+      <td>
+        ${r.status === 'pending' ? `
+          <button class="btn btn-success btn-sm" onclick="approveRecharge('${r.id}','${r.userId}',${r.amount})">✓ Aprobar</button>
+          <button class="btn btn-danger btn-sm" onclick="rejectRecharge('${r.id}')">✗ Rechazar</button>
+        ` : '—'}
+      </td>
+    </tr>`).join('');
+}
+
+async function approveRecharge(rechargeId, userId, amount) {
+  if (!confirm(`¿Aprobar recarga de ${formatUSD2(amount)}?`)) return;
+  const batch = db.batch();
+  batch.update(db.collection('recharges').doc(rechargeId), { status: 'approved', approvedAt: firebase.firestore.FieldValue.serverTimestamp(), approvedBy: adminUser.uid });
+  batch.update(db.collection('users').doc(userId), { balance: firebase.firestore.FieldValue.increment(amount) });
+  await batch.commit();
+  toast(`Recarga de ${formatUSD2(amount)} aprobada`, 'success');
+  loadAdminRecharges();
+  loadOverview();
+}
+
+async function rejectRecharge(rechargeId) {
+  if (!confirm('¿Rechazar esta recarga?')) return;
+  await db.collection('recharges').doc(rechargeId).update({ status: 'rejected', rejectedAt: firebase.firestore.FieldValue.serverTimestamp() });
+  toast('Recarga rechazada', 'info');
+  loadAdminRecharges();
+}
+
+// ── Orders ────────────────────────────────────────────
+async function loadAdminOrders() {
+  const tbody = document.getElementById('admin-orders-body');
+  tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px"><span class="spinner"></span></td></tr>';
+  const snap = await db.collection('orders').orderBy('createdAt','desc').limit(200).get();
+  allOrders = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  tbody.innerHTML = allOrders.map(o => `
+    <tr>
+      <td style="font-family:monospace;font-size:11px">${o.id.slice(0,8)}</td>
+      <td style="font-size:12px">${o.userId?.slice(0,10)}...</td>
+      <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${o.serviceName||'—'}</td>
+      <td>${(o.quantity||0).toLocaleString()}</td>
+      <td>${formatUSD2(o.charge)}</td>
+      <td>${statusBadge(o.status)}</td>
+      <td style="color:var(--muted);font-size:12px">${formatDate(o.createdAt)}</td>
+    </tr>`).join('') || '<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--muted)">Sin pedidos</td></tr>';
+}
+
+async function syncAllOrders() {
+  const btn = document.querySelector('[onclick="syncAllOrders()"]');
+  btn.disabled = true; btn.textContent = 'Sincronizando...';
+  try {
+    await Orders.syncStatus(allOrders);
+    await loadAdminOrders();
+    toast('Estados sincronizados', 'success');
+  } catch(e) { toast('Error: ' + e.message, 'error'); }
+  btn.disabled = false; btn.innerHTML = 'Sincronizar estados';
+}
+
+// ── Users ─────────────────────────────────────────────
+async function loadAdminUsers() {
+  const tbody = document.getElementById('admin-users-body');
+  tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px"><span class="spinner"></span></td></tr>';
+  const snap = await db.collection('users').orderBy('createdAt','desc').get();
+  allUsers = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  renderUsersTable(allUsers);
+}
+
+function renderUsersTable(users) {
+  const tbody = document.getElementById('admin-users-body');
+  if (!users.length) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--muted)">Sin usuarios</td></tr>'; return; }
+  tbody.innerHTML = users.map(u => `
+    <tr>
+      <td>${u.name || '—'}</td>
+      <td style="font-size:13px">${u.email || '—'}</td>
+      <td><strong>${formatUSD2(u.balance)}</strong></td>
+      <td>${u.role === 'admin' ? '<span class="badge badge-admin">Admin</span>' : '<span class="badge badge-active">Usuario</span>'}</td>
+      <td style="color:var(--muted);font-size:12px">${formatDate(u.createdAt)}</td>
+      <td>
+        <button class="btn btn-ghost btn-sm" onclick="openBalanceModal('${u.id}','${u.name || u.email}',${u.balance||0})">💰 Saldo</button>
+        <button class="btn btn-ghost btn-sm" onclick="toggleRole('${u.id}','${u.role}')">${u.role==='admin'?'Usuario':'Admin'}</button>
+      </td>
+    </tr>`).join('');
+}
+
+function filterUsers(q) {
+  const filtered = allUsers.filter(u =>
+    (u.name||'').toLowerCase().includes(q.toLowerCase()) ||
+    (u.email||'').toLowerCase().includes(q.toLowerCase())
+  );
+  renderUsersTable(filtered);
+}
+
+let _balanceModalUserId = null;
+function openBalanceModal(uid, name, current) {
+  _balanceModalUserId = uid;
+  document.getElementById('balance-modal-user').textContent = name;
+  document.getElementById('balance-modal-amount').value = parseFloat(current).toFixed(2);
+  document.getElementById('balance-modal-alert').innerHTML = '';
+  openModal('balance-modal');
+}
+
+document.getElementById('balance-modal-btn').addEventListener('click', async () => {
+  const amount = parseFloat(document.getElementById('balance-modal-amount').value);
+  if (isNaN(amount) || amount < 0) { document.getElementById('balance-modal-alert').innerHTML = '<div class="alert alert-error">Monto inválido</div>'; return; }
+  await db.collection('users').doc(_balanceModalUserId).update({ balance: amount });
+  toast('Saldo actualizado', 'success');
+  closeModal('balance-modal');
+  loadAdminUsers();
+});
+
+async function toggleRole(uid, currentRole) {
+  const newRole = currentRole === 'admin' ? 'user' : 'admin';
+  if (!confirm(`¿Cambiar rol a "${newRole}"?`)) return;
+  await db.collection('users').doc(uid).update({ role: newRole });
+  toast(`Rol cambiado a ${newRole}`, 'success');
+  loadAdminUsers();
+}
+
+// ── Services ──────────────────────────────────────────
+let allAdminServices   = [];
+let pendingPriceChanges = {};
+let catalogMap         = {};  // docId → catalog entry
+let pendingCatalogChanges = {};  // docId → {displayName, displayCategory, rate}
+
+async function loadAdminServices() {
+  const tbody = document.getElementById('admin-services-body');
+  tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:32px"><span class="spinner"></span></td></tr>';
+  try {
+    const [svcSnap, catSnap] = await Promise.all([
+      db.collection('services').orderBy('category').orderBy('name').get(),
+      db.collection('catalog').get(),
+    ]);
+    allAdminServices = svcSnap.docs.map(d => ({ docId: d.id, ...d.data() }));
+    catalogMap = {};
+    catSnap.docs.forEach(d => { catalogMap[d.id] = { docId: d.id, ...d.data() }; });
+  } catch(e) {
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:24px;color:var(--muted)">Error: ${e.message}</td></tr>`;
+    return;
+  }
+  pendingPriceChanges = {};
+  populateCategoryFilter();
+  renderServicesTable();
+  updateCatalogBadge();
+}
+
+function populateCategoryFilter() {
+  const cats = [...new Set(allAdminServices.map(s => s.category).filter(Boolean))].sort();
+  const sel = document.getElementById('svc-category');
+  sel.innerHTML = '<option value="">Todas las categorías</option>' +
+    cats.map(c => `<option value="${c}">${c}</option>`).join('');
+}
+
+function renderServicesTable() {
+  const q    = (document.getElementById('svc-search')?.value || '').toLowerCase();
+  const cat  = document.getElementById('svc-category')?.value || '';
+  const sort = document.getElementById('svc-sort')?.value || 'price-asc';
+
+  let list = allAdminServices.filter(s => {
+    if (cat && s.category !== cat) return false;
+    if (sort === 'active' && !s.active) return false;
+    if (q && !(s.name||'').toLowerCase().includes(q) && !(s.category||'').toLowerCase().includes(q)) return false;
+    return true;
+  });
+
+  if (sort === 'price-asc')  list.sort((a,b) => (a.rate||0) - (b.rate||0));
+  if (sort === 'price-desc') list.sort((a,b) => (b.rate||0) - (a.rate||0));
+  if (sort === 'name-asc')   list.sort((a,b) => (a.name||'').localeCompare(b.name||''));
+
+  document.getElementById('svc-count-total').textContent  = allAdminServices.length;
+  document.getElementById('svc-count-active').textContent = allAdminServices.filter(s=>s.active).length;
+
+  const tbody = document.getElementById('admin-services-body');
+  if (!list.length) {
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:32px;color:var(--muted)">Sin resultados</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = list.map(s => {
+    const inCatalog = !!catalogMap[s.docId];
+    return `
+    <tr id="svc-row-${s.id}">
+      <td style="text-align:center">
+        ${inCatalog
+          ? `<span style="font-size:11px;font-weight:600;color:var(--blue);background:var(--blue-xs);padding:3px 8px;border-radius:20px">En catálogo</span>`
+          : `<button class="btn btn-ghost btn-sm" style="white-space:nowrap;font-size:11px" onclick="addToCatalog('${s.docId}')">+ Agregar</button>`
+        }
+      </td>
+      <td style="font-family:monospace;font-size:11px;color:var(--muted)">${s.id}</td>
+      <td style="min-width:220px;white-space:normal;line-height:1.4;font-size:13px">${s.name}</td>
+      <td style="font-size:12px;color:var(--muted)">${s.category}</td>
+      <td style="font-size:12px;color:var(--muted)">$${parseFloat(s.providerRate||s.rate||0).toFixed(4)}</td>
+      <td>
+        <div style="display:flex;align-items:center;gap:6px">
+          <span style="font-size:11px;color:var(--muted)">$</span>
+          <input type="number" value="${parseFloat(s.rate||0).toFixed(4)}" step="0.0001" min="0"
+            style="width:90px;padding:4px 8px;border:1.5px solid var(--border);border-radius:6px;font-size:12px;outline:none"
+            onfocus="this.style.borderColor='var(--blue)'" onblur="this.style.borderColor='var(--border)'"
+            onchange="markPriceChange('${s.docId}', this.value)">
+        </div>
+      </td>
+      <td style="font-size:12px">${(s.min||0).toLocaleString()}</td>
+      <td style="font-size:12px">${(s.max||0).toLocaleString()}</td>
+    </tr>`;
+  }).join('');
+}
+
+function markPriceChange(docId, value) {
+  pendingPriceChanges[docId] = parseFloat(value);
+  // show save button hint if not visible
+  let saveBtn = document.getElementById('save-prices-btn');
+  if (!saveBtn) {
+    saveBtn = document.createElement('button');
+    saveBtn.id = 'save-prices-btn';
+    saveBtn.className = 'btn btn-primary btn-sm';
+    saveBtn.textContent = 'Guardar precios';
+    saveBtn.onclick = savePendingPrices;
+    document.getElementById('sync-status').after(saveBtn);
+  }
+  saveBtn.style.display = '';
+}
+
+async function savePendingPrices() {
+  const entries = Object.entries(pendingPriceChanges);
+  if (!entries.length) return;
+  const btn = document.getElementById('save-prices-btn');
+  btn.disabled = true; btn.textContent = 'Guardando...';
+  const batch = db.batch();
+  for (const [docId, rate] of entries) {
+    batch.update(db.collection('services').doc(docId), { rate });
+    const svc = allAdminServices.find(s => s.docId === docId);
+    if (svc) svc.rate = rate;
+  }
+  await batch.commit();
+  pendingPriceChanges = {};
+  btn.style.display = 'none';
+  toast(`${entries.length} precios guardados`, 'success');
+}
+
+async function toggleService(docId, active) {
+  await db.collection('services').doc(docId).update({ active });
+  const svc = allAdminServices.find(s => s.docId === docId);
+  if (svc) svc.active = active;
+  document.getElementById('svc-count-active').textContent = allAdminServices.filter(s=>s.active).length;
+}
+
+async function toggleAllServices(active) {
+  if (!confirm(`¿${active ? 'Activar' : 'Desactivar'} todos los servicios visibles?`)) return;
+  const q    = (document.getElementById('svc-search')?.value || '').toLowerCase();
+  const cat  = document.getElementById('svc-category')?.value || '';
+  const list = allAdminServices.filter(s => {
+    if (cat && s.category !== cat) return false;
+    if (q && !(s.name||'').toLowerCase().includes(q)) return false;
+    return true;
+  });
+  // batch in chunks of 500
+  for (let i = 0; i < list.length; i += 400) {
+    const batch = db.batch();
+    list.slice(i, i+400).forEach(s => batch.update(db.collection('services').doc(s.docId), { active }));
+    await batch.commit();
+    list.slice(i, i+400).forEach(s => s.active = active);
+  }
+  renderServicesTable();
+  toast(`${list.length} servicios ${active ? 'activados' : 'desactivados'}`, 'success');
+}
+
+async function syncProviderServices() {
+  const btn = document.getElementById('sync-services-btn');
+  const status = document.getElementById('sync-status');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Sincronizando...';
+  status.innerHTML = '';
+  try {
+    const settingsSnap = await db.collection('settings').doc('main').get();
+    const markup = (settingsSnap.exists && settingsSnap.data().markup) ? settingsSnap.data().markup : APP.markup;
+    const count = await Services.syncFromProvider(markup);
+    status.innerHTML = `<span style="color:var(--green)">${count} servicios sincronizados</span>`;
+    toast(`${count} servicios sincronizados`, 'success');
+    loadAdminServices();
+  } catch(e) {
+    status.innerHTML = `<span style="color:var(--red)">${e.message}</span>`;
+    toast('Error: ' + e.message, 'error');
+  }
+  btn.disabled = false;
+  btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg> Sincronizar del proveedor';
+}
+
+// ── Catalog ───────────────────────────────────────────
+function updateCatalogBadge() {
+  const count = Object.keys(catalogMap).length;
+  const badge = document.getElementById('catalog-count-badge');
+  if (badge) { badge.textContent = count; badge.style.display = count ? '' : 'none'; }
+  const totalEl = document.getElementById('catalog-total');
+  if (totalEl) totalEl.textContent = count;
+}
+
+function addToCatalog(docId) {
+  const svc = allAdminServices.find(s => s.docId === docId);
+  if (!svc || catalogMap[docId]) return;
+  // add to local map immediately with defaults
+  catalogMap[docId] = {
+    docId,
+    serviceId:       svc.id,
+    displayName:     svc.name,
+    displayCategory: svc.category,
+    rate:            svc.rate,
+    providerRate:    svc.providerRate || svc.rate,
+    min:             svc.min,
+    max:             svc.max,
+    type:            svc.type,
+    refill:          svc.refill,
+    cancel:          svc.cancel,
+  };
+  pendingCatalogChanges[docId] = { ...catalogMap[docId], _new: true };
+  renderServicesTable();
+  updateCatalogBadge();
+  showSaveCatalogBtn();
+  toast(`"${svc.name.slice(0,40)}..." agregado al catálogo`, 'success');
+}
+
+function removeFromCatalog(docId) {
+  if (!catalogMap[docId]) return;
+  delete catalogMap[docId];
+  pendingCatalogChanges[docId] = { _delete: true };
+  renderCatalog();
+  renderServicesTable();
+  updateCatalogBadge();
+  showSaveCatalogBtn();
+}
+
+function showSaveCatalogBtn() {
+  const btn = document.getElementById('save-catalog-btn');
+  if (btn) btn.style.display = '';
+}
+
+function markCatalogChange(docId, field, value) {
+  if (!catalogMap[docId]) return;
+  catalogMap[docId][field] = value;
+  if (!pendingCatalogChanges[docId]) pendingCatalogChanges[docId] = {};
+  pendingCatalogChanges[docId][field] = value;
+  showSaveCatalogBtn();
+}
+
+async function loadCatalog() {
+  if (!Object.keys(catalogMap).length) {
+    // first load or coming from a different page
+    const snap = await db.collection('catalog').get();
+    catalogMap = {};
+    snap.docs.forEach(d => { catalogMap[d.id] = { docId: d.id, ...d.data() }; });
+  }
+  pendingCatalogChanges = {};
+  const cats = [...new Set(Object.values(catalogMap).map(s => s.displayCategory).filter(Boolean))].sort();
+  const sel = document.getElementById('cat-category');
+  if (sel) {
+    sel.innerHTML = '<option value="">Todas las categorías</option>' +
+      cats.map(c => `<option value="${c}">${c}</option>`).join('');
+  }
+  updateCatalogBadge();
+  renderCatalog();
+}
+
+function renderCatalog() {
+  const q   = (document.getElementById('cat-search')?.value || '').toLowerCase();
+  const cat = document.getElementById('cat-category')?.value || '';
+  const tbody = document.getElementById('catalog-body');
+  if (!tbody) return;
+
+  let list = Object.values(catalogMap).filter(s => {
+    if (cat && s.displayCategory !== cat) return false;
+    if (q && !(s.displayName||'').toLowerCase().includes(q) && !(s.displayCategory||'').toLowerCase().includes(q)) return false;
+    return true;
+  }).sort((a,b) => (a.displayCategory||'').localeCompare(b.displayCategory||'') || (a.displayName||'').localeCompare(b.displayName||''));
+
+  if (!list.length) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--muted)">${
+      Object.keys(catalogMap).length ? 'Sin resultados para esa búsqueda.' : 'Catálogo vacío — ve a Servicios y agrega los que quieras ofrecer.'
+    }</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = list.map(s => `
+    <tr>
+      <td style="font-family:monospace;font-size:11px;color:var(--muted)">${s.serviceId}</td>
+      <td>
+        <input type="text" class="catalog-input" value="${(s.displayName||'').replace(/"/g,'&quot;')}"
+          placeholder="Nombre para el cliente"
+          onchange="markCatalogChange('${s.docId}','displayName',this.value)"
+          title="Nombre que verán tus clientes">
+      </td>
+      <td>
+        <input type="text" class="catalog-input" value="${(s.displayCategory||'').replace(/"/g,'&quot;')}"
+          placeholder="Categoría (ej: Instagram · Seguidores)"
+          onchange="markCatalogChange('${s.docId}','displayCategory',this.value)">
+      </td>
+      <td>
+        <div style="display:flex;align-items:center;gap:4px">
+          <span style="font-size:11px;color:var(--muted)">$</span>
+          <input type="number" class="catalog-input" style="width:88px" value="${parseFloat(s.rate||0).toFixed(4)}" step="0.0001" min="0"
+            onchange="markCatalogChange('${s.docId}','rate',parseFloat(this.value))">
+        </div>
+      </td>
+      <td style="font-size:12px">${(s.min||0).toLocaleString()}</td>
+      <td style="font-size:12px">${(s.max||0).toLocaleString()}</td>
+      <td style="text-align:center">
+        <button onclick="removeFromCatalog('${s.docId}')" title="Quitar del catálogo"
+          style="background:none;border:none;cursor:pointer;color:var(--muted);padding:4px 6px;border-radius:4px;transition:color .15s"
+          onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='var(--muted)'">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+        </button>
+      </td>
+    </tr>`).join('');
+}
+
+async function saveCatalog() {
+  const entries = Object.entries(pendingCatalogChanges);
+  if (!entries.length) return;
+  const btn = document.getElementById('save-catalog-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Guardando...';
+
+  for (let i = 0; i < entries.length; i += 400) {
+    const batch = db.batch();
+    entries.slice(i, i + 400).forEach(([docId, changes]) => {
+      const ref = db.collection('catalog').doc(docId);
+      if (changes._delete) { batch.delete(ref); return; }
+      const { _new, ...data } = changes;
+      if (_new) {
+        // full entry for new docs
+        batch.set(ref, catalogMap[docId]);
+      } else {
+        batch.update(ref, data);
+      }
+    });
+    await batch.commit();
+  }
+
+  pendingCatalogChanges = {};
+  btn.disabled = false;
+  btn.style.display = 'none';
+  btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Guardar cambios';
+  toast('Catálogo guardado', 'success');
+}
+
+// ── Settings ──────────────────────────────────────────
+async function loadSettings() {
+  // Worker URL comes from config.js — show it as read-only info
+  document.getElementById('settings-api-url').value = PROVIDER.url;
+
+  const snap = await db.collection('settings').doc('main').get();
+  const d = snap.exists ? snap.data() : {};
+  document.getElementById('settings-markup').value  = d.markup  || APP.markup;
+  document.getElementById('settings-binance').value = d.binance || '';
+  document.getElementById('settings-zelle').value   = d.zelle   || '';
+  document.getElementById('settings-usdt').value    = d.usdt    || '';
+}
+
+document.getElementById('save-settings-btn').addEventListener('click', async () => {
+  const markup = parseFloat(document.getElementById('settings-markup').value) || APP.markup;
+  const alertEl = document.getElementById('settings-alert');
+  try {
+    await db.collection('settings').doc('main').set({
+      markup,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    }, { merge: true });
+    alertEl.innerHTML = '<div class="alert alert-success">Markup guardado.</div>';
+    setTimeout(() => alertEl.innerHTML = '', 3000);
+    toast('Configuración guardada', 'success');
+  } catch(e) { alertEl.innerHTML = `<div class="alert alert-error">${e.message}</div>`; }
+});
+
+document.getElementById('save-payments-btn').addEventListener('click', async () => {
+  const data = {
+    binance:   document.getElementById('settings-binance').value.trim(),
+    zelle:     document.getElementById('settings-zelle').value.trim(),
+    usdt:      document.getElementById('settings-usdt').value.trim(),
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+  };
+  await db.collection('settings').doc('main').set(data, { merge: true });
+  toast('Métodos de pago guardados', 'success');
+});
+</script>
+</body>
+</html>
