@@ -269,11 +269,50 @@
                   <label>Monto en USD</label>
                   <input type="number" class="input" id="recharge-amount" placeholder="5.00" min="5" step="0.01">
                 </div>
-                <div id="payment-instructions" class="service-info-box mb-3"></div>
-                <div class="form-group">
-                  <label>Referencia / Hash de transacción</label>
-                  <input type="text" class="input" id="pay-ref" placeholder="ID de transacción o referencia">
+
+                <!-- Payment instructions (loaded from Firestore) -->
+                <div id="payment-instructions" class="service-info-box mb-3" style="display:none"></div>
+
+                <!-- WhatsApp button -->
+                <div id="whatsapp-btn-wrap" style="display:none;margin-bottom:16px">
+                  <a id="whatsapp-btn" href="#" target="_blank" class="btn btn-full"
+                    style="background:#25D366;color:#fff;display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                    Enviar comprobante por WhatsApp
+                  </a>
                 </div>
+
+                <div class="form-group">
+                  <label>Tu nombre completo (quien envía)</label>
+                  <input type="text" class="input" id="pay-sender" placeholder="Nombre que aparece en tu transferencia">
+                </div>
+                <div class="form-group">
+                  <label>Referencia / ID de transacción <span style="color:var(--muted);font-weight:400">(opcional si subes comprobante)</span></label>
+                  <input type="text" class="input" id="pay-ref" placeholder="ID, hash o número de confirmación">
+                </div>
+
+                <!-- Screenshot upload -->
+                <div class="form-group">
+                  <label>Comprobante de pago <span style="color:var(--muted);font-weight:400">(opcional pero recomendado)</span></label>
+                  <div id="upload-area" class="upload-area" onclick="document.getElementById('screenshot-file').click()">
+                    <input type="file" id="screenshot-file" accept="image/*" style="display:none" onchange="handleScreenshot(this)">
+                    <div id="upload-placeholder">
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                      <div style="font-size:13px;color:var(--muted);margin-top:8px">Haz click para subir imagen</div>
+                      <div style="font-size:11px;color:var(--soft)">JPG, PNG, WEBP — máx 5MB</div>
+                    </div>
+                    <div id="upload-preview" style="display:none;text-align:center">
+                      <img id="preview-img" style="max-height:140px;border-radius:8px;object-fit:contain">
+                      <div style="font-size:12px;color:var(--blue);margin-top:6px" id="upload-filename"></div>
+                    </div>
+                  </div>
+                  <div id="upload-progress" style="display:none;margin-top:8px">
+                    <div class="progress-bar"><div class="progress-fill" id="upload-fill"></div></div>
+                    <div style="font-size:12px;color:var(--muted);margin-top:4px" id="upload-status">Subiendo...</div>
+                  </div>
+                </div>
+                <input type="hidden" id="screenshot-url">
+
                 <div id="recharge-alert"></div>
                 <button class="btn btn-primary btn-full" id="recharge-btn">Enviar solicitud</button>
               </div>
@@ -294,7 +333,7 @@
               </div>
             </div>
             <div class="alert alert-info">
-              Las recargas son revisadas y aprobadas por un administrador. Tiempo estimado: <strong>10-30 minutos</strong> en horario hábil.
+              Las recargas son revisadas y aprobadas manualmente. Tiempo estimado: <strong>10-30 minutos</strong> en horario hábil.
             </div>
           </div>
         </div>
@@ -391,6 +430,9 @@
   </div>
 </div>
 
+<a href="https://wa.me/12398231738?text=Hola%20NextBoost%2C%20necesito%20ayuda" target="_blank" class="wa-float" title="Soporte por WhatsApp">
+  <svg width="26" height="26" viewBox="0 0 24 24" fill="#fff"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+</a>
 <div id="toast-container"></div>
 
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
@@ -440,7 +482,7 @@ requireAuth(async user => {
   loadServices();
   loadRecentOrders();
   loadRechargeHistory();
-  initPaymentInstructions();
+  loadPaymentSettings();
 });
 
 // ── Balance display ───────────────────────────────────
@@ -669,7 +711,7 @@ document.getElementById('sync-orders-btn').addEventListener('click', async () =>
     await loadOrdersPage();
     toast('Estados actualizados', 'success');
   } catch(e) { toast('Error: ' + e.message, 'error'); }
-  btn.disabled = false; btn.innerHTML = '🔄 Actualizar estados';
+  btn.disabled = false; btn.innerHTML = 'Actualizar estados';
 });
 
 function showOrderDetail(orderId) {
@@ -692,54 +734,143 @@ function showOrderDetail(orderId) {
 }
 
 // ── Add funds ─────────────────────────────────────────
-const paymentDetails = {
-  binance: { title: 'Binance Pay', detail: 'ID Binance: <strong>XXXXXXXXX</strong><br>Envía exactamente el monto indicado y adjunta el ID de transacción.' },
-  zelle:   { title: 'Zelle', detail: 'Zelle: <strong>pagos@nextboost.io</strong><br>Nombre: NextBoost. Anota el número de confirmación.' },
-  usdt:    { title: 'USDT TRC20', detail: 'Dirección: <strong>T...</strong><br>Red: TRC20 (Tron). Incluye el hash de la transacción.' },
-  paypal:  { title: 'PayPal', detail: 'PayPal requiere coordinación previa. Escríbenos antes de realizar el pago para darte la cuenta correcta y evitar inconvenientes.' },
-};
+const WA_NUMBER        = '12398231738';
+const CLOUDINARY_CLOUD = 'do4fpfwlb';
+const CLOUDINARY_PRESET= 'nextboost';
+let paySettings = {};
+let screenshotUrl = '';
 
-function initPaymentInstructions() {
-  const sel = document.getElementById('pay-method');
-  const box = document.getElementById('payment-instructions');
-  function update() {
-    const p = paymentDetails[sel.value];
-    box.innerHTML = `<strong>${p.title}</strong><br><br>${p.detail}`;
+async function loadPaymentSettings() {
+  try {
+    const snap = await db.collection('settings').doc('main').get();
+    paySettings = snap.exists ? snap.data() : {};
+  } catch(e) { paySettings = {}; }
+  updatePaymentInstructions();
+}
+
+function updatePaymentInstructions() {
+  const method = document.getElementById('pay-method').value;
+  const box    = document.getElementById('payment-instructions');
+  const waWrap = document.getElementById('whatsapp-btn-wrap');
+  const waBtn  = document.getElementById('whatsapp-btn');
+  const s      = paySettings;
+
+  const map = {
+    binance: s.binance
+      ? `Binance Pay ID: <strong style="font-size:15px;color:var(--navy)">${s.binance}</strong><br><span style="font-size:12px;color:var(--muted)">Envía exactamente el monto y guarda el ID de transacción. Incluye tu nombre completo al enviar.</span>`
+      : '<span style="color:var(--muted)">Administrador aún no configuró Binance Pay.</span>',
+    zelle: s.zelle
+      ? `Zelle: <strong style="font-size:15px;color:var(--navy)">${s.zelle}</strong>${s.zelleName ? `<br>Titular: <strong>${s.zelleName}</strong>` : ''}<br><span style="font-size:12px;color:var(--muted)">Anota el número de confirmación. Incluye tu nombre completo en el memo.</span>`
+      : '<span style="color:var(--muted)">Administrador aún no configuró Zelle.</span>',
+    usdt: s.usdt
+      ? `USDT TRC20:<br><strong style="font-size:13px;color:var(--navy);word-break:break-all">${s.usdt}</strong><br><span style="font-size:12px;color:var(--muted)">Red: TRC20 (Tron). Guarda el hash de la transacción. Incluye tu nombre al enviar el comprobante.</span>`
+      : '<span style="color:var(--muted)">Administrador aún no configuró USDT TRC20.</span>',
+    paypal: 'PayPal requiere coordinación previa. Contáctanos por WhatsApp para indicarte la cuenta correcta.',
+  };
+
+  box.innerHTML  = map[method] || '';
+  box.style.display = 'block';
+
+  const amount = document.getElementById('recharge-amount').value || '?';
+  const msg    = encodeURIComponent(`Hola NextBoost, quiero recargar $${amount} USD por ${method.toUpperCase()}. Adjunto mi comprobante.`);
+  waBtn.href   = `https://wa.me/${WA_NUMBER}?text=${msg}`;
+  waWrap.style.display = 'block';
+}
+
+document.getElementById('pay-method').addEventListener('change', updatePaymentInstructions);
+document.getElementById('recharge-amount').addEventListener('input', updatePaymentInstructions);
+
+// ── Screenshot upload (Cloudinary) ────────────────────
+function handleScreenshot(input) {
+  const file = input.files[0];
+  if (!file) return;
+  if (file.size > 5 * 1024 * 1024) { toast('La imagen no puede pesar más de 5MB', 'error'); return; }
+  const reader = new FileReader();
+  reader.onload = e => {
+    document.getElementById('upload-placeholder').style.display = 'none';
+    document.getElementById('upload-preview').style.display     = 'block';
+    document.getElementById('preview-img').src                   = e.target.result;
+    document.getElementById('upload-filename').textContent       = file.name;
+  };
+  reader.readAsDataURL(file);
+  uploadToCloudinary(file);
+}
+
+async function uploadToCloudinary(file) {
+  const progressWrap = document.getElementById('upload-progress');
+  const fill   = document.getElementById('upload-fill');
+  const status = document.getElementById('upload-status');
+  progressWrap.style.display = 'block';
+  fill.style.width = '0%'; status.textContent = 'Subiendo...'; status.style.color = '';
+  screenshotUrl = ''; document.getElementById('screenshot-url').value = '';
+
+  const fd = new FormData();
+  fd.append('file', file);
+  fd.append('upload_preset', CLOUDINARY_PRESET);
+  fd.append('folder', 'nextboost/recharges');
+
+  try {
+    const xhr = new XMLHttpRequest();
+    xhr.upload.onprogress = e => {
+      if (e.lengthComputable) {
+        const pct = Math.round((e.loaded / e.total) * 100);
+        fill.style.width = pct + '%'; status.textContent = `Subiendo... ${pct}%`;
+      }
+    };
+    const res = await new Promise((resolve, reject) => {
+      xhr.onload  = () => xhr.status === 200 ? resolve(JSON.parse(xhr.responseText)) : reject(new Error('Upload failed'));
+      xhr.onerror = () => reject(new Error('Error de red'));
+      xhr.open('POST', `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`);
+      xhr.send(fd);
+    });
+    screenshotUrl = res.secure_url;
+    document.getElementById('screenshot-url').value = screenshotUrl;
+    fill.style.width = '100%'; status.textContent = 'Imagen subida'; status.style.color = 'var(--blue)';
+  } catch(e) {
+    status.textContent = 'Error al subir. Puedes continuar sin comprobante.';
+    status.style.color = 'var(--red)';
   }
-  sel.addEventListener('change', update);
-  update();
 }
 
 document.getElementById('recharge-btn').addEventListener('click', async () => {
-  const method = document.getElementById('pay-method').value;
-  const amount = parseFloat(document.getElementById('recharge-amount').value);
-  const ref    = document.getElementById('pay-ref').value.trim();
+  const method  = document.getElementById('pay-method').value;
+  const amount  = parseFloat(document.getElementById('recharge-amount').value);
+  const ref     = document.getElementById('pay-ref').value.trim();
+  const imgUrl  = document.getElementById('screenshot-url').value;
+  const sender  = document.getElementById('pay-sender').value.trim();
   const alertEl = document.getElementById('recharge-alert');
   alertEl.innerHTML = '';
 
   if (!amount || amount < 5) { alertEl.innerHTML = '<div class="alert alert-error">El monto mínimo es $5.00</div>'; return; }
-  if (!ref) { alertEl.innerHTML = '<div class="alert alert-error">Ingresa la referencia de pago.</div>'; return; }
 
   const btn = document.getElementById('recharge-btn');
   btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Enviando...';
 
   try {
     await db.collection('recharges').add({
-      userId:    currentUser.uid,
-      userEmail: currentUser.email,
-      userName:  userData.name,
+      userId:        currentUser.uid,
+      userEmail:     currentUser.email,
+      userName:      userData.name,
       amount,
       method,
-      reference: ref,
-      status:    'pending',
-      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      reference:     ref || '—',
+      senderName:    sender || '—',
+      screenshotUrl: imgUrl || null,
+      status:        'pending',
+      createdAt:     firebase.firestore.FieldValue.serverTimestamp(),
     });
-    alertEl.innerHTML = '<div class="alert alert-success">✅ Solicitud enviada. El admin la revisará pronto.</div>';
+    alertEl.innerHTML = '<div class="alert alert-success">Solicitud enviada. El admin la revisará pronto.</div>';
     document.getElementById('recharge-amount').value = '';
-    document.getElementById('pay-ref').value = '';
+    document.getElementById('pay-ref').value         = '';
+    document.getElementById('pay-sender').value      = '';
+    document.getElementById('screenshot-url').value  = '';
+    document.getElementById('upload-placeholder').style.display = 'block';
+    document.getElementById('upload-preview').style.display     = 'none';
+    document.getElementById('upload-progress').style.display    = 'none';
+    screenshotUrl = '';
     toast('Solicitud de recarga enviada', 'success');
     loadRechargeHistory();
-  } catch(e) { alertEl.innerHTML = `<div class="alert alert-error">❌ ${e.message}</div>`; }
+  } catch(e) { alertEl.innerHTML = `<div class="alert alert-error">${e.message}</div>`; }
 
   btn.disabled = false; btn.innerHTML = 'Enviar solicitud';
 });
