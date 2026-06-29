@@ -1191,3 +1191,8 @@ section .subtitle { text-align: center; color: var(--muted); margin-bottom: 52px
 
 /* sidebar backdrop (JS adds this class) */
 .sidebar-backdrop { display: none; }
+
+@keyframes slideInRight {
+  from { transform: translateX(120%); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
+}

@@ -501,13 +501,76 @@ async function checkProviderBalance() {
   } catch(e) { document.getElementById('provider-balance').textContent = '$—'; }
 }
 
-// ── Pending badge ─────────────────────────────────────
+// ── Pending badge + real-time notifications ───────────
+let _prevPendingCount = null;
+
 function watchPendingRecharges() {
   db.collection('recharges').where('status','==','pending').onSnapshot(snap => {
     const badge = document.getElementById('pending-recharges-badge');
-    if (snap.size > 0) { badge.textContent = snap.size; badge.style.display = 'inline-flex'; }
+    const count = snap.size;
+
+    if (count > 0) { badge.textContent = count; badge.style.display = 'inline-flex'; }
     else { badge.style.display = 'none'; }
+
+    // Notify only when count increases (new recharge arrived)
+    if (_prevPendingCount !== null && count > _prevPendingCount) {
+      const diff = count - _prevPendingCount;
+      showRechargeAlert(diff, snap);
+      playNotificationSound();
+      if (Notification.permission === 'granted') {
+        new Notification('NextBoost — Nueva recarga', {
+          body: `${diff} solicitud${diff > 1 ? 'es' : ''} de recarga pendiente${diff > 1 ? 's' : ''}`,
+          icon: 'favicon.svg',
+        });
+      }
+    }
+    _prevPendingCount = count;
   });
+
+  // Request browser notification permission
+  if ('Notification' in window && Notification.permission === 'default') {
+    Notification.requestPermission();
+  }
+}
+
+function showRechargeAlert(count, snap) {
+  // Get the newest doc
+  const newest = snap.docs
+    .map(d => ({ id: d.id, ...d.data() }))
+    .sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0))[0];
+
+  const name   = newest?.userName || newest?.userEmail || 'Cliente';
+  const amount = newest ? formatUSD2(newest.amount) : '';
+
+  const el = document.createElement('div');
+  el.style.cssText = 'position:fixed;top:20px;right:20px;z-index:9999;background:var(--navy);color:#fff;padding:16px 20px;border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.25);display:flex;align-items:center;gap:14px;max-width:320px;animation:slideInRight .3s ease';
+  el.innerHTML = `
+    <div style="width:40px;height:40px;background:var(--blue);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+    </div>
+    <div style="flex:1;min-width:0">
+      <div style="font-weight:700;font-size:14px">Nueva solicitud de recarga</div>
+      <div style="font-size:12px;opacity:.8;margin-top:2px">${name} — ${amount}</div>
+    </div>
+    <button onclick="showPage('recharges');loadAdminRecharges();this.parentElement.remove()" style="background:var(--blue);border:none;color:#fff;padding:6px 12px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap">Ver</button>
+  `;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 8000);
+}
+
+function playNotificationSound() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.frequency.setValueAtTime(880, ctx.currentTime);
+    osc.frequency.setValueAtTime(660, ctx.currentTime + 0.1);
+    gain.gain.setValueAtTime(0.3, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.4);
+  } catch(e) {}
 }
 
 // ── Recharges ─────────────────────────────────────────
