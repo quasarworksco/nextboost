@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin — NexBoost</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="loading-overlay" id="loading-overlay">
+  <div class="logo" style="font-size:28px;font-weight:800">Nex<span style="color:var(--accent)">Boost</span></div>
+  <div class="spinner" style="width:32px;height:32px"></div>
+</div>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <a href="index.html" class="logo" style="text-decoration:none;display:block">Nex<span>Boost</span></a>
+    <div style="font-size:11px;color:var(--primary);margin-top:4px;font-weight:600">⚡ Panel Admin</div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section">
+      <div class="nav-section-title">Dashboard</div>
+      <div class="nav-item active" data-page="overview" data-title="Resumen" onclick="showPage('overview')">
+        <span class="nav-icon">📊</span> Resumen
+      </div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-section-title">Gestión</div>
+      <div class="nav-item" data-page="recharges" data-title="Recargas" onclick="showPage('recharges');loadAdminRecharges()">
+        <span class="nav-icon">💳</span> Recargas
+        <span class="badge badge-pending ml-auto" id="pending-recharges-badge" style="display:none"></span>
+      </div>
+      <div class="nav-item" data-page="orders" data-title="Pedidos" onclick="showPage('orders');loadAdminOrders()">
+        <span class="nav-icon">📦</span> Pedidos
+      </div>
+      <div class="nav-item" data-page="users" data-title="Usuarios" onclick="showPage('users');loadAdminUsers()">
+        <span class="nav-icon">👥</span> Usuarios
+      </div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-section-title">Sistema</div>
+      <div class="nav-item" data-page="services" data-title="Servicios" onclick="showPage('services');loadAdminServices()">
+        <span class="nav-icon">🛍️</span> Servicios
+      </div>
+      <div class="nav-item" data-page="settings" data-title="Configuración" onclick="showPage('settings');loadSettings()">
+        <span class="nav-icon">⚙️</span> Configuración
+      </div>
+    </div>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="sidebar-user">
+      <div class="avatar" style="background:linear-gradient(135deg,var(--primary),var(--accent))">A</div>
+      <div class="user-info">
+        <div class="name" id="sidebar-name">Admin</div>
+        <div class="role" style="color:var(--primary)">Administrador</div>
+      </div>
+    </div>
+    <div style="padding:8px 12px;display:flex;gap:8px">
+      <a href="dashboard.html" class="btn btn-ghost btn-sm" style="flex:1;justify-content:center">👤 Mi panel</a>
+      <button class="btn btn-ghost btn-sm" onclick="signOut()">🚪</button>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="layout">
+  <div class="main-content">
+    <div class="topbar">
+      <div style="display:flex;align-items:center;gap:12px">
+        <button class="hamburger" id="hamburger">☰</button>
+        <div class="topbar-title" id="page-title">Resumen</div>
+      </div>
+      <div class="topbar-right">
+        <div class="balance-chip">🏦 Proveedor: <span id="provider-balance">—</span></div>
+      </div>
+    </div>
+
+    <div class="page">
+
+      <!-- ═══ OVERVIEW ═══ -->
+      <div id="page-overview" class="page-section">
+        <div class="grid-4 mb-4">
+          <div class="stat-card">
+            <div class="stat-icon">👥</div>
+            <div class="stat-value" id="stat-users">—</div>
+            <div class="stat-label">Usuarios registrados</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">📦</div>
+            <div class="stat-value" id="stat-orders">—</div>
+            <div class="stat-label">Pedidos totales</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">💰</div>
+            <div class="stat-value" id="stat-revenue">—</div>
+            <div class="stat-label">Revenue total</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">⏳</div>
+            <div class="stat-value" id="stat-pending">—</div>
+            <div class="stat-label">Recargas pendientes</div>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header flex items-center justify-between">
+              <span>Recargas pendientes</span>
+              <button class="btn btn-ghost btn-sm" onclick="showPage('recharges');loadAdminRecharges()">Ver todas</button>
+            </div>
+            <div class="card-body" style="padding:0">
+              <div class="table-wrap">
+                <table>
+                  <thead><tr><th>Usuario</th><th>Monto</th><th>Método</th><th>Acción</th></tr></thead>
+                  <tbody id="overview-recharges-body">
+                    <tr><td colspan="4" style="text-align:center;padding:20px;color:var(--muted)">Cargando...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header">Pedidos recientes</div>
+            <div class="card-body" style="padding:0">
+              <div class="table-wrap">
+                <table>
+                  <thead><tr><th>Usuario</th><th>Servicio</th><th>Costo</th><th>Estado</th></tr></thead>
+                  <tbody id="overview-orders-body">
+                    <tr><td colspan="4" style="text-align:center;padding:20px;color:var(--muted)">Cargando...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ RECHARGES ═══ -->
+      <div id="page-recharges" class="page-section" style="display:none">
+        <div class="card">
+          <div class="card-header flex items-center justify-between">
+            <span>Solicitudes de recarga</span>
+            <div style="display:flex;gap:8px">
+              <select class="select" id="recharge-filter" style="width:160px" onchange="loadAdminRecharges()">
+                <option value="pending">Pendientes</option>
+                <option value="approved">Aprobadas</option>
+                <option value="rejected">Rechazadas</option>
+                <option value="">Todas</option>
+              </select>
+            </div>
+          </div>
+          <div class="card-body" style="padding:0">
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Usuario</th><th>Monto</th><th>Método</th><th>Referencia</th><th>Estado</th><th>Fecha</th><th>Acciones</th></tr></thead>
+                <tbody id="admin-recharges-body">
+                  <tr><td colspan="7" style="text-align:center;padding:24px;color:var(--muted)">Cargando...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ ORDERS ═══ -->
+      <div id="page-orders" class="page-section" style="display:none">
+        <div class="card">
+          <div class="card-header flex items-center justify-between">
+            <span>Todos los pedidos</span>
+            <button class="btn btn-ghost btn-sm" onclick="syncAllOrders()">🔄 Sincronizar estados</button>
+          </div>
+          <div class="card-body" style="padding:0">
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>#</th><th>Usuario</th><th>Servicio</th><th>Cant.</th><th>Costo</th><th>Estado</th><th>Fecha</th></tr></thead>
+                <tbody id="admin-orders-body">
+                  <tr><td colspan="7" style="text-align:center;padding:24px;color:var(--muted)">Cargando...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ USERS ═══ -->
+      <div id="page-users" class="page-section" style="display:none">
+        <div class="card mb-3">
+          <div class="card-body">
+            <div style="display:flex;gap:10px">
+              <input type="text" class="input" id="user-search" placeholder="Buscar por nombre o email..." style="max-width:320px" oninput="filterUsers(this.value)">
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-body" style="padding:0">
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Nombre</th><th>Email</th><th>Saldo</th><th>Rol</th><th>Registrado</th><th>Acciones</th></tr></thead>
+                <tbody id="admin-users-body">
+                  <tr><td colspan="6" style="text-align:center;padding:24px;color:var(--muted)">Cargando...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ SERVICES ═══ -->
+      <div id="page-services" class="page-section" style="display:none">
+        <div class="card mb-3">
+          <div class="card-header">Sincronizar servicios del proveedor</div>
+          <div class="card-body">
+            <p style="color:var(--muted);font-size:14px;margin-bottom:16px">Descarga la lista completa del proveedor y la guarda en Firestore con el markup configurado.</p>
+            <div style="display:flex;gap:10px;align-items:center">
+              <button class="btn btn-primary" id="sync-services-btn" onclick="syncProviderServices()">🔄 Sincronizar servicios</button>
+              <div id="sync-status"></div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-body" style="padding:0">
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>ID</th><th>Nombre</th><th>Categoría</th><th>Precio/1k</th><th>Min</th><th>Max</th><th>Refill</th><th>Estado</th></tr></thead>
+                <tbody id="admin-services-body">
+                  <tr><td colspan="8" style="text-align:center;padding:24px;color:var(--muted)">Sin servicios — sincroniza primero</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ SETTINGS ═══ -->
+      <div id="page-settings" class="page-section" style="display:none">
+        <div class="grid-2" style="align-items:start">
+          <div class="card">
+            <div class="card-header">Configuración del proveedor API</div>
+            <div class="card-body">
+              <div class="alert alert-warning mb-3">⚠️ Esta clave es privada. Solo el admin puede verla y modificarla.</div>
+              <div class="form-group">
+                <label>URL del proveedor API</label>
+                <input type="url" class="input" id="settings-api-url" placeholder="https://justanotherpanel.com/api">
+              </div>
+              <div class="form-group">
+                <label>API Key del proveedor</label>
+                <input type="text" class="input" id="settings-api-key" placeholder="Tu clave del proveedor">
+              </div>
+              <div class="form-group">
+                <label>Markup (ej: 1.5 = 50% ganancia)</label>
+                <input type="number" class="input" id="settings-markup" placeholder="1.5" min="1" step="0.1">
+              </div>
+              <div id="settings-alert"></div>
+              <button class="btn btn-primary" id="save-settings-btn">Guardar configuración</button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header">Métodos de pago</div>
+            <div class="card-body">
+              <div class="form-group">
+                <label>Binance Pay ID</label>
+                <input type="text" class="input" id="settings-binance" placeholder="Tu Binance Pay ID">
+              </div>
+              <div class="form-group">
+                <label>Zelle (email o teléfono)</label>
+                <input type="text" class="input" id="settings-zelle" placeholder="tu@email.com">
+              </div>
+              <div class="form-group">
+                <label>Dirección USDT TRC20</label>
+                <input type="text" class="input" id="settings-usdt" placeholder="T...">
+              </div>
+              <button class="btn btn-primary" id="save-payments-btn">Guardar pagos</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- MODALS -->
+<!-- Adjust balance modal -->
+<div class="modal-overlay" id="balance-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <span>Ajustar saldo</span>
+      <button class="modal-close">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Usuario: <strong id="balance-modal-user"></strong></label>
+      </div>
+      <div class="form-group">
+        <label>Nuevo saldo (USD)</label>
+        <input type="number" class="input" id="balance-modal-amount" placeholder="0.00" step="0.01" min="0">
+      </div>
+      <div id="balance-modal-alert"></div>
+      <div style="display:flex;gap:10px;margin-top:8px">
+        <button class="btn btn-primary btn-full" id="balance-modal-btn">Aplicar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="js/config.js"></script>
+<script src="js/app.js"></script>
+<script src="js/api.js"></script>
+<script>
+let adminUser = null;
+let allUsers  = [];
+let allOrders = [];
+let allRecharges = [];
+
+requireAdmin(async (user, data) => {
+  adminUser = user;
+  document.getElementById('sidebar-name').textContent = data.name || user.email;
+  document.getElementById('loading-overlay').style.display = 'none';
+  initSidebar();
+  loadOverview();
+  checkProviderBalance();
+  watchPendingRecharges();
+});
+
+// ── Overview ──────────────────────────────────────────
+async function loadOverview() {
+  const [usersSnap, ordersSnap, rechargesSnap] = await Promise.all([
+    db.collection('users').get(),
+    db.collection('orders').orderBy('createdAt','desc').limit(200).get(),
+    db.collection('recharges').where('status','==','pending').get(),
+  ]);
+
+  document.getElementById('stat-users').textContent   = usersSnap.size;
+  document.getElementById('stat-orders').textContent  = ordersSnap.size;
+  document.getElementById('stat-pending').textContent = rechargesSnap.size;
+
+  const revenue = ordersSnap.docs.reduce((s, d) => s + (d.data().charge || 0), 0);
+  document.getElementById('stat-revenue').textContent = formatUSD2(revenue);
+
+  // Pending recharges
+  const pendingDocs = rechargesSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+  const rechargesTbody = document.getElementById('overview-recharges-body');
+  if (!pendingDocs.length) {
+    rechargesTbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--muted)">Sin recargas pendientes ✅</td></tr>';
+  } else {
+    rechargesTbody.innerHTML = pendingDocs.slice(0,5).map(r => `
+      <tr>
+        <td>${r.userName || r.userEmail}</td>
+        <td><strong>${formatUSD2(r.amount)}</strong></td>
+        <td>${r.method}</td>
+        <td>
+          <button class="btn btn-success btn-sm" onclick="approveRecharge('${r.id}','${r.userId}',${r.amount})">✓</button>
+          <button class="btn btn-danger btn-sm" onclick="rejectRecharge('${r.id}')">✗</button>
+        </td>
+      </tr>`).join('');
+  }
+
+  // Recent orders
+  const recentOrders = ordersSnap.docs.slice(0,5).map(d => ({ id: d.id, ...d.data() }));
+  const ordersTbody  = document.getElementById('overview-orders-body');
+  if (!recentOrders.length) {
+    ordersTbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--muted)">Sin pedidos</td></tr>';
+  } else {
+    ordersTbody.innerHTML = recentOrders.map(o => `
+      <tr>
+        <td style="font-size:12px">${o.userEmail || o.userId?.slice(0,8)}</td>
+        <td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${o.serviceName||'—'}</td>
+        <td>${formatUSD2(o.charge)}</td>
+        <td>${statusBadge(o.status)}</td>
+      </tr>`).join('');
+  }
+}
+
+// ── Provider balance ──────────────────────────────────
+async function checkProviderBalance() {
+  try {
+    const res = await SmmAPI.getBalance();
+    document.getElementById('provider-balance').textContent = formatUSD2(res.balance);
+  } catch(e) { document.getElementById('provider-balance').textContent = 'No configurado'; }
+}
+
+// ── Pending badge ─────────────────────────────────────
+function watchPendingRecharges() {
+  db.collection('recharges').where('status','==','pending').onSnapshot(snap => {
+    const badge = document.getElementById('pending-recharges-badge');
+    if (snap.size > 0) { badge.textContent = snap.size; badge.style.display = 'inline-flex'; }
+    else { badge.style.display = 'none'; }
+  });
+}
+
+// ── Recharges ─────────────────────────────────────────
+async function loadAdminRecharges() {
+  const filter = document.getElementById('recharge-filter').value;
+  const tbody  = document.getElementById('admin-recharges-body');
+  tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px"><span class="spinner"></span></td></tr>';
+
+  let query = db.collection('recharges').orderBy('createdAt','desc').limit(100);
+  if (filter) query = query.where('status','==',filter);
+
+  const snap = await query.get();
+  allRecharges = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+  if (!allRecharges.length) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--muted)">Sin registros</td></tr>';
+    return;
+  }
+  tbody.innerHTML = allRecharges.map(r => `
+    <tr>
+      <td>${r.userName || '—'}<br><span style="font-size:11px;color:var(--muted)">${r.userEmail || ''}</span></td>
+      <td><strong>${formatUSD2(r.amount)}</strong></td>
+      <td>${r.method}</td>
+      <td style="font-family:monospace;font-size:12px;max-width:160px;overflow:hidden;text-overflow:ellipsis">${r.reference}</td>
+      <td>${statusBadge(r.status)}</td>
+      <td style="color:var(--muted);font-size:12px">${formatDate(r.createdAt)}</td>
+      <td>
+        ${r.status === 'pending' ? `
+          <button class="btn btn-success btn-sm" onclick="approveRecharge('${r.id}','${r.userId}',${r.amount})">✓ Aprobar</button>
+          <button class="btn btn-danger btn-sm" onclick="rejectRecharge('${r.id}')">✗ Rechazar</button>
+        ` : '—'}
+      </td>
+    </tr>`).join('');
+}
+
+async function approveRecharge(rechargeId, userId, amount) {
+  if (!confirm(`¿Aprobar recarga de ${formatUSD2(amount)}?`)) return;
+  const batch = db.batch();
+  batch.update(db.collection('recharges').doc(rechargeId), { status: 'approved', approvedAt: firebase.firestore.FieldValue.serverTimestamp(), approvedBy: adminUser.uid });
+  batch.update(db.collection('users').doc(userId), { balance: firebase.firestore.FieldValue.increment(amount) });
+  await batch.commit();
+  toast(`✅ Recarga de ${formatUSD2(amount)} aprobada`, 'success');
+  loadAdminRecharges();
+  loadOverview();
+}
+
+async function rejectRecharge(rechargeId) {
+  if (!confirm('¿Rechazar esta recarga?')) return;
+  await db.collection('recharges').doc(rechargeId).update({ status: 'rejected', rejectedAt: firebase.firestore.FieldValue.serverTimestamp() });
+  toast('Recarga rechazada', 'info');
+  loadAdminRecharges();
+}
+
+// ── Orders ────────────────────────────────────────────
+async function loadAdminOrders() {
+  const tbody = document.getElementById('admin-orders-body');
+  tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px"><span class="spinner"></span></td></tr>';
+  const snap = await db.collection('orders').orderBy('createdAt','desc').limit(200).get();
+  allOrders = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  tbody.innerHTML = allOrders.map(o => `
+    <tr>
+      <td style="font-family:monospace;font-size:11px">${o.id.slice(0,8)}</td>
+      <td style="font-size:12px">${o.userId?.slice(0,10)}...</td>
+      <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${o.serviceName||'—'}</td>
+      <td>${(o.quantity||0).toLocaleString()}</td>
+      <td>${formatUSD2(o.charge)}</td>
+      <td>${statusBadge(o.status)}</td>
+      <td style="color:var(--muted);font-size:12px">${formatDate(o.createdAt)}</td>
+    </tr>`).join('') || '<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--muted)">Sin pedidos</td></tr>';
+}
+
+async function syncAllOrders() {
+  const btn = document.querySelector('[onclick="syncAllOrders()"]');
+  btn.disabled = true; btn.textContent = 'Sincronizando...';
+  try {
+    await Orders.syncStatus(allOrders);
+    await loadAdminOrders();
+    toast('Estados sincronizados', 'success');
+  } catch(e) { toast('Error: ' + e.message, 'error'); }
+  btn.disabled = false; btn.innerHTML = '🔄 Sincronizar estados';
+}
+
+// ── Users ─────────────────────────────────────────────
+async function loadAdminUsers() {
+  const tbody = document.getElementById('admin-users-body');
+  tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px"><span class="spinner"></span></td></tr>';
+  const snap = await db.collection('users').orderBy('createdAt','desc').get();
+  allUsers = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  renderUsersTable(allUsers);
+}
+
+function renderUsersTable(users) {
+  const tbody = document.getElementById('admin-users-body');
+  if (!users.length) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--muted)">Sin usuarios</td></tr>'; return; }
+  tbody.innerHTML = users.map(u => `
+    <tr>
+      <td>${u.name || '—'}</td>
+      <td style="font-size:13px">${u.email || '—'}</td>
+      <td><strong>${formatUSD2(u.balance)}</strong></td>
+      <td>${u.role === 'admin' ? '<span class="badge badge-admin">Admin</span>' : '<span class="badge badge-active">Usuario</span>'}</td>
+      <td style="color:var(--muted);font-size:12px">${formatDate(u.createdAt)}</td>
+      <td>
+        <button class="btn btn-ghost btn-sm" onclick="openBalanceModal('${u.id}','${u.name || u.email}',${u.balance||0})">💰 Saldo</button>
+        <button class="btn btn-ghost btn-sm" onclick="toggleRole('${u.id}','${u.role}')">${u.role==='admin'?'👤 Usuario':'⚡ Admin'}</button>
+      </td>
+    </tr>`).join('');
+}
+
+function filterUsers(q) {
+  const filtered = allUsers.filter(u =>
+    (u.name||'').toLowerCase().includes(q.toLowerCase()) ||
+    (u.email||'').toLowerCase().includes(q.toLowerCase())
+  );
+  renderUsersTable(filtered);
+}
+
+let _balanceModalUserId = null;
+function openBalanceModal(uid, name, current) {
+  _balanceModalUserId = uid;
+  document.getElementById('balance-modal-user').textContent = name;
+  document.getElementById('balance-modal-amount').value = parseFloat(current).toFixed(2);
+  document.getElementById('balance-modal-alert').innerHTML = '';
+  openModal('balance-modal');
+}
+
+document.getElementById('balance-modal-btn').addEventListener('click', async () => {
+  const amount = parseFloat(document.getElementById('balance-modal-amount').value);
+  if (isNaN(amount) || amount < 0) { document.getElementById('balance-modal-alert').innerHTML = '<div class="alert alert-error">❌ Monto inválido</div>'; return; }
+  await db.collection('users').doc(_balanceModalUserId).update({ balance: amount });
+  toast('Saldo actualizado', 'success');
+  closeModal('balance-modal');
+  loadAdminUsers();
+});
+
+async function toggleRole(uid, currentRole) {
+  const newRole = currentRole === 'admin' ? 'user' : 'admin';
+  if (!confirm(`¿Cambiar rol a "${newRole}"?`)) return;
+  await db.collection('users').doc(uid).update({ role: newRole });
+  toast(`Rol cambiado a ${newRole}`, 'success');
+  loadAdminUsers();
+}
+
+// ── Services ──────────────────────────────────────────
+async function loadAdminServices() {
+  const snap = await db.collection('services').orderBy('category').get();
+  const services = snap.docs.map(d => d.data());
+  const tbody = document.getElementById('admin-services-body');
+  if (!services.length) { tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:24px;color:var(--muted)">Sin servicios — sincroniza del proveedor</td></tr>'; return; }
+  tbody.innerHTML = services.map(s => `
+    <tr>
+      <td style="font-family:monospace">${s.id}</td>
+      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${s.name}</td>
+      <td style="font-size:12px">${s.category}</td>
+      <td><strong>$${parseFloat(s.rate).toFixed(4)}</strong></td>
+      <td>${(s.min||0).toLocaleString()}</td>
+      <td>${(s.max||0).toLocaleString()}</td>
+      <td>${s.refill ? '✅' : '—'}</td>
+      <td>${s.active ? '<span class="badge badge-completed">Activo</span>' : '<span class="badge badge-canceled">Inactivo</span>'}</td>
+    </tr>`).join('');
+}
+
+async function syncProviderServices() {
+  const btn = document.getElementById('sync-services-btn');
+  const status = document.getElementById('sync-status');
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Sincronizando...';
+  status.innerHTML = '';
+  try {
+    const settingsSnap = await db.collection('settings').doc('main').get();
+    const markup = settingsSnap.exists ? (settingsSnap.data().markup || APP.markup) : APP.markup;
+    const count = await Services.syncFromProvider(markup);
+    status.innerHTML = `<span style="color:var(--green)">✅ ${count} servicios sincronizados</span>`;
+    toast(`${count} servicios sincronizados`, 'success');
+    loadAdminServices();
+  } catch(e) {
+    status.innerHTML = `<span style="color:var(--red)">❌ ${e.message}</span>`;
+    toast('Error: ' + e.message, 'error');
+  }
+  btn.disabled = false; btn.innerHTML = '🔄 Sincronizar servicios';
+}
+
+// ── Settings ──────────────────────────────────────────
+async function loadSettings() {
+  const snap = await db.collection('settings').doc('main').get();
+  if (!snap.exists) return;
+  const d = snap.data();
+  document.getElementById('settings-api-url').value = d.smmApiUrl || '';
+  document.getElementById('settings-api-key').value = d.smmApiKey || '';
+  document.getElementById('settings-markup').value  = d.markup || '1.5';
+  document.getElementById('settings-binance').value = d.binance || '';
+  document.getElementById('settings-zelle').value   = d.zelle || '';
+  document.getElementById('settings-usdt').value    = d.usdt || '';
+}
+
+document.getElementById('save-settings-btn').addEventListener('click', async () => {
+  const data = {
+    smmApiUrl: document.getElementById('settings-api-url').value.trim(),
+    smmApiKey: document.getElementById('settings-api-key').value.trim(),
+    markup:    parseFloat(document.getElementById('settings-markup').value) || 1.5,
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+  };
+  const alertEl = document.getElementById('settings-alert');
+  try {
+    await db.collection('settings').doc('main').set(data, { merge: true });
+    alertEl.innerHTML = '<div class="alert alert-success">✅ Configuración guardada.</div>';
+    toast('Configuración guardada', 'success');
+    await SmmAPI.init();
+    checkProviderBalance();
+  } catch(e) { alertEl.innerHTML = `<div class="alert alert-error">❌ ${e.message}</div>`; }
+});
+
+document.getElementById('save-payments-btn').addEventListener('click', async () => {
+  const data = {
+    binance:   document.getElementById('settings-binance').value.trim(),
+    zelle:     document.getElementById('settings-zelle').value.trim(),
+    usdt:      document.getElementById('settings-usdt').value.trim(),
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+  };
+  await db.collection('settings').doc('main').set(data, { merge: true });
+  toast('Métodos de pago guardados', 'success');
+});
+</script>
+</body>
+</html>

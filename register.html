@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Crear cuenta — NexBoost</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="auth-page">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <a href="index.html" class="logo">Nex<span>Boost</span></a>
+    </div>
+    <h2>Crear cuenta gratis</h2>
+    <p>Empieza a impulsar tus redes sociales hoy</p>
+
+    <div id="alert-box"></div>
+
+    <form id="register-form">
+      <div class="form-group">
+        <label>Nombre completo</label>
+        <input type="text" id="name" class="input" placeholder="Tu nombre" required minlength="2">
+      </div>
+      <div class="form-group">
+        <label>Correo electrónico</label>
+        <input type="email" id="email" class="input" placeholder="tu@email.com" required>
+      </div>
+      <div class="form-group">
+        <label>Contraseña</label>
+        <input type="password" id="password" class="input" placeholder="Mínimo 8 caracteres" required minlength="8">
+      </div>
+      <div class="form-group">
+        <label>Confirmar contraseña</label>
+        <input type="password" id="confirm" class="input" placeholder="Repite tu contraseña" required>
+      </div>
+      <div style="margin-bottom:16px;font-size:13px;color:var(--muted)">
+        Al registrarte aceptas nuestros <a href="#" style="color:var(--primary)">Términos de servicio</a> y <a href="#" style="color:var(--primary)">Política de privacidad</a>.
+      </div>
+      <button type="submit" class="btn btn-primary btn-full" id="submit-btn">
+        Crear cuenta
+      </button>
+    </form>
+
+    <div class="auth-divider">o</div>
+
+    <div style="text-align:center;font-size:14px;color:var(--muted)">
+      ¿Ya tienes cuenta? <a href="login.html" style="color:var(--primary);font-weight:600">Iniciar sesión</a>
+    </div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="js/config.js"></script>
+<script src="js/app.js"></script>
+<script>
+  auth.onAuthStateChanged(user => {
+    if (user) window.location.href = 'dashboard.html';
+  });
+
+  const form    = document.getElementById('register-form');
+  const alertEl = document.getElementById('alert-box');
+  const btnEl   = document.getElementById('submit-btn');
+
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    alertEl.innerHTML = '';
+    const name     = document.getElementById('name').value.trim();
+    const email    = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+    const confirm  = document.getElementById('confirm').value;
+
+    if (password !== confirm) {
+      alertEl.innerHTML = '<div class="alert alert-error">❌ Las contraseñas no coinciden.</div>';
+      return;
+    }
+
+    btnEl.disabled = true;
+    btnEl.innerHTML = '<span class="spinner"></span> Creando cuenta...';
+
+    try {
+      const cred = await auth.createUserWithEmailAndPassword(email, password);
+      await cred.user.updateProfile({ displayName: name });
+
+      // Create user document in Firestore
+      await db.collection('users').doc(cred.user.uid).set({
+        name,
+        email,
+        balance: 0,
+        role:    'user',
+        apiKey:  null,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      });
+
+      window.location.href = 'dashboard.html';
+    } catch (err) {
+      let msg = err.message;
+      if (err.code === 'auth/email-already-in-use') msg = 'Este correo ya está registrado.';
+      if (err.code === 'auth/weak-password')        msg = 'La contraseña debe tener al menos 6 caracteres.';
+      alertEl.innerHTML = `<div class="alert alert-error">❌ ${msg}</div>`;
+      btnEl.disabled = false;
+      btnEl.innerHTML = 'Crear cuenta';
+    }
+  });
+</script>
+</body>
+</html>

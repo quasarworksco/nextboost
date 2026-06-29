@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Iniciar sesión — NexBoost</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="auth-page">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <a href="index.html" class="logo">Nex<span>Boost</span></a>
+    </div>
+    <h2>Bienvenido de vuelta</h2>
+    <p>Ingresa a tu cuenta para continuar</p>
+
+    <div id="alert-box"></div>
+
+    <form id="login-form">
+      <div class="form-group">
+        <label>Correo electrónico</label>
+        <input type="email" id="email" class="input" placeholder="tu@email.com" required>
+      </div>
+      <div class="form-group">
+        <label>Contraseña</label>
+        <input type="password" id="password" class="input" placeholder="••••••••" required>
+      </div>
+      <div style="text-align:right;margin:-8px 0 16px">
+        <a href="forgot.html" style="font-size:13px;color:var(--muted)">¿Olvidaste tu contraseña?</a>
+      </div>
+      <button type="submit" class="btn btn-primary btn-full" id="submit-btn">
+        Iniciar sesión
+      </button>
+    </form>
+
+    <div class="auth-divider">o</div>
+
+    <div style="text-align:center;font-size:14px;color:var(--muted)">
+      ¿No tienes cuenta? <a href="register.html" style="color:var(--primary);font-weight:600">Regístrate gratis</a>
+    </div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="js/config.js"></script>
+<script src="js/app.js"></script>
+<script>
+  // If already logged in, redirect
+  auth.onAuthStateChanged(async user => {
+    if (!user) return;
+    const snap = await db.collection('users').doc(user.uid).get();
+    if (snap.exists && snap.data().role === 'admin') {
+      window.location.href = 'admin.html';
+    } else {
+      window.location.href = 'dashboard.html';
+    }
+  });
+
+  const form    = document.getElementById('login-form');
+  const alertEl = document.getElementById('alert-box');
+  const btnEl   = document.getElementById('submit-btn');
+
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    alertEl.innerHTML = '';
+    const email    = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+    btnEl.disabled = true;
+    btnEl.innerHTML = '<span class="spinner"></span> Entrando...';
+    try {
+      const cred = await auth.signInWithEmailAndPassword(email, password);
+      const snap = await db.collection('users').doc(cred.user.uid).get();
+      if (snap.exists && snap.data().role === 'admin') {
+        window.location.href = 'admin.html';
+      } else {
+        window.location.href = 'dashboard.html';
+      }
+    } catch (err) {
+      const msg = err.code === 'auth/wrong-password' || err.code === 'auth/user-not-found'
+        ? 'Correo o contraseña incorrectos.' : err.message;
+      alertEl.innerHTML = `<div class="alert alert-error">❌ ${msg}</div>`;
+      btnEl.disabled = false;
+      btnEl.innerHTML = 'Iniciar sesión';
+    }
+  });
+</script>
+</body>
+</html>

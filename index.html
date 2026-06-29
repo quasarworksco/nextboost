@@ -1,1 +1,343 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NexBoost — Panel SMM Profesional</title>
+  <meta name="description" content="El panel SMM más económico. Seguidores, likes, vistas y más para todas las redes sociales. Precios desde $0.001 por 1000.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .hero-particle {
+      position: absolute;
+      border-radius: 50%;
+      animation: float 8s ease-in-out infinite;
+      pointer-events: none;
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0) scale(1); }
+      50%       { transform: translateY(-20px) scale(1.05); }
+    }
+    .glow-orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(60px);
+      pointer-events: none;
+      opacity: .15;
+    }
+    .pricing-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 28px; text-align: center;
+      transition: all .2s; position: relative; overflow: hidden;
+    }
+    .pricing-card.featured {
+      border-color: var(--primary);
+      background: linear-gradient(135deg, #7c6fff12, #00d4ff08);
+    }
+    .pricing-card.featured::before {
+      content: '⚡ MÁS POPULAR';
+      position: absolute; top: 14px; right: -28px;
+      background: linear-gradient(135deg, var(--primary), var(--primary2));
+      color: #fff; font-size: 10px; font-weight: 700;
+      padding: 4px 36px; transform: rotate(45deg);
+      letter-spacing: .5px;
+    }
+    .pricing-card:hover { transform: translateY(-4px); border-color: var(--primary); }
+    .price-val { font-size: 42px; font-weight: 800; margin: 12px 0 6px; }
+    .price-per { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
+    .price-list { list-style: none; text-align: left; margin-bottom: 24px; }
+    .price-list li { padding: 7px 0; font-size: 14px; border-bottom: 1px solid var(--border); display: flex; gap: 8px; align-items: center; }
+    .price-list li:last-child { border-bottom: none; }
+    .price-list li::before { content: '✓'; color: var(--green); font-weight: 700; }
+    .counter { transition: all .5s; }
+    .faq-item { border-bottom: 1px solid var(--border); }
+    .faq-q { width: 100%; background: none; border: none; color: var(--text); text-align: left; padding: 18px 0; font-size: 15px; font-weight: 600; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+    .faq-q:hover { color: var(--primary); }
+    .faq-a { padding-bottom: 16px; color: var(--muted); font-size: 14px; line-height: 1.7; display: none; }
+    .faq-item.open .faq-a { display: block; }
+    .faq-item.open .faq-arrow { transform: rotate(180deg); }
+    .faq-arrow { transition: transform .2s; }
+  </style>
+</head>
+<body>
 
+<!-- NAVBAR -->
+<nav class="landing-nav">
+  <div class="logo">Nex<span>Boost</span></div>
+  <div class="nav-links">
+    <a href="#features">Características</a>
+    <a href="#services">Servicios</a>
+    <a href="#pricing">Precios</a>
+    <a href="#faq">FAQ</a>
+    <a href="api-docs.html">API</a>
+  </div>
+  <div class="nav-cta">
+    <a href="login.html" class="btn btn-ghost btn-sm">Iniciar sesión</a>
+    <a href="register.html" class="btn btn-primary btn-sm">Crear cuenta</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero" style="padding-top:120px">
+  <div class="glow-orb" style="width:400px;height:400px;background:var(--primary);top:10%;left:60%"></div>
+  <div class="glow-orb" style="width:300px;height:300px;background:var(--accent);top:50%;left:10%"></div>
+  <div style="position:relative;z-index:1;max-width:800px">
+    <div class="hero-badge">⚡ Más económico que fansfull.com — garantizado</div>
+    <h1>El Panel SMM<br><span class="gradient-text">Más Económico</span><br>del Mercado</h1>
+    <p>Seguidores, likes, vistas y comentarios para todas las redes sociales. Precios imbatibles, entrega ultrarrápida y soporte 24/7.</p>
+    <div class="hero-btns">
+      <a href="register.html" class="btn btn-primary btn-lg">Empezar gratis →</a>
+      <a href="#services" class="btn btn-ghost btn-lg">Ver servicios</a>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="stats-bar">
+  <div class="stat-item">
+    <div class="val gradient-text"><span class="counter" data-target="50000">0</span>+</div>
+    <div class="lbl">Pedidos completados</div>
+  </div>
+  <div class="stat-item">
+    <div class="val gradient-text"><span class="counter" data-target="1200">0</span>+</div>
+    <div class="lbl">Usuarios activos</div>
+  </div>
+  <div class="stat-item">
+    <div class="val gradient-text"><span class="counter" data-target="300">0</span>+</div>
+    <div class="lbl">Servicios disponibles</div>
+  </div>
+  <div class="stat-item">
+    <div class="val gradient-text">99.9%</div>
+    <div class="lbl">Uptime garantizado</div>
+  </div>
+</div>
+
+<!-- FEATURES -->
+<section id="features">
+  <div class="hero-badge" style="margin:0 auto 20px;display:table">✦ Por qué elegirnos</div>
+  <h2>Todo lo que necesitas<br><span class="gradient-text">en un solo lugar</span></h2>
+  <p class="subtitle">Diseñado para agencias, creadores y emprendedores que quieren crecer rápido.</p>
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="icon">💸</div>
+      <h3>Precios imbatibles</h3>
+      <p>Compramos al por mayor a los mejores proveedores y te trasladamos el ahorro. Siempre más barato que la competencia.</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon">⚡</div>
+      <h3>Entrega ultrarrápida</h3>
+      <p>La mayoría de pedidos empiezan en minutos. Monitoreo en tiempo real del progreso de tu orden.</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon">🔒</div>
+      <h3>100% seguro</h3>
+      <p>Sin contraseñas, solo necesitas el enlace. Pagos cifrados y saldo seguro en tu cuenta.</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon">🌐</div>
+      <h3>Todas las redes</h3>
+      <p>Instagram, TikTok, YouTube, X (Twitter), Facebook, Spotify, Telegram y muchas más.</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon">🔄</div>
+      <h3>Refill garantizado</h3>
+      <p>Muchos servicios incluyen reposición gratuita si el conteo baja. Sin costo adicional.</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon">🤖</div>
+      <h3>API para revendedores</h3>
+      <p>Integra NexBoost en tu propio sistema con nuestra API compatible con cualquier panel SMM.</p>
+    </div>
+  </div>
+</section>
+
+<!-- NETWORKS -->
+<section id="services" style="background:var(--bg2);max-width:100%;padding:80px 40px">
+  <div style="max-width:1100px;margin:0 auto">
+    <h2>Redes sociales <span class="gradient-text">disponibles</span></h2>
+    <p class="subtitle">Más de 300 servicios para potenciar tu presencia digital</p>
+    <div class="networks-grid">
+      <div class="network-chip">📸 Instagram</div>
+      <div class="network-chip">🎵 TikTok</div>
+      <div class="network-chip">▶️ YouTube</div>
+      <div class="network-chip">🐦 X / Twitter</div>
+      <div class="network-chip">📘 Facebook</div>
+      <div class="network-chip">💬 Telegram</div>
+      <div class="network-chip">🎵 Spotify</div>
+      <div class="network-chip">🎮 Twitch</div>
+      <div class="network-chip">💼 LinkedIn</div>
+      <div class="network-chip">📌 Pinterest</div>
+      <div class="network-chip">👻 Snapchat</div>
+      <div class="network-chip">🎬 Vimeo</div>
+      <div class="network-chip">🔴 SoundCloud</div>
+      <div class="network-chip">📦 + Más</div>
+    </div>
+    <div class="mt-4" style="text-align:center;margin-top:36px">
+      <a href="register.html" class="btn btn-primary">Ver todos los servicios →</a>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section id="pricing">
+  <div class="hero-badge" style="margin:0 auto 20px;display:table">💰 Planes de recarga</div>
+  <h2>Precios <span class="gradient-text">transparentes</span></h2>
+  <p class="subtitle">Sin suscripciones. Recargas tu saldo y lo usas cuando quieras.</p>
+  <div class="grid-3" style="max-width:900px;margin:0 auto">
+    <div class="pricing-card">
+      <div style="font-size:13px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px">Starter</div>
+      <div class="price-val gradient-text">$5</div>
+      <div class="price-per">recarga mínima</div>
+      <ul class="price-list">
+        <li>Acceso a todos los servicios</li>
+        <li>Panel en tiempo real</li>
+        <li>Soporte por Telegram</li>
+        <li>Historial de pedidos</li>
+      </ul>
+      <a href="register.html" class="btn btn-outline btn-full">Empezar</a>
+    </div>
+    <div class="pricing-card featured">
+      <div style="font-size:13px;color:var(--primary);font-weight:600;text-transform:uppercase;letter-spacing:.5px">Pro</div>
+      <div class="price-val gradient-text">$25</div>
+      <div class="price-per">recarga más popular</div>
+      <ul class="price-list">
+        <li>Todo del plan Starter</li>
+        <li>Precios por volumen</li>
+        <li>API de revendedor</li>
+        <li>Soporte prioritario</li>
+      </ul>
+      <a href="register.html" class="btn btn-primary btn-full">Elegir Pro</a>
+    </div>
+    <div class="pricing-card">
+      <div style="font-size:13px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px">Agency</div>
+      <div class="price-val gradient-text">$100</div>
+      <div class="price-per">recarga máxima</div>
+      <ul class="price-list">
+        <li>Todo del plan Pro</li>
+        <li>Descuentos especiales</li>
+        <li>Gestor dedicado</li>
+        <li>Facturación mensual</li>
+      </ul>
+      <a href="register.html" class="btn btn-outline btn-full">Contactar</a>
+    </div>
+  </div>
+</section>
+
+<!-- PAYMENTS -->
+<section style="background:var(--bg2);max-width:100%;padding:60px 40px">
+  <div style="max-width:900px;margin:0 auto;text-align:center">
+    <h2>Métodos de <span class="gradient-text">pago</span></h2>
+    <p class="subtitle">Múltiples opciones para recargar tu saldo</p>
+    <div class="payment-grid">
+      <div class="payment-card">
+        <div class="pay-icon">₿</div>
+        <div>Binance Pay</div>
+        <div style="font-size:11px;color:var(--green)">Instantáneo</div>
+      </div>
+      <div class="payment-card">
+        <div class="pay-icon">💵</div>
+        <div>Zelle</div>
+        <div style="font-size:11px;color:var(--yellow)">1-2 horas</div>
+      </div>
+      <div class="payment-card">
+        <div class="pay-icon">🪙</div>
+        <div>USDT TRC20</div>
+        <div style="font-size:11px;color:var(--green)">Instantáneo</div>
+      </div>
+      <div class="payment-card">
+        <div class="pay-icon">💳</div>
+        <div>PayPal</div>
+        <div style="font-size:11px;color:var(--yellow)">Próximamente</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section id="faq">
+  <h2>Preguntas <span class="gradient-text">frecuentes</span></h2>
+  <p class="subtitle">Todo lo que necesitas saber antes de empezar</p>
+  <div style="max-width:700px;margin:0 auto">
+    <div class="faq-item">
+      <button class="faq-q">¿Necesito dar mi contraseña? <span class="faq-arrow">▼</span></button>
+      <div class="faq-a">No, nunca. Solo necesitas el enlace público de tu perfil o publicación. Tus contraseñas son privadas y nunca te las pediremos.</div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q">¿Cuánto tarda en llegar mi pedido? <span class="faq-arrow">▼</span></button>
+      <div class="faq-a">La mayoría de pedidos comienzan en 0-30 minutos. El tiempo de entrega depende del servicio y la cantidad. Puedes ver el progreso en tiempo real desde tu panel.</div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q">¿Qué pasa si no se entrega completo? <span class="faq-arrow">▼</span></button>
+      <div class="faq-a">Si un pedido queda parcial, se te reembolsa automáticamente la diferencia a tu saldo. Los servicios con refill incluyen reposición gratuita.</div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q">¿Cómo recargo mi saldo? <span class="faq-arrow">▼</span></button>
+      <div class="faq-a">Ve a tu panel de usuario, sección "Recargar saldo", elige el método de pago (Binance Pay, Zelle o USDT), realiza la transferencia y envía el comprobante. Tu saldo se activa en minutos.</div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q">¿Tienen API para revendedores? <span class="faq-arrow">▼</span></button>
+      <div class="faq-a">Sí. Ofrecemos una API compatible con el estándar de los panels SMM más populares. Puedes integrar NexBoost en tu propio sistema o panel. Consulta nuestra documentación de API.</div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q">¿Cuál es el mínimo de recarga? <span class="faq-arrow">▼</span></button>
+      <div class="faq-a">El mínimo de recarga es $5 USD. No hay suscripciones ni cargos mensuales — solo recargas cuando lo necesitas.</div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<div class="cta-section">
+  <div style="max-width:600px;margin:0 auto">
+    <h2 style="font-size:36px;font-weight:800;margin-bottom:12px">¿Listo para crecer?</h2>
+    <p style="color:var(--muted);margin-bottom:28px">Únete a más de 1,200 usuarios que ya están usando NexBoost para impulsar su presencia en redes sociales.</p>
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+      <a href="register.html" class="btn btn-primary btn-lg">Crear cuenta gratis →</a>
+      <a href="login.html" class="btn btn-ghost btn-lg">Ya tengo cuenta</a>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer class="landing-footer">
+  <div style="margin-bottom:8px">
+    <a href="#">Términos de servicio</a> · <a href="#">Política de privacidad</a> · <a href="api-docs.html">API</a> · <a href="#">Soporte</a>
+  </div>
+  <div>© 2025 NexBoost. Todos los derechos reservados.</div>
+</footer>
+
+<div id="toast-container"></div>
+
+<script>
+  // Counter animation
+  const counters = document.querySelectorAll('.counter');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const el = entry.target;
+        const target = parseInt(el.dataset.target);
+        let current = 0;
+        const step = target / 60;
+        const timer = setInterval(() => {
+          current = Math.min(current + step, target);
+          el.textContent = Math.floor(current).toLocaleString();
+          if (current >= target) clearInterval(timer);
+        }, 16);
+        observer.unobserve(el);
+      }
+    });
+  }, { threshold: 0.5 });
+  counters.forEach(c => observer.observe(c));
+
+  // FAQ
+  document.querySelectorAll('.faq-q').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const item = btn.closest('.faq-item');
+      const isOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+      if (!isOpen) item.classList.add('open');
+    });
+  });
+</script>
+</body>
+</html>
