@@ -39,7 +39,7 @@
     </div>
     <div class="nav-section">
       <div class="nav-section-title">Cuenta</div>
-      <div class="nav-item" data-page="add-funds" data-title="Recargar saldo" onclick="showPage('add-funds')">
+      <div class="nav-item" data-page="add-funds" data-title="Recargar saldo" onclick="showPage('add-funds');updatePaymentInstructions()">
         <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></span> Recargar saldo
       </div>
       <div class="nav-item" data-page="movements" data-title="Movimientos" onclick="showPage('movements');loadMovements()">
@@ -142,7 +142,7 @@
               <div style="width:44px;height:44px;background:var(--blue-xs);border-radius:12px;display:flex;align-items:center;justify-content:center;margin-bottom:12px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></div>
               <div style="font-weight:700;font-size:16px;margin-bottom:6px;color:var(--navy)">Recargar saldo</div>
               <div style="color:var(--muted);font-size:13px;margin-bottom:16px">Binance Pay, Zelle, USDT y más</div>
-              <button class="btn btn-outline btn-sm" onclick="showPage('add-funds')">Recargar</button>
+              <button class="btn btn-outline btn-sm" onclick="showPage('add-funds');updatePaymentInstructions()">Recargar</button>
             </div>
           </div>
         </div>
@@ -861,7 +861,7 @@ function updateOrderTotal() {
     const needed = (cost - bal).toFixed(4);
     alertEl.innerHTML = `<div class="alert alert-warning" style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
       <span>Saldo insuficiente. Necesitas <strong>$${needed}</strong> más.</span>
-      <button class="btn btn-primary btn-sm" onclick="showPage('add-funds')">Recargar ahora</button>
+      <button class="btn btn-primary btn-sm" onclick="showPage('add-funds');updatePaymentInstructions()">Recargar ahora</button>
     </div>`;
   } else {
     if (alertEl.querySelector('.alert-warning')) alertEl.innerHTML = '';
