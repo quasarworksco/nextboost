@@ -25,7 +25,9 @@
     .prices-hero p  { font-size: 16px; opacity: .8; max-width: 520px; margin: 0 auto 28px; }
     .prices-hero .cta-row { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
 
-    .prices-body { max-width: 980px; margin: 0 auto; padding: 40px 20px 80px; }
+    body { overflow-x: hidden; }
+    .prices-body { max-width: 980px; margin: 0 auto; padding: 40px 20px 64px; box-sizing: border-box; }
+    .prices-hero { padding-top: 120px; }
 
     /* Platform filter buttons */
     .plat-filter { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 28px; }
@@ -45,13 +47,13 @@
     .search-icon { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: var(--muted); }
 
     /* Table */
-    .prices-table-wrap { overflow-x: auto; border-radius: 12px; border: 1.5px solid var(--border2); }
-    .prices-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .prices-table-wrap { border-radius: 12px; border: 1.5px solid var(--border2); overflow: hidden; }
+    .prices-table { width: 100%; border-collapse: collapse; font-size: 13px; table-layout: fixed; }
     .prices-table th { padding: 12px 16px; text-align: left; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); background: var(--bg2); border-bottom: 1.5px solid var(--border2); }
-    .prices-table td { padding: 12px 16px; border-bottom: 1px solid var(--border2); vertical-align: middle; }
+    .prices-table td { padding: 12px 16px; border-bottom: 1px solid var(--border2); vertical-align: middle; overflow: hidden; text-overflow: ellipsis; }
     .prices-table tr:last-child td { border-bottom: none; }
     .prices-table tr:hover td { background: var(--bg2); }
-    .svc-name { font-weight: 500; color: var(--navy); line-height: 1.4; }
+    .svc-name { font-weight: 500; color: var(--navy); line-height: 1.4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 0; }
     .svc-cat  { font-size: 11px; color: var(--muted); margin-top: 2px; }
     .price-badge { display: inline-block; background: var(--blue-xs); color: var(--blue); font-weight: 700; font-size: 13px; padding: 3px 8px; border-radius: 6px; }
     .range-cell { color: var(--muted); font-size: 12px; white-space: nowrap; }
@@ -69,15 +71,15 @@
 <body>
 
 <!-- NAV -->
-<nav class="navbar">
-  <div class="nav-container">
-    <a href="index.html" class="nav-logo">Next<span>Boost</span></a>
-    <div class="nav-links">
-      <a href="index.html">Inicio</a>
-      <a href="precios.html" style="color:var(--blue);font-weight:600">Precios</a>
-      <a href="login.html">Entrar</a>
-      <a href="register.html" class="btn btn-primary btn-sm">Crear cuenta</a>
-    </div>
+<nav class="landing-nav">
+  <a href="index.html" class="logo">Next<span>Boost</span></a>
+  <div class="nav-links">
+    <a href="index.html">Inicio</a>
+    <a href="precios.html" style="color:var(--blue);font-weight:600">Precios</a>
+    <a href="login.html">Entrar</a>
+  </div>
+  <div class="nav-cta">
+    <a href="register.html" class="btn btn-primary btn-sm">Crear cuenta</a>
   </div>
 </nav>
 
@@ -110,6 +112,13 @@
   <!-- Table -->
   <div class="prices-table-wrap">
     <table class="prices-table">
+      <colgroup>
+        <col style="width:55%">
+        <col style="width:18%">
+        <col class="col-range" style="width:10%">
+        <col class="col-range" style="width:10%">
+        <col style="width:7%">
+      </colgroup>
       <thead>
         <tr>
           <th>Servicio</th>
@@ -135,11 +144,11 @@
 </div>
 
 <!-- FOOTER -->
-<footer class="footer">
-  <div class="footer-container">
+<footer class="landing-footer">
+  <div class="footer-inner">
     <div class="footer-brand">
-      <div class="footer-logo">Next<span>Boost</span></div>
-      <p>Impulsa tu presencia digital con resultados reales.</p>
+      <div class="logo" style="margin-bottom:8px">Next<span>Boost</span></div>
+      <p style="font-size:13px;color:var(--muted)">Impulsa tu presencia digital con resultados reales.</p>
     </div>
     <div class="footer-links">
       <div class="footer-col">
@@ -152,6 +161,7 @@
         <div class="footer-col-title">Legal</div>
         <a href="terms.html">Términos</a>
         <a href="privacy.html">Privacidad</a>
+        <a href="refunds.html">Reembolsos</a>
       </div>
     </div>
   </div>
