@@ -1218,6 +1218,7 @@ function showSaveCatalogBtn() {
 
 function markCatalogChange(docId, field, value) {
   if (!catalogMap[docId]) return;
+  if (typeof value === 'string') value = value.trim();
   catalogMap[docId][field] = value;
   if (!pendingCatalogChanges[docId]) pendingCatalogChanges[docId] = {};
   pendingCatalogChanges[docId][field] = value;
@@ -1339,6 +1340,16 @@ async function saveCatalog() {
     pendingCatalogChanges = {};
     Services.clearCache(); // invalidate client-side catalog cache
     btn.style.display = 'none';
+    // Refresh category filter dropdown in case a category name changed
+    const cats = [...new Set(Object.values(catalogMap).map(s => s.displayCategory).filter(Boolean))].sort();
+    const sel = document.getElementById('cat-category');
+    if (sel) {
+      const prev = sel.value;
+      sel.innerHTML = '<option value="">Todas las categorías</option>' +
+        cats.map(c => `<option value="${c}">${c}</option>`).join('');
+      sel.value = cats.includes(prev) ? prev : '';
+    }
+    renderCatalog();
     toast('Catálogo guardado correctamente', 'success');
   } catch(e) {
     toast('Error al guardar: ' + e.message, 'error');
