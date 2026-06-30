@@ -198,8 +198,6 @@
                   <div class="info-row"><span class="info-label">Precio por 1000</span><span class="info-val" id="si-rate">—</span></div>
                   <div class="info-row"><span class="info-label">Mínimo</span><span class="info-val" id="si-min">—</span></div>
                   <div class="info-row"><span class="info-label">Máximo</span><span class="info-val" id="si-max">—</span></div>
-                  <div class="info-row"><span class="info-label">Refill</span><span class="info-val" id="si-refill">—</span></div>
-                  <div class="info-row"><span class="info-label">Tipo</span><span class="info-val" id="si-type">—</span></div>
                 </div>
               </div>
 
@@ -840,8 +838,6 @@ function updateServiceInfo() {
   document.getElementById('si-rate').textContent   = `$${parseFloat(s.rate).toFixed(4)} / 1000`;
   document.getElementById('si-min').textContent    = (s.min||1).toLocaleString();
   document.getElementById('si-max').textContent    = (s.max||100000).toLocaleString();
-  document.getElementById('si-refill').textContent = s.refill ? 'Sí' : 'No';
-  document.getElementById('si-type').textContent   = s.type || '—';
   document.getElementById('order-qty').min   = s.min || 1;
   document.getElementById('order-qty').max   = s.max || 100000;
   document.getElementById('order-qty').value = s.min || 100;
