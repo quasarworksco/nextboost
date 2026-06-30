@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Precios y Servicios — NextBoost | Seguidores, Likes y Vistas</title>
+  <meta name="description" content="Consulta todos los servicios y precios de NextBoost: seguidores, likes, vistas y más para Instagram, TikTok, YouTube, Facebook, Spotify y Telegram. Sin registro.">
+  <meta name="keywords" content="precios seguidores instagram, precio likes tiktok, comprar vistas youtube, servicios smm precios, seguidores baratos">
+  <meta property="og:title"       content="Precios — NextBoost">
+  <meta property="og:description" content="Servicios de crecimiento para Instagram, TikTok, YouTube y más. Consulta precios sin necesidad de registrarte.">
+  <meta property="og:image"       content="https://nextboostdgp.pages.dev/og-image.svg">
+  <meta name="twitter:card"       content="summary_large_image">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .prices-hero {
+      background: linear-gradient(135deg, var(--navy) 0%, #1e3a8a 100%);
+      padding: 60px 24px 48px;
+      text-align: center;
+      color: #fff;
+    }
+    .prices-hero h1 { font-size: clamp(28px,5vw,42px); font-weight: 800; margin-bottom: 12px; }
+    .prices-hero p  { font-size: 16px; opacity: .8; max-width: 520px; margin: 0 auto 28px; }
+    .prices-hero .cta-row { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+
+    .prices-body { max-width: 980px; margin: 0 auto; padding: 40px 20px 80px; }
+
+    /* Platform filter buttons */
+    .plat-filter { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 28px; }
+    .plat-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 7px 14px; border-radius: 20px;
+      border: 2px solid var(--border2); background: var(--bg-card);
+      color: var(--text); font-size: 13px; font-weight: 500;
+      cursor: pointer; transition: all .18s;
+    }
+    .plat-btn:hover { border-color: var(--blue); }
+    .plat-btn.active { border-color: currentColor; }
+
+    /* Search */
+    .search-wrap { position: relative; margin-bottom: 24px; }
+    .search-wrap input { width: 100%; padding: 10px 16px 10px 40px; border: 1.5px solid var(--border2); border-radius: 10px; font-size: 14px; background: var(--bg-card); color: var(--text); box-sizing: border-box; }
+    .search-icon { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: var(--muted); }
+
+    /* Table */
+    .prices-table-wrap { overflow-x: auto; border-radius: 12px; border: 1.5px solid var(--border2); }
+    .prices-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .prices-table th { padding: 12px 16px; text-align: left; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); background: var(--bg2); border-bottom: 1.5px solid var(--border2); }
+    .prices-table td { padding: 12px 16px; border-bottom: 1px solid var(--border2); vertical-align: middle; }
+    .prices-table tr:last-child td { border-bottom: none; }
+    .prices-table tr:hover td { background: var(--bg2); }
+    .svc-name { font-weight: 500; color: var(--navy); line-height: 1.4; }
+    .svc-cat  { font-size: 11px; color: var(--muted); margin-top: 2px; }
+    .price-badge { display: inline-block; background: var(--blue-xs); color: var(--blue); font-weight: 700; font-size: 13px; padding: 3px 8px; border-radius: 6px; }
+    .range-cell { color: var(--muted); font-size: 12px; white-space: nowrap; }
+    .empty-state { text-align: center; padding: 60px 24px; color: var(--muted); }
+
+    .cta-banner { background: linear-gradient(135deg, var(--blue) 0%, #1e3a8a 100%); border-radius: 16px; padding: 40px 32px; text-align: center; margin-top: 48px; color: #fff; }
+    .cta-banner h2 { font-size: 24px; font-weight: 800; margin-bottom: 10px; }
+    .cta-banner p  { opacity: .85; margin-bottom: 24px; }
+
+    @media(max-width:640px) {
+      .col-range { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="navbar">
+  <div class="nav-container">
+    <a href="index.html" class="nav-logo">Next<span>Boost</span></a>
+    <div class="nav-links">
+      <a href="index.html">Inicio</a>
+      <a href="precios.html" style="color:var(--blue);font-weight:600">Precios</a>
+      <a href="login.html">Entrar</a>
+      <a href="register.html" class="btn btn-primary btn-sm">Crear cuenta</a>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="prices-hero">
+  <div class="hero-badge" style="margin:0 auto 16px;display:table;background:rgba(255,255,255,.15);color:#fff;border-color:rgba(255,255,255,.3)">Catálogo completo</div>
+  <h1>Servicios y <span style="background:linear-gradient(90deg,#60a5fa,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent">Precios</span></h1>
+  <p>Todos los servicios disponibles en NextBoost. Sin registro. Sin sorpresas. Precios reales.</p>
+  <div class="cta-row">
+    <a href="register.html" class="btn btn-primary">Crear cuenta gratis →</a>
+    <a href="login.html" class="btn btn-outline" style="color:#fff;border-color:rgba(255,255,255,.4)">Ya tengo cuenta</a>
+  </div>
+</div>
+
+<!-- BODY -->
+<div class="prices-body">
+
+  <!-- Platform filter -->
+  <div class="plat-filter" id="plat-filter"></div>
+
+  <!-- Search -->
+  <div class="search-wrap">
+    <svg class="search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input type="text" id="svc-search" placeholder="Buscar servicio..." oninput="renderTable()">
+  </div>
+
+  <!-- Count -->
+  <div id="svc-count" style="font-size:13px;color:var(--muted);margin-bottom:14px"></div>
+
+  <!-- Table -->
+  <div class="prices-table-wrap">
+    <table class="prices-table">
+      <thead>
+        <tr>
+          <th>Servicio</th>
+          <th>Precio / 1000</th>
+          <th class="col-range">Mín</th>
+          <th class="col-range">Máx</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="svc-tbody">
+        <tr><td colspan="5" class="empty-state"><span class="spinner"></span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- CTA banner -->
+  <div class="cta-banner">
+    <h2>¿Listo para empezar?</h2>
+    <p>Crea tu cuenta gratis en segundos y haz tu primer pedido hoy mismo.</p>
+    <a href="register.html" class="btn btn-primary" style="font-size:15px;padding:12px 28px">Crear cuenta gratis →</a>
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="footer-container">
+    <div class="footer-brand">
+      <div class="footer-logo">Next<span>Boost</span></div>
+      <p>Impulsa tu presencia digital con resultados reales.</p>
+    </div>
+    <div class="footer-links">
+      <div class="footer-col">
+        <div class="footer-col-title">Plataforma</div>
+        <a href="index.html">Inicio</a>
+        <a href="precios.html">Precios</a>
+        <a href="register.html">Crear cuenta</a>
+      </div>
+      <div class="footer-col">
+        <div class="footer-col-title">Legal</div>
+        <a href="terms.html">Términos</a>
+        <a href="privacy.html">Privacidad</a>
+      </div>
+    </div>
+  </div>
+  <div class="footer-bottom">© 2025 NextBoost. Todos los derechos reservados.</div>
+</footer>
+
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="js/config.js"></script>
+<script>
+const PLATFORM_META = [
+  { key: 'instagram', label: 'Instagram', color: '#e1306c', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>' },
+  { key: 'tiktok',    label: 'TikTok',    color: '#010101', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.18 8.18 0 004.78 1.52V6.76a4.85 4.85 0 01-1.01-.07z"/></svg>' },
+  { key: 'facebook',  label: 'Facebook',  color: '#1877f2', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>' },
+  { key: 'youtube',   label: 'YouTube',   color: '#ff0000', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>' },
+  { key: 'telegram',  label: 'Telegram',  color: '#0088cc', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>' },
+  { key: 'spotify',   label: 'Spotify',   color: '#1db954', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>' },
+  { key: 'twitch',    label: 'Twitch',    color: '#9146ff', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714z"/></svg>' },
+  { key: 'web',       label: 'Tráfico Web', color: '#6366f1', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>' },
+];
+
+let allServices = [];
+let activePlatform = null;
+
+function getPlatform(cat) {
+  const c = (cat || '').toLowerCase();
+  for (const p of PLATFORM_META) {
+    if (p.key === 'web') { if (c.includes('tráfico') || c.includes('trafico') || c.includes('traffic') || c.includes('web')) return p.key; }
+    else if (c.includes(p.key)) return p.key;
+  }
+  return null;
+}
+
+async function loadCatalog() {
+  const snap = await db.collection('catalog').get();
+  allServices = snap.docs.map(d => {
+    const x = d.data();
+    return { id: x.serviceId || d.id, name: x.displayName || x.name, category: x.displayCategory || x.category, rate: x.rate, min: x.min, max: x.max };
+  }).sort((a,b) => parseFloat(a.rate) - parseFloat(b.rate));
+
+  buildPlatformButtons();
+  renderTable();
+}
+
+function buildPlatformButtons() {
+  const available = new Set(allServices.map(s => getPlatform(s.category)).filter(Boolean));
+  const wrap = document.getElementById('plat-filter');
+  wrap.innerHTML = PLATFORM_META.filter(p => available.has(p.key)).map(p => `
+    <button class="plat-btn" id="pb-${p.key}" onclick="togglePlatform('${p.key}')" style="color:var(--text)">
+      <span style="color:${p.color}">${p.icon}</span>${p.label}
+    </button>`).join('');
+}
+
+function togglePlatform(key) {
+  activePlatform = activePlatform === key ? null : key;
+  PLATFORM_META.forEach(p => {
+    const btn = document.getElementById('pb-' + p.key);
+    if (!btn) return;
+    if (p.key === activePlatform) {
+      btn.style.borderColor = p.color; btn.style.background = p.color + '18'; btn.style.color = p.color;
+    } else {
+      btn.style.borderColor = 'var(--border2)'; btn.style.background = 'var(--bg-card)'; btn.style.color = 'var(--text)';
+    }
+  });
+  document.getElementById('svc-search').value = '';
+  renderTable();
+}
+
+function renderTable() {
+  const q = (document.getElementById('svc-search').value || '').toLowerCase().trim();
+  let list = activePlatform ? allServices.filter(s => getPlatform(s.category) === activePlatform) : allServices;
+  if (q) list = list.filter(s => (s.name||'').toLowerCase().includes(q) || (s.category||'').toLowerCase().includes(q));
+
+  document.getElementById('svc-count').textContent = `${list.length} servicio${list.length !== 1 ? 's' : ''}`;
+
+  const tbody = document.getElementById('svc-tbody');
+  if (!list.length) {
+    tbody.innerHTML = `<tr><td colspan="5" class="empty-state">Sin resultados para tu búsqueda.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = list.slice(0, 200).map(s => `
+    <tr>
+      <td>
+        <div class="svc-name">${s.name || '—'}</div>
+        <div class="svc-cat">${s.category || ''}</div>
+      </td>
+      <td><span class="price-badge">$${parseFloat(s.rate||0).toFixed(4)}</span></td>
+      <td class="range-cell col-range">${(s.min||1).toLocaleString()}</td>
+      <td class="range-cell col-range">${(s.max||0).toLocaleString()}</td>
+      <td><a href="register.html" style="font-size:12px;font-weight:600;color:var(--blue);white-space:nowrap">Pedir →</a></td>
+    </tr>`).join('') + (list.length > 200 ? `<tr><td colspan="5" class="empty-state" style="padding:16px">Mostrando 200 de ${list.length}. Usa el buscador para filtrar.</td></tr>` : '');
+}
+
+loadCatalog().catch(() => {
+  document.getElementById('svc-tbody').innerHTML = `<tr><td colspan="5" class="empty-state">Error al cargar servicios. Intenta recargar la página.</td></tr>`;
+});
+</script>
+</body>
+</html>
