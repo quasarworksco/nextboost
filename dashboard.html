@@ -615,7 +615,7 @@ requireAuth(async user => {
   document.getElementById('profile-email').value = user.email;
 
   updateBalanceDisplay(userData.balance || 0);
-  document.getElementById('api-key-display').value = userData.apiKey || '— Sin clave generada —';
+  // api-key-display removed
 
   document.getElementById('loading-overlay').style.display = 'none';
 
@@ -1211,19 +1211,6 @@ function renderRechargeHistory(recharges) {
   </tr>`).join('');
 }
 
-// ── API key ───────────────────────────────────────────
-function copyApiKey() {
-  const val = document.getElementById('api-key-display').value;
-  navigator.clipboard.writeText(val).then(() => toast('API key copiada', 'success'));
-}
-
-document.getElementById('regen-key-btn').addEventListener('click', async () => {
-  const newKey = 'nb_' + Array.from(crypto.getRandomValues(new Uint8Array(24))).map(b => b.toString(16).padStart(2,'0')).join('');
-  await db.collection('users').doc(currentUser.uid).update({ apiKey: newKey });
-  document.getElementById('api-key-display').value = newKey;
-  userData.apiKey = newKey;
-  toast('Nueva API key generada', 'success');
-});
 
 // ── Profile ───────────────────────────────────────────
 document.getElementById('update-profile-btn').addEventListener('click', async () => {
