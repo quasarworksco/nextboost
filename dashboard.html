@@ -749,11 +749,7 @@ let selectedPlatform = null;
 async function loadServices() {
   try {
     const raw = await Services.getAll();
-    allServices = raw.filter(s => {
-      const cat = (s.category || '').toLowerCase();
-      return PLATFORM_META.some(p => cat.includes(p.key) || (p.key === 'web' && (cat.includes('tráfico') || cat.includes('trafico') || cat.includes('traffic'))));
-    });
-    allServices.sort((a, b) => parseFloat(a.rate) - parseFloat(b.rate));
+    allServices = [...raw].sort((a, b) => parseFloat(a.rate) - parseFloat(b.rate));
     renderPlatformButtons();
     filteredServices = allServices;
   } catch(e) { toast('Error cargando servicios: ' + e.message, 'error'); }
