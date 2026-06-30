@@ -486,13 +486,7 @@
                 <label>Worker URL <span style="color:var(--green);font-size:11px">● Activo</span></label>
                 <input type="url" class="input" id="settings-api-url" readonly style="opacity:.6;cursor:default" tabindex="-1">
               </div>
-              <div class="form-group">
-                <label>Markup de precios (ej: 1.5 = 50% de ganancia)</label>
-                <input type="number" class="input" id="settings-markup" placeholder="1.5" min="1.0" step="0.1">
-                <div style="font-size:12px;color:var(--muted);margin-top:4px">Se aplica al sincronizar servicios desde el proveedor.</div>
-              </div>
               <div id="settings-alert"></div>
-              <button class="btn btn-primary" id="save-settings-btn">Guardar markup</button>
             </div>
           </div>
           <div class="card">
@@ -1510,7 +1504,6 @@ async function loadSettings() {
 
   const snap = await db.collection('settings').doc('main').get();
   const d = snap.exists ? snap.data() : {};
-  document.getElementById('settings-markup').value  = d.markup  || APP.markup;
   document.getElementById('settings-binance').value    = d.binance    || '';
   document.getElementById('settings-zelle').value      = d.zelle      || '';
   document.getElementById('settings-zelle-name').value = d.zelleName  || '';
@@ -1522,19 +1515,6 @@ async function loadSettings() {
   document.getElementById('settings-announcement-type').value = d.announcementType || 'info';
 }
 
-document.getElementById('save-settings-btn').addEventListener('click', async () => {
-  const markup = parseFloat(document.getElementById('settings-markup').value) || APP.markup;
-  const alertEl = document.getElementById('settings-alert');
-  try {
-    await db.collection('settings').doc('main').set({
-      markup,
-      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-    }, { merge: true });
-    alertEl.innerHTML = '<div class="alert alert-success">Markup guardado.</div>';
-    setTimeout(() => alertEl.innerHTML = '', 3000);
-    toast('Configuración guardada', 'success');
-  } catch(e) { alertEl.innerHTML = `<div class="alert alert-error">${e.message}</div>`; }
-});
 
 // ── Support tickets (admin) ───────────────────────────
 let _adminActiveTicket = null;
