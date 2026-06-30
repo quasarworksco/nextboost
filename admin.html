@@ -344,7 +344,7 @@
         <!-- Filters -->
         <div class="card mb-3">
           <div class="card-body" style="display:flex;gap:12px;flex-wrap:wrap;align-items:center">
-            <input type="text" class="input" id="svc-search" placeholder="Buscar servicio..." style="max-width:280px" oninput="renderServicesTable()">
+            <input type="text" class="input" id="svc-search" placeholder="Buscar por nombre, categoría o ID..." style="max-width:320px" oninput="renderServicesTable()">
             <select class="select" id="svc-category" style="max-width:220px" onchange="renderServicesTable()">
               <option value="">Todas las categorías</option>
             </select>
@@ -1101,7 +1101,7 @@ function renderServicesTable() {
   let list = allAdminServices.filter(s => {
     if (cat && s.category !== cat) return false;
     if (sort === 'active' && !catalogMap[s.docId]) return false;
-    if (q && !(s.name||'').toLowerCase().includes(q) && !(s.category||'').toLowerCase().includes(q)) return false;
+    if (q && !(s.name||'').toLowerCase().includes(q) && !(s.category||'').toLowerCase().includes(q) && !String(s.id).includes(q)) return false;
     return true;
   });
 
