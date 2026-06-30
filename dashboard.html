@@ -782,6 +782,25 @@ function renderPlatformButtons() {
 }
 
 function selectPlatform(key) {
+  // Toggle off if already selected
+  if (selectedPlatform === key) {
+    selectedPlatform = null;
+    PLATFORM_META.forEach(p => {
+      const btn = document.getElementById('plat-btn-' + p.key);
+      if (!btn) return;
+      btn.style.borderColor = 'var(--border2)';
+      btn.style.background  = 'var(--bg-card)';
+      btn.style.color       = 'var(--text)';
+    });
+    document.getElementById('category-filter-wrap').style.display = 'none';
+    selectedService = null;
+    document.getElementById('service-search').value = '';
+    document.getElementById('service-select').value = '';
+    document.getElementById('service-search-clear').style.display = 'none';
+    updateServiceInfo();
+    renderServiceDropdown();
+    return;
+  }
   selectedPlatform = key;
   // Highlight active button
   PLATFORM_META.forEach(p => {
