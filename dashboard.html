@@ -591,6 +591,7 @@ let _cachedRecharges = null;
 
 // ── Auth ──────────────────────────────────────────────
 requireAuth(async user => {
+  try {
   currentUser = user;
   const snap  = await db.collection('users').doc(user.uid).get();
 
@@ -601,7 +602,6 @@ requireAuth(async user => {
       email: user.email,
       balance: 0,
       role: 'user',
-      apiKey: null,
       createdAt: firebase.firestore.FieldValue.serverTimestamp(),
     });
     userData = { name: user.displayName || user.email.split('@')[0], email: user.email, balance: 0, role: 'user' };
@@ -615,7 +615,6 @@ requireAuth(async user => {
   document.getElementById('profile-email').value = user.email;
 
   updateBalanceDisplay(userData.balance || 0);
-  // api-key-display removed
 
   document.getElementById('loading-overlay').style.display = 'none';
 
@@ -626,6 +625,13 @@ requireAuth(async user => {
   loadRechargeHistory();
   loadPaymentSettings();
   checkOnboarding();
+
+  } catch(initErr) {
+    console.error('Dashboard init error:', initErr);
+    document.getElementById('loading-overlay').style.display = 'none';
+    toast('Error al cargar el panel: ' + initErr.message, 'error', 10000);
+    return;
+  }
 
   // Real-time balance listener — also fires when recharge is approved
   let _prevBalance = parseFloat(userData.balance || 0);
