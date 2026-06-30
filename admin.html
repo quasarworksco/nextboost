@@ -1337,6 +1337,9 @@ async function saveCatalog() {
       });
       await batch.commit();
     }
+    await db.collection('settings').doc('main').set(
+      { catalogVersion: Date.now() }, { merge: true }
+    );
     pendingCatalogChanges = {};
     Services.clearCache(); // invalidate client-side catalog cache
     btn.style.display = 'none';

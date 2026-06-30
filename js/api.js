@@ -202,12 +202,12 @@ const Orders = (() => {
 const Services = (() => {
 
   const CATALOG_KEY = 'nb_catalog_cache';
-  const CATALOG_TTL = 6 * 60 * 60 * 1000; // 6 hours
+  const CATALOG_TTL = 6 * 60 * 60 * 1000; // 6 hours — fallback if version check fails
   let _memCache = null;
 
-  function _saveToStorage(data) {
+  function _saveToStorage(data, version) {
     try {
-      localStorage.setItem(CATALOG_KEY, JSON.stringify({ ts: Date.now(), data }));
+      localStorage.setItem(CATALOG_KEY, JSON.stringify({ ts: Date.now(), version: version || null, data }));
     } catch(e) {}
   }
 
@@ -217,7 +217,7 @@ const Services = (() => {
       if (!raw) return null;
       const parsed = JSON.parse(raw);
       if (Date.now() - parsed.ts > CATALOG_TTL) { localStorage.removeItem(CATALOG_KEY); return null; }
-      return parsed.data;
+      return parsed;
     } catch(e) { return null; }
   }
 
@@ -229,7 +229,18 @@ const Services = (() => {
   async function getAll() {
     if (_memCache) return _memCache;
     const stored = _loadFromStorage();
-    if (stored) { _memCache = stored; return _memCache; }
+
+    // Cheap single-doc read to check if admin published a newer catalog version
+    let serverVersion = null;
+    try {
+      const verSnap = await db.collection('settings').doc('main').get();
+      serverVersion = verSnap.exists ? (verSnap.data().catalogVersion || null) : null;
+    } catch(e) {}
+
+    if (stored && (!serverVersion || stored.version === serverVersion)) {
+      _memCache = stored.data;
+      return _memCache;
+    }
 
     // Read from catalog collection (admin's curated list with custom names/prices)
     const catSnap = await db.collection('catalog').get();
@@ -248,7 +259,7 @@ const Services = (() => {
           cancel:   data.cancel,
         };
       }).sort((a,b) => parseFloat(a.rate) - parseFloat(b.rate));
-      _saveToStorage(_memCache);
+      _saveToStorage(_memCache, serverVersion);
       return _memCache;
     }
     return [];
