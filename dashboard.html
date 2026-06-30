@@ -1145,12 +1145,20 @@ function updatePaymentInstructions() {
   const waBtn  = document.getElementById('whatsapp-btn');
   const s      = paySettings;
 
+  // Update minimum amount based on method
+  const minGeneral = parseFloat(s.minRecharge) || 5;
+  const minZelle   = parseFloat(s.minRechargeZelle) || 25;
+  const min = method === 'zelle' ? minZelle : minGeneral;
+  const amountInput = document.getElementById('recharge-amount');
+  amountInput.min         = min;
+  amountInput.placeholder = min.toFixed(2);
+
   const map = {
     binance: s.binance
       ? `Binance Pay ID: <strong style="font-size:15px;color:var(--navy)">${s.binance}</strong><br><span style="font-size:12px;color:var(--muted)">Envía exactamente el monto y guarda el ID de transacción. Incluye tu nombre completo al enviar.</span>`
       : '<span style="color:var(--muted)">Administrador aún no configuró Binance Pay.</span>',
     zelle: s.zelle
-      ? `Zelle: <strong style="font-size:15px;color:var(--navy)">${s.zelle}</strong>${s.zelleName ? `<br>Titular: <strong>${s.zelleName}</strong>` : ''}<br><span style="font-size:12px;color:var(--muted)">Anota el número de confirmación. Incluye tu nombre completo en el memo.</span>`
+      ? `Zelle: <strong style="font-size:15px;color:var(--navy)">${s.zelle}</strong>${s.zelleName ? `<br>Titular: <strong>${s.zelleName}</strong>` : ''}<br><span style="font-size:12px;color:var(--muted)">Monto mínimo: <strong>$${minZelle.toFixed(2)}</strong>. Anota el número de confirmación e incluye tu nombre completo en el memo.</span>`
       : '<span style="color:var(--muted)">Administrador aún no configuró Zelle.</span>',
     usdt: s.usdt
       ? `USDT TRC20:<br><strong style="font-size:13px;color:var(--navy);word-break:break-all">${s.usdt}</strong><br><span style="font-size:12px;color:var(--muted)">Red: TRC20 (Tron). Guarda el hash de la transacción. Incluye tu nombre al enviar el comprobante.</span>`
@@ -1231,8 +1239,10 @@ document.getElementById('recharge-btn').addEventListener('click', async () => {
   const alertEl = document.getElementById('recharge-alert');
   alertEl.innerHTML = '';
 
-  const minRecharge = parseFloat(paySettings.minRecharge) || 5;
-  if (!amount || amount < minRecharge) { alertEl.innerHTML = `<div class="alert alert-error">El monto mínimo es $${minRecharge.toFixed(2)}</div>`; return; }
+  const minRecharge = method === 'zelle'
+    ? (parseFloat(paySettings.minRechargeZelle) || 25)
+    : (parseFloat(paySettings.minRecharge) || 5);
+  if (!amount || amount < minRecharge) { alertEl.innerHTML = `<div class="alert alert-error">El monto mínimo para ${method === 'zelle' ? 'Zelle' : 'este método'} es $${minRecharge.toFixed(2)}</div>`; return; }
 
   const btn = document.getElementById('recharge-btn');
   btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Enviando...';

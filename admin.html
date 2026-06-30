@@ -514,9 +514,14 @@
                 <div style="font-size:12px;color:var(--muted);margin-top:4px">Se usa para que los clientes envíen comprobantes por WhatsApp.</div>
               </div>
               <div class="form-group">
-                <label>Mínimo de recarga (USD)</label>
+                <label>Mínimo de recarga general (USD)</label>
                 <input type="number" class="input" id="settings-min-recharge" placeholder="5" min="1" step="0.5">
-                <div style="font-size:12px;color:var(--muted);margin-top:4px">Monto mínimo que un cliente puede solicitar recargar.</div>
+                <div style="font-size:12px;color:var(--muted);margin-top:4px">Aplica a Binance Pay, USDT y PayPal.</div>
+              </div>
+              <div class="form-group">
+                <label>Mínimo de recarga Zelle (USD)</label>
+                <input type="number" class="input" id="settings-min-recharge-zelle" placeholder="25" min="1" step="0.5">
+                <div style="font-size:12px;color:var(--muted);margin-top:4px">Mínimo exclusivo para pagos por Zelle.</div>
               </div>
               <div class="form-group">
                 <label>Límite de pedidos activos por usuario</label>
@@ -1523,7 +1528,8 @@ async function loadSettings() {
   document.getElementById('settings-zelle-name').value = d.zelleName  || '';
   document.getElementById('settings-usdt').value       = d.usdt       || '';
   document.getElementById('settings-whatsapp').value          = d.whatsapp          || '';
-  document.getElementById('settings-min-recharge').value      = d.minRecharge       || '5';
+  document.getElementById('settings-min-recharge').value       = d.minRecharge      || '5';
+  document.getElementById('settings-min-recharge-zelle').value = d.minRechargeZelle || '25';
   document.getElementById('settings-max-active-orders').value = d.maxActiveOrders   || '10';
   document.getElementById('settings-announcement').value      = d.announcement     || '';
   document.getElementById('settings-announcement-type').value = d.announcementType || 'info';
@@ -1670,6 +1676,7 @@ document.getElementById('save-payments-btn').addEventListener('click', async () 
     usdt:      document.getElementById('settings-usdt').value.trim(),
     whatsapp:         document.getElementById('settings-whatsapp').value.trim(),
     minRecharge:      parseFloat(document.getElementById('settings-min-recharge').value) || 5,
+    minRechargeZelle: parseFloat(document.getElementById('settings-min-recharge-zelle').value) || 25,
     maxActiveOrders:  parseInt(document.getElementById('settings-max-active-orders').value) || 10,
     updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
   };
