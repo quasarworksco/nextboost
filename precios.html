@@ -11,8 +11,12 @@
   <meta property="og:description" content="Servicios de crecimiento para Instagram, TikTok, YouTube y más. Consulta precios sin necesidad de registrarte.">
   <meta property="og:image"       content="https://nextboostdgp.pages.dev/og-image.svg">
   <meta name="twitter:card"       content="summary_large_image">
+  <link rel="canonical" href="https://nextboostdgp.pages.dev/precios.html">
+  <meta property="og:url" content="https://nextboostdgp.pages.dev/precios.html">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"></noscript>
   <link rel="stylesheet" href="css/style.css">
   <style>
     .prices-hero {
@@ -255,6 +259,19 @@ function renderTable() {
       <td><a href="register.html" style="font-size:12px;font-weight:600;color:var(--blue);white-space:nowrap">Pedir →</a></td>
     </tr>`).join('') + (list.length > 200 ? `<tr><td colspan="5" class="empty-state" style="padding:16px">Mostrando 200 de ${list.length}. Usa el buscador para filtrar.</td></tr>` : '');
 }
+
+// Inject BreadcrumbList JSON-LD after page title is known
+const breadcrumbLd = document.createElement('script');
+breadcrumbLd.type = 'application/ld+json';
+breadcrumbLd.text = JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "Inicio", "item": "https://nextboostdgp.pages.dev/" },
+    { "@type": "ListItem", "position": 2, "name": "Precios y Servicios", "item": "https://nextboostdgp.pages.dev/precios.html" }
+  ]
+});
+document.head.appendChild(breadcrumbLd);
 
 loadCatalog().catch(() => {
   document.getElementById('svc-tbody').innerHTML = `<tr><td colspan="5" class="empty-state">Error al cargar servicios. Intenta recargar la página.</td></tr>`;
