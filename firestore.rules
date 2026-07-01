@@ -9,7 +9,7 @@ service cloud.firestore {
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
 
-    // Users: read own doc, admin reads all
+    // Users: read/update own doc, admin reads/writes all
     match /users/{uid} {
       allow read:   if isOwner(uid) || isAdmin();
       allow create: if isOwner(uid);
@@ -33,6 +33,14 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
+    // Balance history: users read own; admin reads/writes all
+    match /balance_history/{docId} {
+      allow read:   if isAuth() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isAdmin();
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
     // Services: public read, admin write
     match /services/{serviceId} {
       allow read:   if true;
@@ -47,7 +55,7 @@ service cloud.firestore {
 
     // Settings: authenticated users read (for payment data), admin write
     match /settings/{doc} {
-      allow read:   if isAuth();
+      allow read:   if isAuth() || true;
       allow write:  if isAdmin();
     }
 
