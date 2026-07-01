@@ -307,13 +307,15 @@ tr:hover td { background: var(--blue-xs); }
 
 /* ─── SIDEBAR ────────────────────────────────────────────── */
 .sidebar {
-  width: var(--sidebar-w); min-height: 100vh;
+  width: var(--sidebar-w); height: 100vh;
   background: var(--navy);
   border-right: 1px solid rgba(255,255,255,.06);
   display: flex; flex-direction: column;
   position: fixed; top: 0; left: 0; bottom: 0; z-index: 100;
   transition: transform .3s cubic-bezier(.4,0,.2,1);
+  overflow: hidden;
 }
+.sidebar-footer { flex-shrink: 0; }
 /* subtle blue shimmer on top */
 .sidebar::before {
   content: '';

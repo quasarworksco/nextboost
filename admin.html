@@ -572,14 +572,16 @@
     <div class="modal-body">
       <div class="form-group">
         <label>Usuario: <strong id="balance-modal-user"></strong></label>
+        <div style="margin-top:4px;font-size:13px;color:var(--muted)">Saldo actual: <strong id="balance-modal-current">$0.00</strong></div>
       </div>
       <div class="form-group">
-        <label>Nuevo saldo (USD)</label>
+        <label>Monto a ajustar (USD)</label>
         <input type="number" class="input" id="balance-modal-amount" placeholder="0.00" step="0.01" min="0">
       </div>
       <div id="balance-modal-alert"></div>
       <div style="display:flex;gap:10px;margin-top:8px">
-        <button class="btn btn-primary btn-full" id="balance-modal-btn">Aplicar</button>
+        <button class="btn btn-primary" style="flex:1" id="balance-modal-add">+ Sumar</button>
+        <button class="btn btn-ghost" style="flex:1;color:var(--red,#ef4444);border-color:var(--red,#ef4444)" id="balance-modal-sub">− Restar</button>
       </div>
     </div>
   </div>
@@ -982,17 +984,23 @@ let _balanceModalUserId = null;
 function openBalanceModal(uid, name, current) {
   _balanceModalUserId = uid;
   document.getElementById('balance-modal-user').textContent = name;
-  document.getElementById('balance-modal-amount').value = parseFloat(current).toFixed(2);
+  document.getElementById('balance-modal-current').textContent = formatUSD2(parseFloat(current));
+  document.getElementById('balance-modal-amount').value = '';
   document.getElementById('balance-modal-alert').innerHTML = '';
   openModal('balance-modal');
 }
 
-document.getElementById('balance-modal-btn').addEventListener('click', async () => {
-  const newBalance = parseFloat(document.getElementById('balance-modal-amount').value);
-  if (isNaN(newBalance) || newBalance < 0) { document.getElementById('balance-modal-alert').innerHTML = '<div class="alert alert-error">Monto inválido</div>'; return; }
+async function applyBalanceAdjustment(direction) {
+  const amount = parseFloat(document.getElementById('balance-modal-amount').value);
+  const alertEl = document.getElementById('balance-modal-alert');
+  if (isNaN(amount) || amount <= 0) {
+    alertEl.innerHTML = '<div class="alert alert-error">Ingresa un monto válido mayor a 0</div>';
+    return;
+  }
   const u = allUsers.find(x => x.id === _balanceModalUserId);
   const prevBalance = parseFloat(u?.balance || 0);
-  const delta = +(newBalance - prevBalance).toFixed(6);
+  const delta = direction === 'add' ? +amount : -amount;
+  const newBalance = Math.max(0, +(prevBalance + delta).toFixed(6));
   const now = firebase.firestore.FieldValue.serverTimestamp();
   const batch = db.batch();
   batch.update(db.collection('users').doc(_balanceModalUserId), { balance: newBalance });
@@ -1000,14 +1008,19 @@ document.getElementById('balance-modal-btn').addEventListener('click', async () 
     userId: _balanceModalUserId,
     type: 'adjustment',
     amount: delta,
-    description: `Ajuste manual por admin (de ${formatUSD2(prevBalance)} a ${formatUSD2(newBalance)})`,
+    description: direction === 'add'
+      ? `Suma manual por admin (+${formatUSD2(amount)})`
+      : `Resta manual por admin (−${formatUSD2(amount)})`,
     createdAt: now,
   });
   await batch.commit();
-  toast('Saldo actualizado', 'success');
+  toast(`Saldo ${direction === 'add' ? 'sumado' : 'restado'}: ${formatUSD2(Math.abs(delta))}`, 'success');
   closeModal('balance-modal');
   loadAdminUsers();
-});
+}
+
+document.getElementById('balance-modal-add').addEventListener('click', () => applyBalanceAdjustment('add'));
+document.getElementById('balance-modal-sub').addEventListener('click', () => applyBalanceAdjustment('sub'));
 
 async function toggleRole(uid, currentRole) {
   const newRole = currentRole === 'admin' ? 'user' : 'admin';
