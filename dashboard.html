@@ -947,7 +947,10 @@ function updateOrderTotal() {
   }
 }
 
+let _placingOrder = false;
 document.getElementById('place-order-btn').addEventListener('click', async () => {
+  if (_placingOrder) return;
+
   const service = selectedService;
   const link    = document.getElementById('order-link').value.trim();
   const qty     = parseInt(document.getElementById('order-qty').value);
@@ -961,24 +964,31 @@ document.getElementById('place-order-btn').addEventListener('click', async () =>
     return;
   }
 
+  _placingOrder = true;
   const btn = document.getElementById('place-order-btn');
   btn.disabled = true;
   btn.innerHTML = '<span class="spinner"></span> Procesando...';
 
   try {
     const order = await Orders.place({ userId: currentUser.uid, service, link, quantity: qty });
-    const newBal = parseFloat(userData.balance) - order.charge;
-    updateBalanceDisplay(newBal);
-    alertEl.innerHTML = `<div class="alert alert-success">Pedido #${order.id.slice(0,8)} creado. Costo: ${formatUSD2(order.charge)}</div>`;
+    alertEl.innerHTML = `<div class="alert alert-success">✅ Pedido #${order.id.slice(0,8)} creado. Costo: ${formatUSD2(order.charge)}</div>`;
     toast('Pedido creado exitosamente', 'success');
+    // Reset form to prevent accidental re-submit
+    document.getElementById('order-link').value = '';
+    document.getElementById('order-qty').value = '';
+    document.getElementById('order-total-box').style.display = 'none';
+    selectedService = null;
+    document.querySelectorAll('.svc-row.selected').forEach(r => r.classList.remove('selected'));
+    document.getElementById('service-info-box').style.display = 'none';
     _ordersLoaded = false;
     await loadHomeStats();
   } catch(e) {
     alertEl.innerHTML = `<div class="alert alert-error">❌ ${e.message}</div>`;
+    btn.disabled = false;
+    btn.innerHTML = 'Confirmar pedido';
+  } finally {
+    _placingOrder = false;
   }
-
-  btn.disabled = false;
-  btn.innerHTML = 'Confirmar pedido';
 });
 
 // ── Orders page ───────────────────────────────────────
@@ -1230,7 +1240,10 @@ async function uploadToCloudinary(file) {
   }
 }
 
+let _submittingRecharge = false;
 document.getElementById('recharge-btn').addEventListener('click', async () => {
+  if (_submittingRecharge) return;
+
   const method  = document.getElementById('pay-method').value;
   const amount  = parseFloat(document.getElementById('recharge-amount').value);
   const ref     = document.getElementById('pay-ref').value.trim();
@@ -1244,6 +1257,26 @@ document.getElementById('recharge-btn').addEventListener('click', async () => {
     : (parseFloat(paySettings.minRecharge) || 5);
   if (!amount || amount < minRecharge) { alertEl.innerHTML = `<div class="alert alert-error">El monto mínimo para ${method === 'zelle' ? 'Zelle' : 'este método'} es $${minRecharge.toFixed(2)}</div>`; return; }
 
+  // Check for duplicate pending recharge (same amount + method in last 2 minutes)
+  try {
+    const twoMinAgo = new Date(Date.now() - 2 * 60 * 1000);
+    const dupSnap = await db.collection('recharges')
+      .where('userId', '==', currentUser.uid)
+      .where('status', '==', 'pending')
+      .where('amount', '==', amount)
+      .where('method', '==', method)
+      .limit(1).get();
+    if (!dupSnap.empty) {
+      const existing = dupSnap.docs[0].data();
+      const createdAt = existing.createdAt?.toDate?.() || new Date(0);
+      if (createdAt > twoMinAgo) {
+        alertEl.innerHTML = '<div class="alert alert-warning">Ya tienes una solicitud pendiente por ese monto. Espera a que sea procesada.</div>';
+        return;
+      }
+    }
+  } catch(e) { /* continue if check fails */ }
+
+  _submittingRecharge = true;
   const btn = document.getElementById('recharge-btn');
   btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Enviando...';
 
@@ -1272,9 +1305,13 @@ document.getElementById('recharge-btn').addEventListener('click', async () => {
     toast('Solicitud de recarga enviada', 'success');
     _cachedRecharges = null;
     loadRechargeHistory(true);
-  } catch(e) { alertEl.innerHTML = `<div class="alert alert-error">${e.message}</div>`; }
-
-  btn.disabled = false; btn.innerHTML = 'Enviar solicitud';
+  } catch(e) {
+    alertEl.innerHTML = `<div class="alert alert-error">${e.message}</div>`;
+  } finally {
+    _submittingRecharge = false;
+    btn.disabled = false;
+    btn.innerHTML = 'Enviar solicitud';
+  }
 });
 
 async function loadRechargeHistory(forceRefresh) {
