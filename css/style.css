@@ -307,7 +307,9 @@ tr:hover td { background: var(--blue-xs); }
 
 /* ─── SIDEBAR ────────────────────────────────────────────── */
 .sidebar {
-  width: var(--sidebar-w); height: 100vh;
+  width: var(--sidebar-w);
+  height: 100vh;
+  height: 100dvh;
   background: var(--navy);
   border-right: 1px solid rgba(255,255,255,.06);
   display: flex; flex-direction: column;
@@ -315,7 +317,10 @@ tr:hover td { background: var(--blue-xs); }
   transition: transform .3s cubic-bezier(.4,0,.2,1);
   overflow: hidden;
 }
-.sidebar-footer { flex-shrink: 0; }
+.sidebar-footer {
+  flex-shrink: 0;
+  padding-bottom: max(14px, env(safe-area-inset-bottom));
+}
 /* subtle blue shimmer on top */
 .sidebar::before {
   content: '';
