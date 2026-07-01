@@ -1,60 +1,44 @@
-# NexBoost — Panel SMM Profesional
+# NextBoost
 
-Panel SMM de revendedor. Compra servicios al por mayor de un proveedor JAP-compatible y los revende con margen.
+**Panel SMM profesional para crecer en redes sociales.**
 
-## Stack
-- Frontend: HTML/CSS/JS puro (sin frameworks)
-- Base de datos: Firebase Firestore
-- Auth: Firebase Authentication
-- Hosting: GitHub Pages / Cloudflare Pages
-- Proveedor: JustAnotherPanel o cualquier API JAP-compatible
+Seguidores, likes, vistas y más para Instagram, TikTok, YouTube, Facebook, Spotify, Telegram y otras plataformas — con entrega rápida, precios accesibles y soporte real.
 
-## Configuración rápida
+🌐 **[nextboost.dgp-link.com](https://nextboost.dgp-link.com)**
 
-### 1. Firebase
-1. Crea un proyecto en [console.firebase.google.com](https://console.firebase.google.com)
-2. Activa **Authentication** (Email/Password)
-3. Activa **Firestore Database**
-4. Copia tus credenciales en `js/config.js`
-5. Aplica las reglas de `firestore.rules` en la consola de Firestore
+---
 
-### 2. Primer admin
-1. Regístrate normalmente en la app
-2. En Firestore, busca tu documento `users/{tu-uid}` y cambia `role` a `"admin"`
+## ¿Qué es NextBoost?
 
-### 3. Configurar proveedor API
-1. Entra al panel admin → Configuración
-2. Ingresa la URL y API key de tu proveedor (ej: JustAnotherPanel)
-3. Configura el markup (ej: `1.5` = 50% de ganancia)
-4. Sincroniza los servicios desde el panel admin → Servicios
+NextBoost es una plataforma de marketing en redes sociales (SMM Panel) para creadores de contenido, marcas y agencias digitales que quieren resultados reales sin esperar meses.
 
-### 4. Métodos de pago
-En admin → Configuración → Métodos de pago, configura tus datos de Binance/Zelle/USDT.
+- Más de 15 plataformas cubiertas
+- Pedidos que comienzan en minutos
+- Saldo prepagado sin suscripciones ni cargos ocultos
+- Soporte por WhatsApp y tickets en el panel
 
-## Proveedores recomendados (más económicos que fansfull.com)
+## Servicios disponibles
 
-| Proveedor | URL API | Precio aprox/1k seguidores IG |
-|-----------|---------|-------------------------------|
-| JustAnotherPanel | justanotherpanel.com | $0.30–0.60 |
-| SMMFox | smmfox.com | $0.25–0.50 |
-| Peakerr | peakerr.com | $0.20–0.45 |
-| BoostSMM | boostsmm.com | $0.35–0.70 |
+- Seguidores, likes, vistas y comentarios para Instagram
+- Seguidores, likes y reproducciones para TikTok
+- Vistas, likes y suscriptores para YouTube
+- Fans, likes y vistas para Facebook
+- Oyentes y seguidores para Spotify
+- Miembros y vistas para Telegram
+- Y muchas plataformas más
 
-> Todos son compatibles con la misma API (formato JAP estándar).
+## Cómo empezar
 
-## Estructura
-```
-/
-├── index.html        # Landing page
-├── login.html        # Login
-├── register.html     # Registro
-├── dashboard.html    # Panel de usuario
-├── admin.html        # Panel administrador
-├── api-docs.html     # Documentación API pública
-├── css/style.css     # Estilos globales
-├── js/
-│   ├── config.js     # Firebase config + constantes
-│   ├── app.js        # Utilidades compartidas
-│   └── api.js        # Wrapper API proveedor + Firestore
-└── firestore.rules   # Reglas de seguridad Firestore
-```
+1. Crea tu cuenta gratis en [nextboost.dgp-link.com/register.html](https://nextboost.dgp-link.com/register.html)
+2. Recarga tu saldo (Binance Pay, Zelle o USDT TRC20 — mínimo $5)
+3. Elige el servicio, ingresa tu enlace y confirma el pedido
+4. Monitorea el progreso en tiempo real desde tu panel
+
+## Contacto y soporte
+
+- Soporte dentro del panel → sección **Tickets**
+- WhatsApp: disponible en el panel
+
+---
+
+© 2026 NextBoost by DGP Global Group. Todos los derechos reservados.

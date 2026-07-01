@@ -28,6 +28,40 @@
   <noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"></noscript>
   <link rel="stylesheet" href="css/style.css">
   <style>
+    /* Hero two-column layout */
+    .hero-inner {
+      position: relative; z-index: 1;
+      display: flex; align-items: center; gap: 48px;
+      max-width: 1100px; width: 100%;
+    }
+    .hero-text { flex: 1; min-width: 0; }
+    .hero-visual {
+      flex: 0 0 280px; position: relative;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .hero-badge-float {
+      position: absolute; background: rgba(255,255,255,.95);
+      color: var(--navy); font-size: 12px; font-weight: 700;
+      padding: 8px 14px; border-radius: 24px;
+      box-shadow: 0 8px 24px rgba(0,0,0,.18);
+      white-space: nowrap; animation: floatBadge 3s ease-in-out infinite;
+    }
+    .hero-badge-float-1 { top: 20px; left: -20px; animation-delay: 0s; }
+    .hero-badge-float-2 { bottom: 40px; right: -20px; animation-delay: 1.5s; }
+    @keyframes floatBadge {
+      0%, 100% { transform: translateY(0); }
+      50%       { transform: translateY(-8px); }
+    }
+    @media (max-width: 768px) {
+      .hero-inner { flex-direction: column; text-align: center; gap: 32px; }
+      .hero-text h1 { font-size: clamp(28px, 8vw, 42px); }
+      .hero-text p { margin: 0 auto 28px; max-width: 400px; }
+      .hero-btns { justify-content: center; }
+      .hero-visual { flex: none; width: 220px; }
+      .hero-badge-float-1 { top: 10px; left: -10px; }
+      .hero-badge-float-2 { bottom: 20px; right: -10px; }
+    }
+
     .hero-particle {
       position: absolute;
       border-radius: 50%;
@@ -100,13 +134,85 @@
 <section class="hero" style="padding-top:120px">
   <div class="glow-orb" style="width:400px;height:400px;background:var(--primary);top:10%;left:60%"></div>
   <div class="glow-orb" style="width:300px;height:300px;background:var(--accent);top:50%;left:10%"></div>
-  <div style="position:relative;z-index:1;max-width:800px">
-    <div class="hero-badge">Crecimiento real en redes sociales</div>
-    <h1>Impulsa tu<br><span class="gradient-text">Presencia Digital</span><br>hoy mismo</h1>
-    <p>Más seguidores, más likes, más visibilidad. Para creadores, marcas y agencias que quieren resultados reales en Instagram, TikTok, YouTube y más — sin esperar meses.</p>
-    <div class="hero-btns">
-      <a href="register.html" class="btn btn-primary btn-lg">Empezar gratis →</a>
-      <a href="#services" class="btn btn-ghost btn-lg">Ver servicios</a>
+  <div class="hero-inner">
+    <div class="hero-text">
+      <div class="hero-badge">Crecimiento real en redes sociales</div>
+      <h1>Impulsa tu<br><span class="gradient-text">Presencia Digital</span><br>hoy mismo</h1>
+      <p>Más seguidores, más likes, más visibilidad. Para creadores, marcas y agencias que quieren resultados reales en Instagram, TikTok, YouTube y más — sin esperar meses.</p>
+      <div class="hero-btns">
+        <a href="register.html" class="btn btn-primary btn-lg">Empezar gratis →</a>
+        <a href="#services" class="btn btn-ghost btn-lg">Ver servicios</a>
+      </div>
+    </div>
+    <!-- Phone illustration -->
+    <div class="hero-visual" aria-hidden="true">
+      <svg viewBox="0 0 280 480" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:280px;filter:drop-shadow(0 24px 48px rgba(20,56,204,.25))">
+        <!-- Phone body -->
+        <rect x="10" y="10" width="260" height="460" rx="36" fill="#0f1729" stroke="rgba(255,255,255,.12)" stroke-width="1.5"/>
+        <!-- Screen -->
+        <rect x="20" y="50" width="240" height="400" rx="8" fill="#111d3a"/>
+        <!-- Notch -->
+        <rect x="100" y="18" width="80" height="14" rx="7" fill="#1a2540"/>
+        <!-- Top bar -->
+        <rect x="20" y="50" width="240" height="38" rx="0" fill="#0d1633"/>
+        <text x="36" y="73" fill="white" font-size="11" font-weight="700" font-family="Inter,sans-serif">NextBoost</text>
+        <circle cx="244" cy="69" r="6" fill="#22c55e"/>
+
+        <!-- Stat card 1 - Instagram followers -->
+        <rect x="30" y="100" width="220" height="64" rx="12" fill="#1e2d50"/>
+        <circle cx="52" cy="132" r="14" fill="#e1306c22"/>
+        <text x="47" y="137" fill="#e1306c" font-size="14" font-family="Inter,sans-serif">📷</text>
+        <text x="74" y="124" fill="rgba(255,255,255,.5)" font-size="9" font-family="Inter,sans-serif">Instagram · Seguidores</text>
+        <text x="74" y="140" fill="white" font-size="16" font-weight="700" font-family="Inter,sans-serif">+12,450</text>
+        <text x="74" y="154" fill="#22c55e" font-size="9" font-weight="600" font-family="Inter,sans-serif">▲ Entregando...</text>
+        <!-- Mini chart -->
+        <polyline points="190,150 200,138 210,142 220,128 230,122 240,110" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="240" cy="110" r="3" fill="#22c55e"/>
+
+        <!-- Stat card 2 - TikTok likes -->
+        <rect x="30" y="176" width="104" height="64" rx="12" fill="#1e2d50"/>
+        <text x="46" y="206" fill="rgba(255,255,255,.5)" font-size="9" font-family="Inter,sans-serif">TikTok Likes</text>
+        <text x="46" y="222" fill="white" font-size="15" font-weight="700" font-family="Inter,sans-serif">+8.2K</text>
+        <text x="46" y="234" fill="#22c55e" font-size="9" font-weight="600" font-family="Inter,sans-serif">▲ Completado</text>
+
+        <!-- Stat card 3 - YouTube views -->
+        <rect x="146" y="176" width="104" height="64" rx="12" fill="#1e2d50"/>
+        <text x="162" y="206" fill="rgba(255,255,255,.5)" font-size="9" font-family="Inter,sans-serif">YouTube Vistas</text>
+        <text x="162" y="222" fill="white" font-size="15" font-weight="700" font-family="Inter,sans-serif">+45K</text>
+        <text x="162" y="234" fill="#22c55e" font-size="9" font-weight="600" font-family="Inter,sans-serif">▲ Completado</text>
+
+        <!-- Balance -->
+        <rect x="30" y="252" width="220" height="52" rx="12" fill="url(#grad1)"/>
+        <defs>
+          <linearGradient id="grad1" x1="30" y1="252" x2="250" y2="304" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#1438cc"/>
+            <stop offset="100%" stop-color="#6366f1"/>
+          </linearGradient>
+        </defs>
+        <text x="46" y="273" fill="rgba(255,255,255,.7)" font-size="9" font-family="Inter,sans-serif">Saldo disponible</text>
+        <text x="46" y="293" fill="white" font-size="18" font-weight="800" font-family="Inter,sans-serif">$48.20 USD</text>
+        <text x="210" y="293" fill="rgba(255,255,255,.6)" font-size="20" font-family="Inter,sans-serif">→</text>
+
+        <!-- Recent order -->
+        <rect x="30" y="316" width="220" height="44" rx="12" fill="#1e2d50"/>
+        <circle cx="50" cy="338" r="10" fill="#e1306c22"/>
+        <text x="45" y="343" fill="#e1306c" font-size="11" font-family="Inter,sans-serif">♥</text>
+        <text x="68" y="332" fill="rgba(255,255,255,.5)" font-size="9" font-family="Inter,sans-serif">Instagram · Likes</text>
+        <text x="68" y="347" fill="white" font-size="11" font-weight="600" font-family="Inter,sans-serif">5,000 likes · $1.20</text>
+        <rect x="196" y="328" width="44" height="18" rx="6" fill="#22c55e22"/>
+        <text x="204" y="340" fill="#22c55e" font-size="9" font-weight="700" font-family="Inter,sans-serif">✓ Listo</text>
+
+        <!-- Bottom nav -->
+        <rect x="20" y="388" width="240" height="62" rx="0" fill="#0d1633"/>
+        <rect x="20" y="388" width="240" height="1" fill="rgba(255,255,255,.06)"/>
+        <text x="50" y="426" fill="#1438cc" font-size="18" font-family="Inter,sans-serif" text-anchor="middle">⊞</text>
+        <text x="110" y="426" fill="rgba(255,255,255,.3)" font-size="18" font-family="Inter,sans-serif" text-anchor="middle">+</text>
+        <text x="170" y="426" fill="rgba(255,255,255,.3)" font-size="18" font-family="Inter,sans-serif" text-anchor="middle">☰</text>
+        <text x="230" y="426" fill="rgba(255,255,255,.3)" font-size="18" font-family="Inter,sans-serif" text-anchor="middle">◎</text>
+      </svg>
+      <!-- Floating badges -->
+      <div class="hero-badge-float hero-badge-float-1">🚀 +12K seguidores</div>
+      <div class="hero-badge-float hero-badge-float-2">⚡ Entrega en minutos</div>
     </div>
   </div>
 </section>
