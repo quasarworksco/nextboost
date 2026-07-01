@@ -763,7 +763,7 @@ async function testTelegramNotif() {
     return;
   }
   const ok = await sendTelegramMessage(token, chatId,
-    '✅ *NextBoost* — Notificaciones configuradas correctamente\. Este es un mensaje de prueba\.');
+    '✅ <b>NextBoost</b> — Notificaciones configuradas correctamente. Este es un mensaje de prueba.');
   if (ok) {
     alertEl.innerHTML = '<div class="alert alert-success mt-2">✓ Mensaje enviado. Revisa tu Telegram.</div>';
   } else {
@@ -777,28 +777,20 @@ async function sendTelegramMessage(token, chatId, text) {
     const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ chat_id: chatId, text, parse_mode: 'MarkdownV2' }),
+      body: JSON.stringify({ chat_id: chatId, text, parse_mode: 'HTML' }),
     });
-    return res.ok;
+    const data = await res.json();
+    return data.ok === true;
   } catch(e) { return false; }
-}
-
-function escapeTg(s) {
-  return String(s || '').replace(/[_*[\]()~`>#+=|{}.!\-]/g, '\\$&');
 }
 
 function notifyTelegramRecharge(r) {
   if (!_tgToken || !_tgChatId) return;
-  const name   = escapeTg(r.userName || r.userEmail || 'Cliente');
-  const amount = escapeTg(formatUSD2(r.amount));
-  const method = escapeTg(r.method || '—');
-  const ref    = escapeTg(r.reference ? r.reference.slice(0, 40) : 'Sin referencia');
-  const msg = `💰 *Nueva solicitud de recarga*
-👤 ${name}
-💵 ${amount} vía ${method}
-📎 ${ref}
-
-_Ingresa al panel para aprobar o rechazar\._`;
+  const name   = r.userName || r.userEmail || 'Cliente';
+  const amount = formatUSD2(r.amount);
+  const method = r.method || '—';
+  const ref    = r.reference ? r.reference.slice(0, 40) : 'Sin referencia';
+  const msg = `💰 <b>Nueva solicitud de recarga</b>\n👤 ${name}\n💵 ${amount} vía ${method}\n📎 ${ref}\n\n<i>Ingresa al panel para aprobar o rechazar.</i>`;
   sendTelegramMessage(_tgToken, _tgChatId, msg);
 }
 
