@@ -1257,22 +1257,23 @@ document.getElementById('recharge-btn').addEventListener('click', async () => {
     : (parseFloat(paySettings.minRecharge) || 5);
   if (!amount || amount < minRecharge) { alertEl.innerHTML = `<div class="alert alert-error">El monto mínimo para ${method === 'zelle' ? 'Zelle' : 'este método'} es $${minRecharge.toFixed(2)}</div>`; return; }
 
-  // Check for duplicate pending recharge (same amount + method in last 2 minutes)
+  // Check pending recharge limits
   try {
-    const twoMinAgo = new Date(Date.now() - 2 * 60 * 1000);
-    const dupSnap = await db.collection('recharges')
+    const pendingSnap = await db.collection('recharges')
       .where('userId', '==', currentUser.uid)
       .where('status', '==', 'pending')
-      .where('amount', '==', amount)
-      .where('method', '==', method)
-      .limit(1).get();
-    if (!dupSnap.empty) {
-      const existing = dupSnap.docs[0].data();
-      const createdAt = existing.createdAt?.toDate?.() || new Date(0);
-      if (createdAt > twoMinAgo) {
-        alertEl.innerHTML = '<div class="alert alert-warning">Ya tienes una solicitud pendiente por ese monto. Espera a que sea procesada.</div>';
-        return;
-      }
+      .limit(4).get();
+
+    if (pendingSnap.size >= 3) {
+      alertEl.innerHTML = '<div class="alert alert-warning">Tienes 3 solicitudes de recarga pendientes. Espera a que el admin las procese antes de enviar otra.</div>';
+      return;
+    }
+
+    // Also block exact duplicate (same amount + method) regardless of time
+    const dupSnap = pendingSnap.docs.find(d => d.data().amount === amount && d.data().method === method);
+    if (dupSnap) {
+      alertEl.innerHTML = '<div class="alert alert-warning">Ya tienes una solicitud pendiente por ese monto y método. Espera a que sea procesada.</div>';
+      return;
     }
   } catch(e) { /* continue if check fails */ }
 

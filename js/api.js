@@ -91,6 +91,18 @@ const Orders = (() => {
       throw new Error(`Tienes ${activeSnap.size} pedidos activos. El límite es ${maxActive}. Espera a que se completen antes de hacer otro.`);
     }
 
+    // 1c. Check for identical duplicate order (same service + link, active/pending)
+    const dupSnap = await db.collection('orders')
+      .where('userId', '==', userId)
+      .where('serviceId', '==', String(service.id))
+      .where('link', '==', link)
+      .where('status', 'in', ['pending', 'active', 'in progress'])
+      .limit(1)
+      .get();
+    if (!dupSnap.empty) {
+      throw new Error('Ya tienes un pedido activo para ese enlace con el mismo servicio. Espera a que se complete antes de repetirlo.');
+    }
+
     const userData = userSnap.data();
     const balance  = parseFloat(userData.balance || 0);
 
