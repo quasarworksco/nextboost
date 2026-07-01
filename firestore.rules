@@ -59,6 +59,14 @@ service cloud.firestore {
       allow write:  if isAdmin();
     }
 
+    // Admin audit log: only admin reads/writes
+    match /admin_logs/{logId} {
+      allow read:   if isAdmin();
+      allow create: if isAdmin();
+      allow update: if false;
+      allow delete: if false;
+    }
+
     // Support tickets: users read/create own; admin reads/writes all
     match /support_tickets/{ticketId} {
       allow read:   if isAuth() && (resource.data.userId == request.auth.uid || isAdmin());

@@ -959,6 +959,34 @@ document.getElementById('place-order-btn').addEventListener('click', async () =>
   alertEl.innerHTML = '';
   if (!service) { alertEl.innerHTML = '<div class="alert alert-error">Selecciona un servicio.</div>'; return; }
   if (!link)    { alertEl.innerHTML = '<div class="alert alert-error">Ingresa el enlace.</div>'; return; }
+
+  // Validate URL format
+  let parsedUrl;
+  try { parsedUrl = new URL(link.startsWith('http') ? link : 'https://' + link); }
+  catch(e) { alertEl.innerHTML = '<div class="alert alert-error">El enlace no es una URL válida. Ej: https://instagram.com/usuario</div>'; return; }
+
+  // Validate URL matches service platform
+  const PLATFORM_DOMAINS = {
+    instagram: ['instagram.com'],
+    tiktok:    ['tiktok.com', 'vm.tiktok.com'],
+    facebook:  ['facebook.com', 'fb.com', 'fb.watch'],
+    youtube:   ['youtube.com', 'youtu.be'],
+    telegram:  ['t.me', 'telegram.me'],
+    spotify:   ['spotify.com', 'open.spotify.com'],
+    twitch:    ['twitch.tv'],
+  };
+  const cat = (service.category || '').toLowerCase();
+  const matchedPlatform = Object.entries(PLATFORM_DOMAINS).find(([key]) => cat.includes(key));
+  if (matchedPlatform) {
+    const [platformName, domains] = matchedPlatform;
+    const hostname = parsedUrl.hostname.replace('www.', '');
+    if (!domains.some(d => hostname === d || hostname.endsWith('.' + d))) {
+      const label = platformName.charAt(0).toUpperCase() + platformName.slice(1);
+      alertEl.innerHTML = `<div class="alert alert-error">Este servicio es para ${label}. El enlace debe ser de ${domains[0]}.</div>`;
+      return;
+    }
+  }
+
   if (qty < service.min || qty > service.max) {
     alertEl.innerHTML = `<div class="alert alert-error">Cantidad fuera de rango (${service.min.toLocaleString()}–${service.max.toLocaleString()}).</div>`;
     return;
@@ -1256,6 +1284,7 @@ document.getElementById('recharge-btn').addEventListener('click', async () => {
     ? (parseFloat(paySettings.minRechargeZelle) || 25)
     : (parseFloat(paySettings.minRecharge) || 5);
   if (!amount || amount < minRecharge) { alertEl.innerHTML = `<div class="alert alert-error">El monto mínimo para ${method === 'zelle' ? 'Zelle' : 'este método'} es $${minRecharge.toFixed(2)}</div>`; return; }
+  if (amount > 1000) { alertEl.innerHTML = '<div class="alert alert-error">El monto máximo por recarga es $1,000.00. Para montos mayores contáctanos por soporte.</div>'; return; }
 
   // Check pending recharge limits
   try {

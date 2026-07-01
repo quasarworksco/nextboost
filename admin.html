@@ -818,6 +818,19 @@ async function loadAdminRecharges() {
     </tr>`).join('');
 }
 
+// ── Audit log ─────────────────────────────────────────
+function auditLog(action, details) {
+  try {
+    db.collection('admin_logs').add({
+      adminUid:   adminUser?.uid || 'unknown',
+      adminEmail: adminUser?.email || 'unknown',
+      action,
+      details,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+    });
+  } catch(e) {}
+}
+
 async function approveRecharge(rechargeId, userId, amount) {
   if (!confirm(`¿Aprobar recarga de ${formatUSD2(amount)}?`)) return;
   const now = firebase.firestore.FieldValue.serverTimestamp();
@@ -826,6 +839,7 @@ async function approveRecharge(rechargeId, userId, amount) {
   batch.update(db.collection('users').doc(userId), { balance: firebase.firestore.FieldValue.increment(amount) });
   batch.set(db.collection('balance_history').doc(), { userId, type: 'recharge', amount, description: `Recarga aprobada por admin`, createdAt: now });
   await batch.commit();
+  auditLog('recharge_approved', { rechargeId, userId, amount });
   toast(`Recarga de ${formatUSD2(amount)} aprobada`, 'success');
   loadAdminRecharges();
   loadOverview();
@@ -834,6 +848,7 @@ async function approveRecharge(rechargeId, userId, amount) {
 async function rejectRecharge(rechargeId) {
   if (!confirm('¿Rechazar esta recarga?')) return;
   await db.collection('recharges').doc(rechargeId).update({ status: 'rejected', rejectedAt: firebase.firestore.FieldValue.serverTimestamp() });
+  auditLog('recharge_rejected', { rechargeId });
   toast('Recarga rechazada', 'info');
   loadAdminRecharges();
 }
@@ -1014,6 +1029,7 @@ async function applyBalanceAdjustment(direction) {
     createdAt: now,
   });
   await batch.commit();
+  auditLog('balance_adjustment', { userId: _balanceModalUserId, direction, amount, delta, prevBalance, newBalance });
   toast(`Saldo ${direction === 'add' ? 'sumado' : 'restado'}: ${formatUSD2(Math.abs(delta))}`, 'success');
   closeModal('balance-modal');
   loadAdminUsers();
@@ -1026,6 +1042,7 @@ async function toggleRole(uid, currentRole) {
   const newRole = currentRole === 'admin' ? 'user' : 'admin';
   if (!confirm(`¿Cambiar rol a "${newRole}"?`)) return;
   await db.collection('users').doc(uid).update({ role: newRole });
+  auditLog('role_change', { targetUserId: uid, from: currentRole, to: newRole });
   toast(`Rol cambiado a ${newRole}`, 'success');
   loadAdminUsers();
 }
@@ -1034,6 +1051,7 @@ async function toggleBlock(uid, isBlocked) {
   const action = isBlocked ? 'desbloquear' : 'bloquear';
   if (!confirm(`¿${action.charAt(0).toUpperCase() + action.slice(1)} este usuario?`)) return;
   await db.collection('users').doc(uid).update({ blocked: !isBlocked });
+  auditLog(isBlocked ? 'user_unblocked' : 'user_blocked', { targetUserId: uid });
   const u = allUsers.find(x => x.id === uid);
   if (u) u.blocked = !isBlocked;
   toast(`Usuario ${isBlocked ? 'desbloqueado' : 'bloqueado'}`, isBlocked ? 'success' : 'info');
