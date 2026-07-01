@@ -60,6 +60,12 @@ service cloud.firestore {
       allow write:  if isAdmin();
     }
 
+    // Private settings (Telegram tokens, etc.) — admin only
+    match /private_settings/{doc} {
+      allow read:   if isAdmin();
+      allow write:  if isAdmin();
+    }
+
     // Admin audit log: only admin reads/writes
     match /admin_logs/{logId} {
       allow read:   if isAdmin();

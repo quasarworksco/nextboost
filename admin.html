@@ -555,6 +555,36 @@
             <button class="btn btn-outline" id="save-announcement-btn">Publicar anuncio</button>
           </div>
         </div>
+
+        <!-- Telegram notifications card -->
+        <div class="card mt-4">
+          <div class="card-header">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:8px"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            Notificaciones por Telegram
+          </div>
+          <div class="card-body">
+            <div class="alert alert-info mb-3" style="font-size:13px">
+              Recibe un mensaje en Telegram cada vez que un cliente haga una solicitud de recarga.<br>
+              <strong>Cómo configurarlo:</strong><br>
+              1. Escríbele a <a href="https://t.me/BotFather" target="_blank" style="color:var(--blue)">@BotFather</a> en Telegram → <code>/newbot</code> → copia el <strong>token</strong>.<br>
+              2. Escríbele <code>/start</code> a tu nuevo bot.<br>
+              3. Abre <a href="https://api.telegram.org/bot{TU_TOKEN}/getUpdates" target="_blank" id="get-updates-link" style="color:var(--blue)">este enlace</a> y copia el <code>id</code> dentro de <code>chat</code> — ese es tu <strong>Chat ID</strong>.
+            </div>
+            <div class="form-group">
+              <label>Token del Bot</label>
+              <input type="text" class="input" id="settings-tg-token" placeholder="123456789:AAHdqTcvCH1vGWJxfSeofSAs0K5PALDsaw" autocomplete="off">
+            </div>
+            <div class="form-group">
+              <label>Tu Chat ID</label>
+              <input type="text" class="input" id="settings-tg-chatid" placeholder="987654321">
+            </div>
+            <div id="settings-tg-alert"></div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap">
+              <button class="btn btn-primary" onclick="saveTelegramSettings()">Guardar</button>
+              <button class="btn btn-outline" onclick="testTelegramNotif()">Enviar mensaje de prueba</button>
+            </div>
+          </div>
+        </div>
       </div>
 
     </div>
@@ -636,6 +666,7 @@ requireAdmin(async (user, data) => {
   loadOverview();
   checkProviderBalance();
   watchPendingRecharges();
+  loadTelegramConfig();
 });
 
 // ── Overview ──────────────────────────────────────────
@@ -695,6 +726,82 @@ async function checkProviderBalance() {
   } catch(e) { document.getElementById('provider-balance').textContent = '$—'; }
 }
 
+// ── Telegram notification config ───────────────────────
+let _tgToken  = null;
+let _tgChatId = null;
+
+async function loadTelegramConfig() {
+  try {
+    const snap = await db.collection('private_settings').doc('notifications').get();
+    if (snap.exists) { _tgToken = snap.data().tgToken || null; _tgChatId = snap.data().tgChatId || null; }
+  } catch(e) {}
+}
+
+async function saveTelegramSettings() {
+  const token  = document.getElementById('settings-tg-token').value.trim();
+  const chatId = document.getElementById('settings-tg-chatid').value.trim();
+  const alertEl = document.getElementById('settings-tg-alert');
+  try {
+    await db.collection('private_settings').doc('notifications').set({ tgToken: token, tgChatId: chatId }, { merge: true });
+    _tgToken  = token  || null;
+    _tgChatId = chatId || null;
+    const link = document.getElementById('get-updates-link');
+    if (link && token) link.href = `https://api.telegram.org/bot${token}/getUpdates`;
+    alertEl.innerHTML = '<div class="alert alert-success mt-2">Guardado correctamente.</div>';
+    setTimeout(() => alertEl.innerHTML = '', 3000);
+  } catch(e) {
+    alertEl.innerHTML = `<div class="alert alert-error mt-2">${e.message}</div>`;
+  }
+}
+
+async function testTelegramNotif() {
+  const alertEl = document.getElementById('settings-tg-alert');
+  const token  = document.getElementById('settings-tg-token').value.trim();
+  const chatId = document.getElementById('settings-tg-chatid').value.trim();
+  if (!token || !chatId) {
+    alertEl.innerHTML = '<div class="alert alert-error mt-2">Ingresa el token y el Chat ID primero.</div>';
+    return;
+  }
+  const ok = await sendTelegramMessage(token, chatId,
+    '✅ *NextBoost* — Notificaciones configuradas correctamente\. Este es un mensaje de prueba\.');
+  if (ok) {
+    alertEl.innerHTML = '<div class="alert alert-success mt-2">✓ Mensaje enviado. Revisa tu Telegram.</div>';
+  } else {
+    alertEl.innerHTML = '<div class="alert alert-error mt-2">Error al enviar. Verifica el token y el Chat ID.</div>';
+  }
+  setTimeout(() => alertEl.innerHTML = '', 5000);
+}
+
+async function sendTelegramMessage(token, chatId, text) {
+  try {
+    const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: chatId, text, parse_mode: 'MarkdownV2' }),
+    });
+    return res.ok;
+  } catch(e) { return false; }
+}
+
+function escapeTg(s) {
+  return String(s || '').replace(/[_*[\]()~`>#+=|{}.!\-]/g, '\\$&');
+}
+
+function notifyTelegramRecharge(r) {
+  if (!_tgToken || !_tgChatId) return;
+  const name   = escapeTg(r.userName || r.userEmail || 'Cliente');
+  const amount = escapeTg(formatUSD2(r.amount));
+  const method = escapeTg(r.method || '—');
+  const ref    = escapeTg(r.reference ? r.reference.slice(0, 40) : 'Sin referencia');
+  const msg = `💰 *Nueva solicitud de recarga*
+👤 ${name}
+💵 ${amount} vía ${method}
+📎 ${ref}
+
+_Ingresa al panel para aprobar o rechazar\._`;
+  sendTelegramMessage(_tgToken, _tgChatId, msg);
+}
+
 // ── Pending badge + real-time notifications ───────────
 let _prevPendingCount = null;
 
@@ -717,6 +824,11 @@ function watchPendingRecharges() {
           icon: 'favicon.svg',
         });
       }
+      // Telegram notification — newest recharge
+      const newest = snap.docs
+        .map(d => ({ id: d.id, ...d.data() }))
+        .sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0))[0];
+      if (newest) notifyTelegramRecharge(newest);
     }
     _prevPendingCount = count;
   });
@@ -1564,6 +1676,21 @@ async function loadSettings() {
   document.getElementById('settings-max-active-orders').value = d.maxActiveOrders   || '10';
   document.getElementById('settings-announcement').value      = d.announcement     || '';
   document.getElementById('settings-announcement-type').value = d.announcementType || 'info';
+
+  // Load Telegram config (admin-only private_settings)
+  try {
+    const tgSnap = await db.collection('private_settings').doc('notifications').get();
+    if (tgSnap.exists) {
+      const tg = tgSnap.data();
+      document.getElementById('settings-tg-token').value  = tg.tgToken  || '';
+      document.getElementById('settings-tg-chatid').value = tg.tgChatId || '';
+      _tgToken  = tg.tgToken  || null;
+      _tgChatId = tg.tgChatId || null;
+      // Update the getUpdates helper link
+      const link = document.getElementById('get-updates-link');
+      if (link && tg.tgToken) link.href = `https://api.telegram.org/bot${tg.tgToken}/getUpdates`;
+    }
+  } catch(e) {}
 }
 
 
