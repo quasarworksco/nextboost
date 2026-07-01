@@ -106,10 +106,11 @@ const Orders = (() => {
     const userData = userSnap.data();
     const balance  = parseFloat(userData.balance || 0);
 
-    // 2. Calculate cost using the catalog rate (already set by admin, no markup needed)
-    const providerRate = parseFloat(service.rate);  // per 1000 — this is the client-facing rate
-    const userRate     = providerRate;
-    const charge       = +((userRate * quantity) / 1000).toFixed(6);
+    // 2. Calculate cost — rate is what client pays, providerRate is what admin pays provider
+    const providerRate  = parseFloat(service.providerRate || service.rate); // admin's actual cost
+    const userRate      = parseFloat(service.rate);                          // client-facing price
+    const charge        = +((userRate      * quantity) / 1000).toFixed(6);
+    const providerCost  = +((providerRate  * quantity) / 1000).toFixed(6);
 
     if (balance < charge) throw new Error(`Saldo insuficiente. Necesitas $${charge.toFixed(4)}, tienes $${balance.toFixed(4)}.`);
 
@@ -126,6 +127,8 @@ const Orders = (() => {
     const now = firebase.firestore.FieldValue.serverTimestamp();
     const order = {
       userId,
+      userEmail:       userData.email || null,
+      userName:        userData.name  || null,
       serviceId:       service.id,
       serviceName:     service.name,
       category:        service.category,
@@ -134,6 +137,7 @@ const Orders = (() => {
       providerRate,
       userRate,
       charge,
+      providerCost,
       status:          'pending',
       providerOrderId,
       refill:          service.refill || false,
@@ -256,15 +260,16 @@ const Services = (() => {
       _memCache = catSnap.docs.map(d => {
         const data = d.data();
         return {
-          id:       data.serviceId || d.id,
-          name:     data.displayName || data.name,
-          category: data.displayCategory || data.category,
-          rate:     data.rate,
-          min:      data.min,
-          max:      data.max,
-          type:     data.type,
-          refill:   data.refill,
-          cancel:   data.cancel,
+          id:           data.serviceId || d.id,
+          name:         data.displayName || data.name,
+          category:     data.displayCategory || data.category,
+          rate:         data.rate,
+          providerRate: data.providerRate || data.rate,
+          min:          data.min,
+          max:          data.max,
+          type:         data.type,
+          refill:       data.refill,
+          cancel:       data.cancel,
         };
       }).sort((a,b) => parseFloat(a.rate) - parseFloat(b.rate));
       _saveToStorage(_memCache, serverVersion);

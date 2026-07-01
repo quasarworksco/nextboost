@@ -124,7 +124,7 @@
           <div class="stat-card">
             <div class="stat-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
             <div class="stat-value" id="stat-revenue">—</div>
-            <div class="stat-label">Revenue total</div>
+            <div class="stat-label">Ingresos totales</div>
           </div>
           <div class="stat-card">
             <div class="stat-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></div>
@@ -1463,11 +1463,11 @@ async function loadStats() {
     const revenue = orders.reduce((s, o) => s + (o.charge || 0), 0);
     const rechargeTotal = rechargesSnap.docs.reduce((s,d) => s + (d.data().amount || 0), 0);
 
-    // Profit = revenue (client pays) - provider cost
-    // providerRate stored per 1000, charge = userRate * qty / 1000
+    // Profit = what client paid - what admin paid provider
+    // New orders store providerCost directly; old orders fall back to providerRate calc
     const providerCost = orders.reduce((s, o) => {
-      const cost = ((o.providerRate || 0) * (o.quantity || 0)) / 1000;
-      return s + cost;
+      if (o.providerCost != null) return s + o.providerCost;
+      return s + ((o.providerRate || o.userRate || 0) * (o.quantity || 0)) / 1000;
     }, 0);
     const profit = revenue - providerCost;
     const avgMargin = revenue > 0 ? ((profit / revenue) * 100).toFixed(1) : 0;
@@ -1530,7 +1530,7 @@ async function loadStats() {
     const clientMap = {};
     orders.forEach(o => {
       const k = o.userId;
-      if (!clientMap[k]) clientMap[k] = { email: o.userEmail || k?.slice(0,8) || '—', orders: 0, spent: 0 };
+      if (!clientMap[k]) clientMap[k] = { email: o.userName || o.userEmail || k?.slice(0,8) || '—', orders: 0, spent: 0 };
       clientMap[k].orders++;
       clientMap[k].spent += (o.charge || 0);
     });
