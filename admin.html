@@ -762,12 +762,12 @@ async function testTelegramNotif() {
     alertEl.innerHTML = '<div class="alert alert-error mt-2">Ingresa el token y el Chat ID primero.</div>';
     return;
   }
-  const ok = await sendTelegramMessage(token, chatId,
+  const result = await sendTelegramMessage(token, chatId,
     '✅ <b>NextBoost</b> — Notificaciones configuradas correctamente. Este es un mensaje de prueba.');
-  if (ok) {
+  if (result.ok) {
     alertEl.innerHTML = '<div class="alert alert-success mt-2">✓ Mensaje enviado. Revisa tu Telegram.</div>';
   } else {
-    alertEl.innerHTML = '<div class="alert alert-error mt-2">Error al enviar. Verifica el token y el Chat ID.</div>';
+    alertEl.innerHTML = `<div class="alert alert-error mt-2">Error: ${result.error || 'No se pudo conectar con Telegram'}</div>`;
   }
   setTimeout(() => alertEl.innerHTML = '', 5000);
 }
@@ -780,8 +780,8 @@ async function sendTelegramMessage(token, chatId, text) {
       body: JSON.stringify({ chat_id: chatId, text, parse_mode: 'HTML' }),
     });
     const data = await res.json();
-    return data.ok === true;
-  } catch(e) { return false; }
+    return { ok: data.ok === true, error: data.description || null };
+  } catch(e) { return { ok: false, error: e.message }; }
 }
 
 function notifyTelegramRecharge(r) {
