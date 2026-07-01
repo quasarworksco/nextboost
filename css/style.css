@@ -434,6 +434,8 @@ tr:hover td { background: var(--blue-xs); }
 .landing-nav.scrolled { box-shadow: var(--shadow-m); }
 .logo { font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 4px; color: var(--navy); }
 .logo span { color: var(--blue); }
+.logo-img { height: 30px; width: auto; display: block; }
+.logo-img-xl { height: 44px; }
 .nav-links { display: flex; align-items: center; gap: 32px; }
 .nav-links a { color: var(--muted); font-size: 14px; font-weight: 500; transition: color .2s; }
 .nav-links a:hover { color: var(--navy); }
