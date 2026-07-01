@@ -1544,8 +1544,9 @@ async function loadAdminTickets() {
   const container = document.getElementById('admin-tickets-list');
   container.innerHTML = '<div style="text-align:center;padding:24px"><span class="spinner"></span></div>';
   const filter = document.getElementById('admin-ticket-filter').value;
-  let q = db.collection('support_tickets').orderBy('updatedAt','desc').limit(50);
+  let q = db.collection('support_tickets');
   if (filter) q = q.where('status','==',filter);
+  q = q.orderBy('updatedAt','desc').limit(50);
   const snap = await q.get();
   const tickets = snap.docs.map(d => ({ id: d.id, ...d.data() }));
   const unread = tickets.filter(t => !t.adminSeen && t.lastMessage).length;
