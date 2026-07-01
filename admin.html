@@ -563,12 +563,14 @@
             Notificaciones por Telegram
           </div>
           <div class="card-body">
-            <div class="alert alert-info mb-3" style="font-size:13px">
-              Recibe un mensaje en Telegram cada vez que un cliente haga una solicitud de recarga.<br>
-              <strong>Cómo configurarlo:</strong><br>
-              1. Escríbele a <a href="https://t.me/BotFather" target="_blank" style="color:var(--blue)">@BotFather</a> en Telegram → <code>/newbot</code> → copia el <strong>token</strong>.<br>
-              2. Escríbele <code>/start</code> a tu nuevo bot.<br>
-              3. Abre <a href="https://api.telegram.org/bot{TU_TOKEN}/getUpdates" target="_blank" id="get-updates-link" style="color:var(--blue)">este enlace</a> y copia el <code>id</code> dentro de <code>chat</code> — ese es tu <strong>Chat ID</strong>.
+            <p style="font-size:13px;color:var(--muted);margin:0 0 16px">
+              Recibe un mensaje en Telegram cada vez que un cliente haga una solicitud de recarga.
+            </p>
+            <div style="background:var(--bg2);border-radius:10px;padding:14px 16px;margin-bottom:20px;font-size:13px;color:var(--muted);line-height:1.8">
+              <strong style="color:var(--navy);display:block;margin-bottom:6px">Cómo configurarlo:</strong>
+              <span style="display:block">1. Escríbele a <a href="https://t.me/BotFather" target="_blank" style="color:var(--blue)">@BotFather</a> en Telegram → <code>/newbot</code> → copia el <strong>token</strong></span>
+              <span style="display:block">2. Escríbele <code>/start</code> a tu nuevo bot</span>
+              <span style="display:block">3. Abre <a href="https://api.telegram.org/bot{TU_TOKEN}/getUpdates" target="_blank" id="get-updates-link" style="color:var(--blue)">este enlace</a> y copia el <code>id</code> dentro de <code>chat</code> — ese es tu <strong>Chat ID</strong></span>
             </div>
             <div class="form-group">
               <label>Token del Bot</label>
@@ -593,24 +595,26 @@
             Notificación por email al aprobar recarga
           </div>
           <div class="card-body">
-            <div class="alert alert-info mb-3" style="font-size:13px">
-              Envía un email automático al cliente cuando apruebas su recarga. Usa <a href="https://www.emailjs.com/" target="_blank" style="color:var(--blue)">EmailJS</a> (gratis hasta 200 emails/mes, sin backend).<br><br>
-              <strong>Configuración:</strong><br>
-              1. Crea cuenta en emailjs.com → <strong>Email Services</strong> → conecta tu Gmail/Outlook → copia el <strong>Service ID</strong>.<br>
-              2. Ve a <strong>Email Templates</strong> → crea plantilla con variables: <code>{{to_email}}</code>, <code>{{client_name}}</code>, <code>{{amount}}</code>, <code>{{new_balance}}</code> → copia el <strong>Template ID</strong>.<br>
-              3. Ve a <strong>Account → API Keys</strong> → copia tu <strong>Public Key</strong>.
+            <p style="font-size:13px;color:var(--muted);margin:0 0 16px">
+              Envía un email automático al cliente cuando apruebas su recarga usando <a href="https://www.emailjs.com/" target="_blank" style="color:var(--blue)">EmailJS</a> (gratis, hasta 200 emails/mes).
+            </p>
+            <div style="background:var(--bg2);border-radius:10px;padding:14px 16px;margin-bottom:20px;font-size:13px;color:var(--muted);line-height:1.8">
+              <strong style="color:var(--navy);display:block;margin-bottom:6px">Pasos para configurar:</strong>
+              <span style="display:block">1. Entra a emailjs.com → <strong>Email Services</strong> → conecta Gmail/Outlook → copia el <strong>Service ID</strong></span>
+              <span style="display:block">2. Ve a <strong>Email Templates</strong> → crea plantilla → copia el <strong>Template ID</strong></span>
+              <span style="display:block">3. Ve a <strong>Account → API Keys</strong> → copia tu <strong>Public Key</strong></span>
             </div>
             <div class="form-group">
               <label>Public Key</label>
-              <input type="text" class="input" id="settings-ejs-pubkey" placeholder="user_XXXXXXXXXXXXXX">
+              <input type="text" class="input" id="settings-ejs-pubkey" placeholder="user_XXXXXXXXXXXXXX" autocomplete="off">
             </div>
             <div class="form-group">
               <label>Service ID</label>
-              <input type="text" class="input" id="settings-ejs-service" placeholder="service_xxxxxxx">
+              <input type="text" class="input" id="settings-ejs-service" placeholder="service_xxxxxxx" autocomplete="off">
             </div>
             <div class="form-group">
               <label>Template ID</label>
-              <input type="text" class="input" id="settings-ejs-template" placeholder="template_xxxxxxx">
+              <input type="text" class="input" id="settings-ejs-template" placeholder="template_xxxxxxx" autocomplete="off">
             </div>
             <div id="settings-ejs-alert"></div>
             <div style="display:flex;gap:10px;flex-wrap:wrap">
