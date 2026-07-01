@@ -101,21 +101,16 @@ const Orders = (() => {
 
     if (balance < charge) throw new Error(`Saldo insuficiente. Necesitas $${charge.toFixed(4)}, tienes $${balance.toFixed(4)}.`);
 
-    // 3. Deduct balance optimistically
-    await userRef.update({ balance: firebase.firestore.FieldValue.increment(-charge) });
-
-    // 4. Call provider
+    // 3. Call provider first (before touching balance)
     let providerOrderId = null;
     try {
       const resp = await SmmAPI.addOrder({ service: service.id, link, quantity });
       providerOrderId = resp.order;
     } catch (err) {
-      // Refund if provider fails
-      await userRef.update({ balance: firebase.firestore.FieldValue.increment(charge) });
       throw new Error('Error del proveedor: ' + err.message);
     }
 
-    // 5. Save order to Firestore
+    // 4. Atomic batch: deduct balance + save order + save balance_history
     const now = firebase.firestore.FieldValue.serverTimestamp();
     const order = {
       userId,
@@ -136,6 +131,7 @@ const Orders = (() => {
     const batch = db.batch();
     const orderRef = db.collection('orders').doc();
     batch.set(orderRef, order);
+    batch.update(userRef, { balance: firebase.firestore.FieldValue.increment(-charge) });
     batch.set(db.collection('balance_history').doc(), {
       userId,
       type: 'order',
