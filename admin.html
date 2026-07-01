@@ -7,6 +7,7 @@
   <title>Admin — NextBoost</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 </head>
 <body>
 
@@ -285,6 +286,7 @@
             <span>Todos los pedidos <span id="admin-orders-count" style="font-size:13px;font-weight:400;color:var(--muted)"></span></span>
             <div style="display:flex;gap:8px">
               <button class="btn btn-ghost btn-sm" onclick="exportOrdersCSV()">⬇ CSV</button>
+              <span id="admin-sync-last" style="font-size:11px;color:var(--muted)"></span>
               <button class="btn btn-ghost btn-sm" onclick="syncAllOrders()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg> Sincronizar</button>
             </div>
           </div>
@@ -585,6 +587,40 @@
             </div>
           </div>
         </div>
+
+        <!-- Email notifications card -->
+        <div class="card mt-4">
+          <div class="card-header">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:8px"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            Notificación por email al aprobar recarga
+          </div>
+          <div class="card-body">
+            <div class="alert alert-info mb-3" style="font-size:13px">
+              Envía un email automático al cliente cuando apruebas su recarga. Usa <a href="https://www.emailjs.com/" target="_blank" style="color:var(--blue)">EmailJS</a> (gratis hasta 200 emails/mes, sin backend).<br><br>
+              <strong>Configuración:</strong><br>
+              1. Crea cuenta en emailjs.com → <strong>Email Services</strong> → conecta tu Gmail/Outlook → copia el <strong>Service ID</strong>.<br>
+              2. Ve a <strong>Email Templates</strong> → crea plantilla con variables: <code>{{to_email}}</code>, <code>{{client_name}}</code>, <code>{{amount}}</code>, <code>{{new_balance}}</code> → copia el <strong>Template ID</strong>.<br>
+              3. Ve a <strong>Account → API Keys</strong> → copia tu <strong>Public Key</strong>.
+            </div>
+            <div class="form-group">
+              <label>Public Key</label>
+              <input type="text" class="input" id="settings-ejs-pubkey" placeholder="user_XXXXXXXXXXXXXX">
+            </div>
+            <div class="form-group">
+              <label>Service ID</label>
+              <input type="text" class="input" id="settings-ejs-service" placeholder="service_xxxxxxx">
+            </div>
+            <div class="form-group">
+              <label>Template ID</label>
+              <input type="text" class="input" id="settings-ejs-template" placeholder="template_xxxxxxx">
+            </div>
+            <div id="settings-ejs-alert"></div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap">
+              <button class="btn btn-primary" onclick="saveEmailJSSettings()">Guardar</button>
+              <button class="btn btn-outline" onclick="testEmailNotif()">Enviar email de prueba</button>
+            </div>
+          </div>
+        </div>
       </div>
 
     </div>
@@ -667,6 +703,7 @@ requireAdmin(async (user, data) => {
   checkProviderBalance();
   watchPendingRecharges();
   loadTelegramConfig();
+  loadEmailJSConfig();
 });
 
 // ── Overview ──────────────────────────────────────────
@@ -792,6 +829,77 @@ function notifyTelegramRecharge(r) {
   const ref    = r.reference ? r.reference.slice(0, 40) : 'Sin referencia';
   const msg = `💰 <b>Nueva solicitud de recarga</b>\n👤 ${name}\n💵 ${amount} vía ${method}\n📎 ${ref}\n\n<i>Ingresa al panel para aprobar o rechazar.</i>`;
   sendTelegramMessage(_tgToken, _tgChatId, msg);
+}
+
+// ── EmailJS notification config ────────────────────────
+let _ejsPubKey   = null;
+let _ejsService  = null;
+let _ejsTemplate = null;
+
+async function loadEmailJSConfig() {
+  try {
+    const snap = await db.collection('private_settings').doc('notifications').get();
+    if (snap.exists) {
+      const d = snap.data();
+      _ejsPubKey   = d.ejsPubKey   || null;
+      _ejsService  = d.ejsService  || null;
+      _ejsTemplate = d.ejsTemplate || null;
+      if (_ejsPubKey) emailjs.init({ publicKey: _ejsPubKey });
+      document.getElementById('settings-ejs-pubkey').value   = _ejsPubKey   || '';
+      document.getElementById('settings-ejs-service').value  = _ejsService  || '';
+      document.getElementById('settings-ejs-template').value = _ejsTemplate || '';
+    }
+  } catch(e) {}
+}
+
+async function saveEmailJSSettings() {
+  const pubkey   = document.getElementById('settings-ejs-pubkey').value.trim();
+  const service  = document.getElementById('settings-ejs-service').value.trim();
+  const template = document.getElementById('settings-ejs-template').value.trim();
+  const alertEl  = document.getElementById('settings-ejs-alert');
+  try {
+    await db.collection('private_settings').doc('notifications').set(
+      { ejsPubKey: pubkey, ejsService: service, ejsTemplate: template }, { merge: true }
+    );
+    _ejsPubKey = pubkey; _ejsService = service; _ejsTemplate = template;
+    if (pubkey) emailjs.init({ publicKey: pubkey });
+    alertEl.innerHTML = '<div class="alert alert-success mt-2">Guardado correctamente.</div>';
+    setTimeout(() => alertEl.innerHTML = '', 3000);
+  } catch(e) {
+    alertEl.innerHTML = `<div class="alert alert-error mt-2">${e.message}</div>`;
+  }
+}
+
+async function testEmailNotif() {
+  const alertEl = document.getElementById('settings-ejs-alert');
+  if (!_ejsPubKey || !_ejsService || !_ejsTemplate) {
+    alertEl.innerHTML = '<div class="alert alert-error mt-2">Configura y guarda los datos de EmailJS primero.</div>';
+    return;
+  }
+  try {
+    await emailjs.send(_ejsService, _ejsTemplate, {
+      to_email:     adminUser.email,
+      client_name:  'Admin (prueba)',
+      amount:       '$10.00',
+      new_balance:  '$10.00',
+    });
+    alertEl.innerHTML = '<div class="alert alert-success mt-2">✓ Email de prueba enviado a ' + adminUser.email + '</div>';
+  } catch(e) {
+    alertEl.innerHTML = `<div class="alert alert-error mt-2">Error: ${e.text || e.message}</div>`;
+  }
+  setTimeout(() => alertEl.innerHTML = '', 6000);
+}
+
+async function sendRechargeApprovedEmail(userEmail, userName, amount, newBalance) {
+  if (!_ejsPubKey || !_ejsService || !_ejsTemplate || !userEmail) return;
+  try {
+    await emailjs.send(_ejsService, _ejsTemplate, {
+      to_email:    userEmail,
+      client_name: userName || 'Cliente',
+      amount:      formatUSD2(amount),
+      new_balance: formatUSD2(newBalance),
+    });
+  } catch(e) {} // fire-and-forget
 }
 
 // ── Pending badge + real-time notifications ───────────
@@ -945,6 +1053,13 @@ async function approveRecharge(rechargeId, userId, amount) {
   await batch.commit();
   auditLog('recharge_approved', { rechargeId, userId, amount });
   toast(`Recarga de ${formatUSD2(amount)} aprobada`, 'success');
+  // Send email to client
+  try {
+    const userSnap = await db.collection('users').doc(userId).get();
+    const ud = userSnap.exists ? userSnap.data() : {};
+    const newBalance = (parseFloat(ud.balance || 0) + amount);
+    sendRechargeApprovedEmail(ud.email, ud.name, amount, newBalance);
+  } catch(e) {}
   loadAdminRecharges();
   loadOverview();
 }
@@ -999,18 +1114,39 @@ async function loadAdminOrders() {
   const snap = await db.collection('orders').orderBy('createdAt','desc').limit(500).get();
   allOrders = snap.docs.map(d => ({ id: d.id, ...d.data() }));
   applyAdminOrderFilters();
+  // Sync active orders on load + start auto-sync interval
+  syncAllOrders(true);
+  startAdminAutoSync();
 }
 
-async function syncAllOrders() {
+let _adminSyncInterval = null;
+const ADMIN_SYNC_BTN_HTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg> Sincronizar';
+
+async function syncAllOrders(silent = false) {
   const btn = document.querySelector('[onclick="syncAllOrders()"]');
-  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Sincronizando...';
+  if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Sincronizando...'; }
   try {
-    const pending = allOrders.filter(o => ['pending','active','in progress'].includes((o.status||'').toLowerCase()));
-    await Orders.syncStatus(pending.length ? pending : allOrders.slice(0,50));
+    const pending = allOrders.filter(o =>
+      o.providerOrderId && ['pending','active','in progress','processing'].includes((o.status||'').toLowerCase())
+    );
+    if (!pending.length) { if (!silent) toast('Sin pedidos activos para sincronizar', 'info'); return; }
+    await Orders.syncStatus(pending);
     await loadAdminOrders();
-    toast('Estados sincronizados', 'success');
-  } catch(e) { toast('Error: ' + e.message, 'error'); }
-  btn.disabled = false; btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg> Sincronizar';
+    const label = document.getElementById('admin-sync-last');
+    if (label) label.textContent = 'Sync: ' + new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+    if (!silent) toast(`${pending.length} pedido${pending.length>1?'s':''} sincronizado${pending.length>1?'s':''}`, 'success');
+  } catch(e) { if (!silent) toast('Error: ' + e.message, 'error'); }
+  finally { if (btn) { btn.disabled = false; btn.innerHTML = ADMIN_SYNC_BTN_HTML; } }
+}
+
+function startAdminAutoSync() {
+  if (_adminSyncInterval) clearInterval(_adminSyncInterval);
+  _adminSyncInterval = setInterval(() => {
+    const hasActive = allOrders.some(o =>
+      o.providerOrderId && ['pending','active','in progress','processing'].includes((o.status||'').toLowerCase())
+    );
+    if (hasActive) syncAllOrders(true);
+  }, 5 * 60 * 1000);
 }
 
 // ── Users ─────────────────────────────────────────────
@@ -1669,7 +1805,7 @@ async function loadSettings() {
   document.getElementById('settings-announcement').value      = d.announcement     || '';
   document.getElementById('settings-announcement-type').value = d.announcementType || 'info';
 
-  // Load Telegram config (admin-only private_settings)
+  // Load Telegram + EmailJS config (admin-only private_settings)
   try {
     const tgSnap = await db.collection('private_settings').doc('notifications').get();
     if (tgSnap.exists) {
@@ -1678,9 +1814,11 @@ async function loadSettings() {
       document.getElementById('settings-tg-chatid').value = tg.tgChatId || '';
       _tgToken  = tg.tgToken  || null;
       _tgChatId = tg.tgChatId || null;
-      // Update the getUpdates helper link
       const link = document.getElementById('get-updates-link');
       if (link && tg.tgToken) link.href = `https://api.telegram.org/bot${tg.tgToken}/getUpdates`;
+      document.getElementById('settings-ejs-pubkey').value   = tg.ejsPubKey   || '';
+      document.getElementById('settings-ejs-service').value  = tg.ejsService  || '';
+      document.getElementById('settings-ejs-template').value = tg.ejsTemplate || '';
     }
   } catch(e) {}
 }

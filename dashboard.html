@@ -260,9 +260,12 @@
               <button class="btn btn-sm btn-ghost"    id="of-partial"   onclick="setOrderFilter('partial')">Parcial</button>
               <button class="btn btn-sm btn-ghost"    id="of-canceled"  onclick="setOrderFilter('canceled')">Cancelado</button>
             </div>
-            <button class="btn btn-ghost btn-sm" id="sync-orders-btn" style="margin-left:auto">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg> Actualizar
-            </button>
+            <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
+              <span id="sync-last-time" style="font-size:11px;color:var(--muted)"></span>
+              <button class="btn btn-ghost btn-sm" id="sync-orders-btn">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg> Sincronizar
+              </button>
+            </div>
           </div>
         </div>
         <div class="card">
@@ -1043,6 +1046,9 @@ async function loadOrdersPage() {
   userOrders = orders;
   _ordersLoaded = true;
   applyOrderFilters();
+  // Auto-sync active orders on first load, then start interval
+  syncActiveOrders(true);
+  startAutoSync();
 }
 
 function renderOrdersTable(orders) {
@@ -1063,18 +1069,47 @@ function renderOrdersTable(orders) {
     </tr>`).join('');
 }
 
-document.getElementById('sync-orders-btn').addEventListener('click', async () => {
+// ── Auto-sync de pedidos ──────────────────────────────
+let _syncInterval = null;
+const SYNC_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
+const SYNC_BTN_HTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg> Sincronizar';
+
+async function syncActiveOrders(silent = false) {
+  const activeOrders = userOrders.filter(o =>
+    o.providerOrderId && ['pending', 'active', 'in progress', 'processing'].includes((o.status || '').toLowerCase())
+  );
+  if (!activeOrders.length) return 0;
+
   const btn = document.getElementById('sync-orders-btn');
-  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>';
+  if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>'; }
+
   try {
-    await Orders.syncStatus(userOrders);
-    _ordersLoaded = false; // force re-fetch after sync
+    await Orders.syncStatus(activeOrders);
+    _ordersLoaded = false;
     await loadOrdersPage();
-    toast('Estados actualizados', 'success');
-  } catch(e) { toast('Error: ' + e.message, 'error'); }
-  btn.disabled = false;
-  btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg> Actualizar';
-});
+    const label = document.getElementById('sync-last-time');
+    if (label) label.textContent = 'Sync: ' + new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+    if (!silent) toast('Estados actualizados', 'success');
+    return activeOrders.length;
+  } catch(e) {
+    if (!silent) toast('Error al sincronizar: ' + e.message, 'error');
+    return 0;
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerHTML = SYNC_BTN_HTML; }
+  }
+}
+
+function startAutoSync() {
+  if (_syncInterval) clearInterval(_syncInterval);
+  _syncInterval = setInterval(() => {
+    const hasActive = userOrders.some(o =>
+      o.providerOrderId && ['pending', 'active', 'in progress', 'processing'].includes((o.status || '').toLowerCase())
+    );
+    if (hasActive) syncActiveOrders(true);
+  }, SYNC_INTERVAL_MS);
+}
+
+document.getElementById('sync-orders-btn').addEventListener('click', () => syncActiveOrders(false));
 
 function showOrderDetail(orderId) {
   const o = userOrders.find(x => x.id === orderId);

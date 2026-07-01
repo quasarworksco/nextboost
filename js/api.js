@@ -181,7 +181,10 @@ const Orders = (() => {
   // Sync status from provider
   async function syncStatus(orders) {
     if (!orders.length) return;
-    const withProvider = orders.filter(o => o.providerOrderId);
+    const TERMINAL = ['completed', 'cancelled', 'partial', 'canceled'];
+    const withProvider = orders.filter(o =>
+      o.providerOrderId && !TERMINAL.includes((o.status || '').toLowerCase())
+    );
     if (!withProvider.length) return;
 
     const ids     = withProvider.map(o => o.providerOrderId);
