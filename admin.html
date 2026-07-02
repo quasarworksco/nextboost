@@ -1038,8 +1038,13 @@ async function loadAdminRecharges() {
             <button class="btn btn-danger btn-sm" style="width:100%" onclick="rejectRecharge('${r.id}')">✗ Rechazar</button>
           </div>
         ` : r.status === 'approved' ? `
-          <button class="btn btn-outline btn-sm" style="color:var(--red);border-color:var(--red);width:100%" onclick="revertRecharge('${r.id}','${r.userId}',${r.amount})">↩ Revertir</button>
-        ` : '<span style="color:var(--muted);font-size:12px">—</span>'}
+          <div style="display:flex;flex-direction:column;gap:6px;min-width:90px">
+            <button class="btn btn-outline btn-sm" style="color:var(--red);border-color:var(--red);width:100%" onclick="revertRecharge('${r.id}','${r.userId}',${r.amount})">↩ Revertir</button>
+            <button class="btn btn-ghost btn-sm" style="width:100%" onclick="deleteRecharge('${r.id}')">🗑 Eliminar</button>
+          </div>
+        ` : `
+          <button class="btn btn-ghost btn-sm" style="width:100%" onclick="deleteRecharge('${r.id}')">🗑 Eliminar</button>
+        `}
       </td>
     </tr>`).join('');
 }
@@ -1094,6 +1099,18 @@ async function rejectRecharge(rechargeId) {
   auditLog('recharge_rejected', { rechargeId });
   toast('Recarga rechazada', 'info');
   loadAdminRecharges();
+}
+
+async function deleteRecharge(rechargeId) {
+  if (!confirm('¿Eliminar esta recarga? Esta acción no se puede deshacer.')) return;
+  try {
+    await db.collection('recharges').doc(rechargeId).delete();
+    auditLog('recharge_deleted', { rechargeId });
+    toast('Recarga eliminada', 'info');
+    loadAdminRecharges();
+  } catch(e) {
+    toast('Error al eliminar: ' + e.message, 'error');
+  }
 }
 
 async function revertRecharge(rechargeId, userId, amount) {
