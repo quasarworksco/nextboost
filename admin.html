@@ -975,7 +975,9 @@ async function loadAdminRecharges() {
 
   try {
     // Filter first, then orderBy — avoids requiring a composite index in Firestore
-    let query = db.collection('recharges').where('status','==',filter).orderBy('createdAt','desc').limit(100);
+    let query = filter
+      ? db.collection('recharges').where('status','==',filter).orderBy('createdAt','desc').limit(100)
+      : db.collection('recharges').orderBy('createdAt','desc').limit(100);
     const snap = await query.get();
     allRecharges = snap.docs.map(d => ({ id: d.id, ...d.data() }));
   } catch (err) {
@@ -1015,6 +1017,8 @@ async function loadAdminRecharges() {
             <button class="btn btn-success btn-sm" style="width:100%" onclick="approveRecharge('${r.id}','${r.userId}',${r.amount})">✓ Aprobar</button>
             <button class="btn btn-danger btn-sm" style="width:100%" onclick="rejectRecharge('${r.id}')">✗ Rechazar</button>
           </div>
+        ` : r.status === 'approved' ? `
+          <button class="btn btn-outline btn-sm" style="color:var(--red);border-color:var(--red);width:100%" onclick="revertRecharge('${r.id}','${r.userId}',${r.amount})">↩ Revertir</button>
         ` : '<span style="color:var(--muted);font-size:12px">—</span>'}
       </td>
     </tr>`).join('');
@@ -1060,6 +1064,24 @@ async function rejectRecharge(rechargeId) {
   auditLog('recharge_rejected', { rechargeId });
   toast('Recarga rechazada', 'info');
   loadAdminRecharges();
+}
+
+async function revertRecharge(rechargeId, userId, amount) {
+  if (!confirm(`¿Revertir recarga de ${formatUSD2(amount)}? Se descontará el saldo del usuario.`)) return;
+  const now = firebase.firestore.FieldValue.serverTimestamp();
+  const batch = db.batch();
+  batch.update(db.collection('recharges').doc(rechargeId), { status: 'reversed', reversedAt: now, reversedBy: adminUser.uid });
+  batch.update(db.collection('users').doc(userId), { balance: firebase.firestore.FieldValue.increment(-amount) });
+  batch.set(db.collection('balance_history').doc(), { userId, type: 'reversal', amount: -amount, description: `Recarga revertida por admin`, createdAt: now });
+  try {
+    await batch.commit();
+    auditLog('recharge_reversed', { rechargeId, userId, amount });
+    toast(`Recarga de ${formatUSD2(amount)} revertida`, 'info');
+    loadAdminRecharges();
+    loadOverview();
+  } catch(e) {
+    toast('Error al revertir: ' + e.message, 'error');
+  }
 }
 
 // ── Orders ────────────────────────────────────────────

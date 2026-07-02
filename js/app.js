@@ -130,6 +130,7 @@ function statusBadge(status) {
     cancelled:  'badge-canceled',
     approved:   'badge-approved',
     rejected:   'badge-rejected',
+    reversed:   'badge-canceled',
   };
   const cls = map[(status || '').toLowerCase()] || 'badge-pending';
   return `<span class="badge ${cls}">${status || 'pending'}</span>`;
