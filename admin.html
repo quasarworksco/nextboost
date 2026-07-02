@@ -719,8 +719,10 @@ async function loadOverview() {
         <td data-label="Monto"><strong>${formatUSD2(r.amount)}</strong></td>
         <td data-label="Método">${r.method}</td>
         <td data-label="">
-          <button class="btn btn-success btn-sm" onclick="approveRecharge('${r.id}','${r.userId}',${r.amount})">✓ Aprobar</button>
-          <button class="btn btn-danger btn-sm" onclick="rejectRecharge('${r.id}')">✗ Rechazar</button>
+          <div style="display:flex;flex-direction:column;gap:6px;min-width:90px">
+            <button class="btn btn-success btn-sm" style="width:100%" onclick="approveRecharge('${r.id}','${r.userId}',${r.amount})">✓ Aprobar</button>
+            <button class="btn btn-danger btn-sm" style="width:100%" onclick="rejectRecharge('${r.id}')">✗ Rechazar</button>
+          </div>
         </td>
       </tr>`).join('');
   }
@@ -1009,8 +1011,10 @@ async function loadAdminRecharges() {
       <td data-label="Fecha" style="color:var(--muted);font-size:12px">${formatDate(r.createdAt)}</td>
       <td data-label="">
         ${r.status === 'pending' ? `
-          <button class="btn btn-success btn-sm" onclick="approveRecharge('${r.id}','${r.userId}',${r.amount})">✓ Aprobar</button>
-          <button class="btn btn-danger btn-sm" onclick="rejectRecharge('${r.id}')">✗ Rechazar</button>
+          <div style="display:flex;flex-direction:column;gap:6px;min-width:90px">
+            <button class="btn btn-success btn-sm" style="width:100%" onclick="approveRecharge('${r.id}','${r.userId}',${r.amount})">✓ Aprobar</button>
+            <button class="btn btn-danger btn-sm" style="width:100%" onclick="rejectRecharge('${r.id}')">✗ Rechazar</button>
+          </div>
         ` : '<span style="color:var(--muted);font-size:12px">—</span>'}
       </td>
     </tr>`).join('');
