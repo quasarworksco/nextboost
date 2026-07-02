@@ -58,6 +58,9 @@
         <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span> Soporte
         <span class="badge badge-pending ml-auto" id="admin-tickets-badge" style="display:none"></span>
       </div>
+      <div class="nav-item" data-page="coupons" data-title="Cupones" onclick="showPage('coupons');loadCoupons()">
+        <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg></span> Cupones
+      </div>
       <div class="nav-item" data-page="settings" data-title="Configuración" onclick="showPage('settings');loadSettings()">
         <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span> Configuración
       </div>
@@ -474,6 +477,48 @@
                 <input type="text" class="input" id="admin-reply-input" placeholder="Responder al cliente..." style="flex:1" onkeydown="if(event.key==='Enter')sendAdminReply()">
                 <button class="btn btn-primary btn-sm" onclick="sendAdminReply()">Enviar</button>
               </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ COUPONS ═══ -->
+      <div id="page-coupons" class="page-section" style="display:none">
+        <div class="card mb-3">
+          <div class="card-header">Crear cupón</div>
+          <div class="card-body">
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr auto;gap:12px;align-items:end">
+              <div class="form-group" style="margin:0">
+                <label>Código</label>
+                <input type="text" class="input" id="new-coupon-code" placeholder="DESCUENTO5" style="text-transform:uppercase">
+              </div>
+              <div class="form-group" style="margin:0">
+                <label>Tipo</label>
+                <select class="select" id="new-coupon-type">
+                  <option value="fixed">Bono fijo ($)</option>
+                  <option value="percent">Porcentaje (%)</option>
+                </select>
+              </div>
+              <div class="form-group" style="margin:0">
+                <label>Valor</label>
+                <input type="number" class="input" id="new-coupon-value" placeholder="5" min="0" step="0.01">
+              </div>
+              <div class="form-group" style="margin:0">
+                <label>Usos máx. (0 = ilimitado)</label>
+                <input type="number" class="input" id="new-coupon-maxuses" placeholder="0" min="0" value="0">
+              </div>
+              <button class="btn btn-primary" onclick="createCoupon()">+ Crear</button>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">Cupones activos</div>
+          <div class="card-body" style="padding:0">
+            <div class="table-wrap admin-table-wrap">
+              <table>
+                <thead><tr><th>Código</th><th>Tipo</th><th>Valor</th><th>Usos</th><th>Estado</th><th>Acciones</th></tr></thead>
+                <tbody id="coupons-body"><tr><td colspan="6" style="text-align:center;padding:24px;color:var(--muted)">Cargando...</td></tr></tbody>
+              </table>
             </div>
           </div>
         </div>
@@ -1059,6 +1104,61 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Escape') document.getElementById('screenshot-lightbox').style.display = 'none';
 });
 
+// ── Cupones ───────────────────────────────────────────
+async function loadCoupons() {
+  const tbody = document.getElementById('coupons-body');
+  tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px"><span class="spinner"></span></td></tr>';
+  const snap = await db.collection('coupons').orderBy('createdAt','desc').get();
+  if (snap.empty) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--muted)">Sin cupones</td></tr>'; return; }
+  tbody.innerHTML = snap.docs.map(d => {
+    const c = d.data();
+    const val = c.type === 'percent' ? `${c.value}%` : `$${parseFloat(c.value).toFixed(2)}`;
+    const uses = c.maxUses > 0 ? `${c.usedCount||0}/${c.maxUses}` : `${c.usedCount||0}/∞`;
+    return `<tr>
+      <td data-label="Código"><strong style="font-family:monospace;font-size:14px">${d.id}</strong></td>
+      <td data-label="Tipo">${c.type === 'percent' ? 'Porcentaje' : 'Bono fijo'}</td>
+      <td data-label="Valor"><strong>${val}</strong></td>
+      <td data-label="Usos" style="color:var(--muted)">${uses}</td>
+      <td data-label="Estado">${c.active ? '<span class="badge badge-active">Activo</span>' : '<span class="badge badge-canceled">Inactivo</span>'}</td>
+      <td data-label="" style="display:flex;gap:6px">
+        <button class="btn btn-ghost btn-sm" onclick="toggleCoupon('${d.id}',${!!c.active})">${c.active ? 'Desactivar' : 'Activar'}</button>
+        <button class="btn btn-ghost btn-sm" style="color:var(--red)" onclick="deleteCoupon('${d.id}')">🗑</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+async function createCoupon() {
+  const code    = document.getElementById('new-coupon-code').value.trim().toUpperCase();
+  const type    = document.getElementById('new-coupon-type').value;
+  const value   = parseFloat(document.getElementById('new-coupon-value').value);
+  const maxUses = parseInt(document.getElementById('new-coupon-maxuses').value) || 0;
+  if (!code) { toast('Ingresa un código', 'error'); return; }
+  if (!value || value <= 0) { toast('Ingresa un valor válido', 'error'); return; }
+  try {
+    await db.collection('coupons').doc(code).set({
+      type, value, maxUses, usedCount: 0, active: true,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+    });
+    toast(`Cupón ${code} creado`, 'success');
+    document.getElementById('new-coupon-code').value  = '';
+    document.getElementById('new-coupon-value').value = '';
+    loadCoupons();
+  } catch(e) { toast('Error: ' + e.message, 'error'); }
+}
+
+async function toggleCoupon(code, current) {
+  await db.collection('coupons').doc(code).update({ active: !current });
+  loadCoupons();
+}
+
+async function deleteCoupon(code) {
+  if (!confirm(`¿Eliminar cupón ${code}?`)) return;
+  await db.collection('coupons').doc(code).delete();
+  toast(`Cupón ${code} eliminado`, 'info');
+  loadCoupons();
+}
+
 // ── Audit log ─────────────────────────────────────────
 function auditLog(action, details) {
   try {
@@ -1073,14 +1173,20 @@ function auditLog(action, details) {
 }
 
 async function approveRecharge(rechargeId, userId, amount) {
-  if (!confirm(`¿Aprobar recarga de ${formatUSD2(amount)}?`)) return;
+  const r = allRecharges.find(x => x.id === rechargeId);
+  const bonus = parseFloat(r?.couponBonus || 0);
+  const total = amount + bonus;
+  const confirmMsg = bonus > 0
+    ? `¿Aprobar recarga de ${formatUSD2(amount)} + bono de cupón ${formatUSD2(bonus)} = ${formatUSD2(total)}?`
+    : `¿Aprobar recarga de ${formatUSD2(amount)}?`;
+  if (!confirm(confirmMsg)) return;
   const now = firebase.firestore.FieldValue.serverTimestamp();
   const batch = db.batch();
   batch.update(db.collection('recharges').doc(rechargeId), { status: 'approved', approvedAt: now, approvedBy: adminUser.uid });
-  batch.update(db.collection('users').doc(userId), { balance: firebase.firestore.FieldValue.increment(amount) });
-  batch.set(db.collection('balance_history').doc(), { userId, type: 'recharge', amount, description: `Recarga aprobada por admin`, createdAt: now });
+  batch.update(db.collection('users').doc(userId), { balance: firebase.firestore.FieldValue.increment(total) });
+  batch.set(db.collection('balance_history').doc(), { userId, type: 'recharge', amount: total, description: bonus > 0 ? `Recarga aprobada + bono cupón ${r.couponCode} (${formatUSD2(bonus)})` : `Recarga aprobada por admin`, createdAt: now });
   await batch.commit();
-  auditLog('recharge_approved', { rechargeId, userId, amount });
+  auditLog('recharge_approved', { rechargeId, userId, amount, bonus });
   toast(`Recarga de ${formatUSD2(amount)} aprobada`, 'success');
   // Send email to client
   try {

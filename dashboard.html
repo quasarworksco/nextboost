@@ -351,6 +351,15 @@
                 </div>
                 <input type="hidden" id="screenshot-url">
 
+                <div class="form-group">
+                  <label>Cupón <span style="color:var(--muted);font-weight:400">(opcional)</span></label>
+                  <div style="display:flex;gap:8px">
+                    <input type="text" class="input" id="coupon-code" placeholder="Ingresa tu código" style="text-transform:uppercase;flex:1">
+                    <button type="button" class="btn btn-ghost" id="coupon-apply-btn" onclick="applyCoupon()">Aplicar</button>
+                  </div>
+                  <div id="coupon-result" style="margin-top:6px;font-size:13px"></div>
+                </div>
+
                 <div id="recharge-alert"></div>
                 <button class="btn btn-primary btn-full" id="recharge-btn">Enviar solicitud</button>
               </div>
@@ -1307,6 +1316,52 @@ async function uploadToCloudinary(file) {
 }
 
 let _submittingRecharge = false;
+// ── Cupones ───────────────────────────────────────────
+let _appliedCoupon = null;
+
+async function applyCoupon() {
+  const code = document.getElementById('coupon-code').value.trim().toUpperCase();
+  const resultEl = document.getElementById('coupon-result');
+  if (!code) { resultEl.innerHTML = ''; return; }
+
+  const btn = document.getElementById('coupon-apply-btn');
+  btn.disabled = true; btn.textContent = '...';
+
+  try {
+    const snap = await db.collection('coupons').doc(code).get();
+    if (!snap.exists || !snap.data().active) {
+      resultEl.innerHTML = '<span style="color:var(--red)">❌ Cupón inválido o inactivo.</span>';
+      _appliedCoupon = null;
+    } else {
+      const c = snap.data();
+      const expired = c.expiresAt && c.expiresAt.toDate() < new Date();
+      const maxed   = c.maxUses > 0 && c.usedCount >= c.maxUses;
+      // Check if this user already used it
+      const usedSnap = await db.collection('coupons').doc(code).collection('used_by').doc(currentUser.uid).get();
+      if (expired) {
+        resultEl.innerHTML = '<span style="color:var(--red)">❌ Este cupón ha expirado.</span>';
+        _appliedCoupon = null;
+      } else if (maxed) {
+        resultEl.innerHTML = '<span style="color:var(--red)">❌ Este cupón ya alcanzó su límite de usos.</span>';
+        _appliedCoupon = null;
+      } else if (usedSnap.exists) {
+        resultEl.innerHTML = '<span style="color:var(--red)">❌ Ya usaste este cupón anteriormente.</span>';
+        _appliedCoupon = null;
+      } else {
+        _appliedCoupon = { code, ...c };
+        const bonus = c.type === 'percent'
+          ? `+${c.value}% de bono en tu recarga`
+          : `+$${parseFloat(c.value).toFixed(2)} de bono`;
+        resultEl.innerHTML = `<span style="color:var(--green)">✓ Cupón aplicado: ${bonus}</span>`;
+      }
+    }
+  } catch(e) {
+    resultEl.innerHTML = '<span style="color:var(--red)">Error al validar el cupón.</span>';
+  } finally {
+    btn.disabled = false; btn.textContent = 'Aplicar';
+  }
+}
+
 document.getElementById('recharge-btn').addEventListener('click', async () => {
   if (_submittingRecharge) return;
 
@@ -1349,6 +1404,16 @@ document.getElementById('recharge-btn').addEventListener('click', async () => {
   btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Enviando...';
 
   try {
+    // Calculate coupon bonus
+    let couponBonus = 0;
+    let couponCode  = null;
+    if (_appliedCoupon) {
+      couponCode  = _appliedCoupon.code;
+      couponBonus = _appliedCoupon.type === 'percent'
+        ? +((amount * _appliedCoupon.value) / 100).toFixed(2)
+        : parseFloat(_appliedCoupon.value);
+    }
+
     await db.collection('recharges').add({
       userId:        currentUser.uid,
       userEmail:     currentUser.email,
@@ -1359,8 +1424,22 @@ document.getElementById('recharge-btn').addEventListener('click', async () => {
       senderName:    sender || '—',
       screenshotUrl: imgUrl || null,
       status:        'pending',
+      couponCode:    couponCode || null,
+      couponBonus:   couponBonus || 0,
       createdAt:     firebase.firestore.FieldValue.serverTimestamp(),
     });
+
+    // Mark coupon as used
+    if (_appliedCoupon) {
+      const now = firebase.firestore.FieldValue.serverTimestamp();
+      const couponRef = db.collection('coupons').doc(_appliedCoupon.code);
+      couponRef.update({ usedCount: firebase.firestore.FieldValue.increment(1) });
+      couponRef.collection('used_by').doc(currentUser.uid).set({ usedAt: now, userId: currentUser.uid });
+      _appliedCoupon = null;
+      document.getElementById('coupon-code').value = '';
+      document.getElementById('coupon-result').innerHTML = '';
+    }
+
     alertEl.innerHTML = '<div class="alert alert-success">Solicitud enviada. El admin la revisará pronto.</div>';
     document.getElementById('recharge-amount').value = '';
     document.getElementById('pay-ref').value         = '';

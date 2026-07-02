@@ -59,6 +59,19 @@ service cloud.firestore {
       allow write:  if isAdmin();
     }
 
+    // Coupons: authenticated users read active ones; admin writes; used_by subcollection tracks usage
+    match /coupons/{code} {
+      allow read:   if isAuth();
+      allow write:  if isAdmin();
+
+      match /used_by/{uid} {
+        allow read:   if isAuth() && (isOwner(uid) || isAdmin());
+        allow create: if isAuth() && isOwner(uid);
+        allow update: if isAdmin();
+        allow delete: if isAdmin();
+      }
+    }
+
     // Settings: authenticated users read (for payment data), admin write
     match /settings/{doc} {
       allow read:   if isAuth() || true;
