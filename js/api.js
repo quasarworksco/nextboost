@@ -188,22 +188,60 @@ const Orders = (() => {
     if (!withProvider.length) return;
 
     const ids     = withProvider.map(o => o.providerOrderId);
-    // For multiple orders JAP returns { "providerId": { charge, status, ... } }
     const results = await SmmAPI.getStatus(ids);
 
+    const now   = firebase.firestore.FieldValue.serverTimestamp();
     const batch = db.batch();
+
     withProvider.forEach(o => {
-      // Single-order response has status directly; multi-order keyed by provider ID
       const r = ids.length === 1 ? results : results[o.providerOrderId];
-      if (r && !r.error) {
-        const ref = db.collection('orders').doc(o.id);
-        batch.update(ref, {
-          status:     (r.status || 'pending').toLowerCase(),
-          remains:    r.remains    || null,
-          startCount: r.start_count || null,
-        });
+      if (!r || r.error) return;
+
+      const newStatus = (r.status || 'pending').toLowerCase();
+      const remains   = r.remains != null ? parseInt(r.remains) : null;
+
+      const orderUpdate = {
+        status:     newStatus,
+        remains,
+        startCount: r.start_count || null,
+      };
+
+      // Refund logic — only if status is actually changing to a refundable state
+      const cancelled = newStatus === 'cancelled' || newStatus === 'canceled';
+      const partial   = newStatus === 'partial';
+
+      if ((cancelled || partial) && o.userId && o.charge > 0 && !o.refunded) {
+        let refundAmt = 0;
+
+        if (cancelled) {
+          // Full refund
+          refundAmt = parseFloat(o.charge);
+        } else if (partial && remains != null && o.userRate) {
+          // Refund only the undelivered portion
+          refundAmt = +((remains * parseFloat(o.userRate)) / 1000).toFixed(6);
+        }
+
+        if (refundAmt > 0) {
+          orderUpdate.refunded     = true;
+          orderUpdate.refundAmount = refundAmt;
+
+          batch.update(db.collection('users').doc(o.userId), {
+            balance: firebase.firestore.FieldValue.increment(refundAmt),
+          });
+          batch.set(db.collection('balance_history').doc(), {
+            userId:      o.userId,
+            type:        'refund',
+            amount:      refundAmt,
+            description: `Reembolso: ${cancelled ? 'pedido cancelado' : 'pedido parcial'} — ${o.serviceName?.slice(0,50) || o.serviceId}`,
+            orderId:     o.id,
+            createdAt:   now,
+          });
+        }
       }
+
+      batch.update(db.collection('orders').doc(o.id), orderUpdate);
     });
+
     await batch.commit();
   }
 
