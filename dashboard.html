@@ -1085,8 +1085,10 @@ async function syncActiveOrders(silent = false) {
 
   try {
     await Orders.syncStatus(activeOrders);
-    _ordersLoaded = false;
-    await loadOrdersPage();
+    // Reload orders from Firestore and re-render without triggering sync again
+    const fresh = await Orders.getForUser(currentUser.uid, 200);
+    userOrders = fresh;
+    applyOrderFilters();
     const label = document.getElementById('sync-last-time');
     if (label) label.textContent = 'Sync: ' + new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
     if (!silent) toast('Estados actualizados', 'success');
