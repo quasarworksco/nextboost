@@ -206,22 +206,20 @@ const Orders = (() => {
         startCount: r.start_count || null,
       };
 
-      // Refund logic — only if status is actually changing to a refundable state
+      // Refund only when provider actually refunded us (r.charge < providerCost)
       const cancelled = newStatus === 'cancelled' || newStatus === 'canceled';
       const partial   = newStatus === 'partial';
 
       if ((cancelled || partial) && o.userId && o.charge > 0 && !o.refunded) {
-        let refundAmt = 0;
+        const providerCharged  = r.charge != null ? parseFloat(r.charge) : null;
+        const providerOriginal = parseFloat(o.providerCost || o.charge);
+        // If provider didn't return a charge field, assume no refund
+        const providerRefund   = providerCharged != null ? Math.max(0, providerOriginal - providerCharged) : 0;
 
-        if (cancelled) {
-          // Full refund
-          refundAmt = parseFloat(o.charge);
-        } else if (partial && remains != null && o.userRate) {
-          // Refund only the undelivered portion
-          refundAmt = +((remains * parseFloat(o.userRate)) / 1000).toFixed(6);
-        }
+        if (providerRefund > 0) {
+          // Pass refund to client proportionally to their charge
+          const refundAmt = +((providerRefund / providerOriginal) * parseFloat(o.charge)).toFixed(6);
 
-        if (refundAmt > 0) {
           orderUpdate.refunded     = true;
           orderUpdate.refundAmount = refundAmt;
 
@@ -236,6 +234,9 @@ const Orders = (() => {
             orderId:     o.id,
             createdAt:   now,
           });
+        } else {
+          // Provider did not refund (e.g. private account) — mark so we don't re-check
+          orderUpdate.refunded = false;
         }
       }
 
