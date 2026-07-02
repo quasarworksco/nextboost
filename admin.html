@@ -640,6 +640,11 @@
   </div>
 </div>
 
+<!-- Screenshot lightbox -->
+<div id="screenshot-lightbox" onclick="this.style.display='none'" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.85);cursor:zoom-out;display:none;align-items:center;justify-content:center">
+  <img id="screenshot-lightbox-img" src="" style="max-width:92vw;max-height:90vh;border-radius:10px;box-shadow:0 8px 40px rgba(0,0,0,.6)">
+</div>
+
 <!-- User detail modal -->
 <div class="modal-overlay" id="user-detail-modal">
   <div class="modal" style="max-width:600px">
@@ -1020,9 +1025,7 @@ async function loadAdminRecharges() {
       </td>
       <td data-label="Comprobante">
         ${r.screenshotUrl
-          ? `<a href="${r.screenshotUrl}" target="_blank" style="display:inline-block">
-               <img src="${r.screenshotUrl}" style="width:52px;height:40px;object-fit:cover;border-radius:6px;border:1.5px solid var(--border);cursor:zoom-in">
-             </a>`
+          ? `<img src="${r.screenshotUrl}" style="width:52px;height:40px;object-fit:cover;border-radius:6px;border:1.5px solid var(--border);cursor:zoom-in" onclick="openScreenshot('${r.screenshotUrl}')">`
           : `<span style="font-size:11px;color:var(--muted)">Sin imagen</span>`
         }
       </td>
@@ -1040,6 +1043,16 @@ async function loadAdminRecharges() {
       </td>
     </tr>`).join('');
 }
+
+// ── Screenshot lightbox ───────────────────────────────
+function openScreenshot(url) {
+  const lb = document.getElementById('screenshot-lightbox');
+  document.getElementById('screenshot-lightbox-img').src = url;
+  lb.style.display = 'flex';
+}
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') document.getElementById('screenshot-lightbox').style.display = 'none';
+});
 
 // ── Audit log ─────────────────────────────────────────
 function auditLog(action, details) {
