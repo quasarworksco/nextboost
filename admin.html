@@ -809,14 +809,30 @@ async function sendTelegramMessage(token, chatId, text) {
   } catch(e) { return { ok: false, error: e.message }; }
 }
 
-function notifyTelegramRecharge(r) {
+async function notifyTelegramRecharge(r) {
   if (!_tgToken || !_tgChatId) return;
-  const name   = r.userName || r.userEmail || 'Cliente';
+  const name   = r.userName   || r.userEmail || 'Cliente';
+  const email  = r.userEmail  || '—';
   const amount = formatUSD2(r.amount);
-  const method = r.method || '—';
-  const ref    = r.reference ? r.reference.slice(0, 40) : 'Sin referencia';
-  const msg = `💰 <b>Nueva solicitud de recarga</b>\n👤 ${name}\n💵 ${amount} vía ${method}\n📎 ${ref}\n\n<i>Ingresa al panel para aprobar o rechazar.</i>`;
-  sendTelegramMessage(_tgToken, _tgChatId, msg);
+  const method = r.method     || '—';
+  const sender = r.senderName && r.senderName !== '—' ? r.senderName : '—';
+  const ref    = r.reference  ? r.reference.slice(0, 60) : 'Sin referencia';
+
+  const caption = `💰 <b>Nueva solicitud de recarga</b>\n\n👤 <b>Cliente:</b> ${name}\n📧 <b>Email:</b> ${email}\n💵 <b>Monto:</b> ${amount}\n🏦 <b>Método:</b> ${method}\n🪪 <b>Titular:</b> ${sender}\n📎 <b>Referencia:</b> ${ref}\n\n<i>Ingresa al panel para aprobar o rechazar.</i>`;
+
+  if (r.screenshotUrl) {
+    try {
+      const res = await fetch(`https://api.telegram.org/bot${_tgToken}/sendPhoto`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chat_id: _tgChatId, photo: r.screenshotUrl, caption, parse_mode: 'HTML' }),
+      });
+      const data = await res.json();
+      if (data.ok) return;
+    } catch(e) {}
+  }
+  // Fallback: text only if no screenshot or sendPhoto failed
+  sendTelegramMessage(_tgToken, _tgChatId, caption);
 }
 
 // ── EmailJS notification config ────────────────────────
