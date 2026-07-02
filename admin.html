@@ -322,6 +322,7 @@
                 </tbody>
               </table>
             </div>
+            <div id="users-pager" style="padding:0 16px"></div>
           </div>
         </div>
       </div>
@@ -1178,19 +1179,42 @@ function startAdminAutoSync() {
 }
 
 // ── Users ─────────────────────────────────────────────
+const USERS_PAGE_SIZE = 25;
+let _usersPage = 0;
+let _usersFiltered = [];
+
 async function loadAdminUsers() {
   const tbody = document.getElementById('admin-users-body');
   tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px"><span class="spinner"></span></td></tr>';
   const snap = await db.collection('users').orderBy('createdAt','desc').get();
+  // Sort: active balance first (desc), then zero/no balance (by createdAt desc)
   allUsers = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-  renderUsersTable(allUsers);
+  allUsers.sort((a, b) => {
+    const ba = parseFloat(a.balance || 0);
+    const bb = parseFloat(b.balance || 0);
+    if (bb > 0 && ba <= 0) return 1;
+    if (ba > 0 && bb <= 0) return -1;
+    return bb - ba;
+  });
+  _usersPage = 0;
+  _usersFiltered = allUsers;
+  renderUsersTable(_usersFiltered);
 }
 
 function renderUsersTable(users) {
   const tbody = document.getElementById('admin-users-body');
-  if (!users.length) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--muted)">Sin usuarios</td></tr>'; return; }
-  tbody.innerHTML = users.map(u => `
-    <tr style="${u.blocked ? 'opacity:.6' : ''}">
+  if (!users.length) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--muted)">Sin usuarios</td></tr>'; _renderUsersPager(0,0); return; }
+
+  // Split active vs inactive
+  const active   = users.filter(u => parseFloat(u.balance || 0) > 0);
+  const inactive = users.filter(u => parseFloat(u.balance || 0) <= 0);
+
+  // Pagination on the inactive group (active group always shown fully if small)
+  const inactivePage = inactive.slice(_usersPage * USERS_PAGE_SIZE, (_usersPage + 1) * USERS_PAGE_SIZE);
+  const totalPages   = Math.ceil(inactive.length / USERS_PAGE_SIZE);
+
+  function rowHtml(u) {
+    return `<tr style="${u.blocked ? 'opacity:.6' : ''}">
       <td data-label="Nombre">
         ${u.blocked ? '<span style="font-size:10px;background:#fee2e2;color:#dc2626;padding:1px 6px;border-radius:4px;font-weight:700;margin-right:4px">BLOQUEADO</span>' : ''}
         ${u.name || '—'}
@@ -1205,7 +1229,47 @@ function renderUsersTable(users) {
         <button class="btn btn-ghost btn-sm" onclick="toggleRole('${u.id}','${u.role}')">${u.role==='admin'?'→ Usuario':'→ Admin'}</button>
         <button class="btn btn-sm ${u.blocked ? 'btn-success' : 'btn-danger'}" onclick="toggleBlock('${u.id}',${!!u.blocked})">${u.blocked ? '✓ Desbloquear' : '⊘ Bloquear'}</button>
       </td>
-    </tr>`).join('');
+    </tr>`;
+  }
+
+  let html = '';
+
+  if (active.length) {
+    html += `<tr><td colspan="6" style="background:var(--surface);padding:6px 12px;font-size:11px;font-weight:700;color:var(--blue);letter-spacing:.05em;text-transform:uppercase">Con saldo activo (${active.length})</td></tr>`;
+    html += active.map(rowHtml).join('');
+  }
+
+  if (inactivePage.length) {
+    html += `<tr><td colspan="6" style="background:var(--surface);padding:6px 12px;font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.05em;text-transform:uppercase">Sin saldo / inactivos (${inactive.length})</td></tr>`;
+    html += inactivePage.map(rowHtml).join('');
+  }
+
+  tbody.innerHTML = html;
+  _renderUsersPager(totalPages, inactive.length);
+}
+
+function _renderUsersPager(totalPages, totalInactive) {
+  let pager = document.getElementById('users-pager');
+  if (!pager) return;
+  if (totalPages <= 1) { pager.innerHTML = ''; return; }
+  const start = _usersPage * USERS_PAGE_SIZE + 1;
+  const end   = Math.min((_usersPage + 1) * USERS_PAGE_SIZE, totalInactive);
+  pager.innerHTML = `
+    <div style="display:flex;align-items:center;gap:10px;justify-content:flex-end;padding:12px 0;font-size:13px;color:var(--muted)">
+      <span>${start}–${end} de ${totalInactive} inactivos</span>
+      <button class="btn btn-ghost btn-sm" ${_usersPage === 0 ? 'disabled' : ''} onclick="_usersPage--;renderUsersTable(_usersFiltered)">‹ Anterior</button>
+      <button class="btn btn-ghost btn-sm" ${_usersPage >= totalPages - 1 ? 'disabled' : ''} onclick="_usersPage++;renderUsersTable(_usersFiltered)">Siguiente ›</button>
+    </div>`;
+}
+
+function filterUsers(q) {
+  _usersPage = 0;
+  _usersFiltered = q
+    ? allUsers.filter(u =>
+        (u.name||'').toLowerCase().includes(q.toLowerCase()) ||
+        (u.email||'').toLowerCase().includes(q.toLowerCase()))
+    : allUsers;
+  renderUsersTable(_usersFiltered);
 }
 
 async function openUserDetail(userId) {
@@ -1255,13 +1319,6 @@ async function openUserDetail(userId) {
   }
 }
 
-function filterUsers(q) {
-  const filtered = allUsers.filter(u =>
-    (u.name||'').toLowerCase().includes(q.toLowerCase()) ||
-    (u.email||'').toLowerCase().includes(q.toLowerCase())
-  );
-  renderUsersTable(filtered);
-}
 
 let _balanceModalUserId = null;
 function openBalanceModal(uid, name, current) {
