@@ -1046,9 +1046,11 @@ async function loadOrdersPage() {
   userOrders = orders;
   _ordersLoaded = true;
   applyOrderFilters();
-  // Auto-sync active orders on first load, then start interval
-  syncActiveOrders(true);
-  startAutoSync();
+  // Start interval only once — guard with flag
+  if (!_syncInterval) {
+    syncActiveOrders(true);
+    startAutoSync();
+  }
 }
 
 function renderOrdersTable(orders) {
@@ -1171,8 +1173,9 @@ async function requestCancel(orderId, providerOrderId) {
     await db.collection('orders').doc(orderId).update({ status: 'canceled' });
     toast('Pedido cancelado', 'success');
     closeModal('order-detail-modal');
-    _ordersLoaded = false;
-    await loadOrdersPage();
+    const fresh = await Orders.getForUser(currentUser.uid, 200);
+    userOrders = fresh;
+    applyOrderFilters();
   } catch(e) { toast('Error: ' + e.message, 'error'); btn.disabled = false; btn.textContent = '✕ Cancelar pedido'; }
 }
 
