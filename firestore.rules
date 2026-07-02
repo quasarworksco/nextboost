@@ -14,7 +14,10 @@ service cloud.firestore {
       allow read:   if isOwner(uid) || isAdmin();
       allow create: if isOwner(uid);
       allow update: if isAdmin()
-        || (isOwner(uid) && !('balance' in request.resource.data.diff(resource.data).affectedKeys()));
+        || (isOwner(uid) && !('balance' in request.resource.data.diff(resource.data).affectedKeys()))
+        || (isOwner(uid)
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['balance'])
+            && request.resource.data.balance <= resource.data.balance);
       allow delete: if isAdmin();
     }
 
