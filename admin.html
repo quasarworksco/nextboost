@@ -1143,9 +1143,11 @@ async function loadAdminOrders() {
   const snap = await db.collection('orders').orderBy('createdAt','desc').limit(500).get();
   allOrders = snap.docs.map(d => ({ id: d.id, ...d.data() }));
   applyAdminOrderFilters();
-  // Sync active orders on load + start auto-sync interval
-  syncAllOrders(true);
-  startAdminAutoSync();
+  // Start sync only once
+  if (!_adminSyncInterval) {
+    syncAllOrders(true);
+    startAdminAutoSync();
+  }
 }
 
 let _adminSyncInterval = null;
@@ -1160,7 +1162,10 @@ async function syncAllOrders(silent = false) {
     );
     if (!pending.length) { if (!silent) toast('Sin pedidos activos para sincronizar', 'info'); return; }
     await Orders.syncStatus(pending);
-    await loadAdminOrders();
+    // Reload orders directly without calling loadAdminOrders (avoids re-triggering sync)
+    const snap = await db.collection('orders').orderBy('createdAt','desc').limit(500).get();
+    allOrders = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    applyAdminOrderFilters();
     const label = document.getElementById('admin-sync-last');
     if (label) label.textContent = 'Sync: ' + new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
     if (!silent) toast(`${pending.length} pedido${pending.length>1?'s':''} sincronizado${pending.length>1?'s':''}`, 'success');
