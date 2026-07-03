@@ -3,6 +3,12 @@
 // ══════════════════════════════════════════════════════
 
 // ── Toast notifications ───────────────────────────────
+const TOAST_ICONS = {
+  success: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>',
+  error:   '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>',
+  info:    '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>',
+};
+
 function toast(msg, type = 'info', duration = 4000) {
   let container = document.getElementById('toast-container');
   if (!container) {
@@ -12,9 +18,52 @@ function toast(msg, type = 'info', duration = 4000) {
   }
   const el = document.createElement('div');
   el.className = `toast ${type}`;
-  el.innerHTML = `<span>${msg}</span>`;
+  el.innerHTML = `
+    <span class="toast-icon">${TOAST_ICONS[type] || TOAST_ICONS.info}</span>
+    <span class="toast-msg">${msg}</span>
+    <span class="toast-progress" style="animation-duration:${duration}ms"></span>
+  `;
+  el.addEventListener('click', () => dismissToast(el));
   container.appendChild(el);
-  setTimeout(() => { el.style.opacity = '0'; el.style.transition = 'opacity .3s'; setTimeout(() => el.remove(), 300); }, duration);
+  setTimeout(() => dismissToast(el), duration);
+}
+
+function dismissToast(el) {
+  if (el._dismissed) return;
+  el._dismissed = true;
+  el.classList.add('toast-exit');
+  setTimeout(() => el.remove(), 350);
+}
+
+// ── Animated count-up for stat values ─────────────────
+// Usage: countUp(element, 1234) or countUp(element, 45.5, { prefix: '$', decimals: 2 })
+function countUp(el, target, { prefix = '', decimals = 0, duration = 700 } = {}) {
+  if (!el) return;
+  const start = performance.now();
+  const from  = 0;
+  function frame(nowTs) {
+    const p = Math.min((nowTs - start) / duration, 1);
+    const eased = 1 - Math.pow(1 - p, 3); // easeOutCubic
+    const val = from + (target - from) * eased;
+    el.textContent = prefix + val.toLocaleString(undefined, { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+    if (p < 1) requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+}
+
+// ── Skeleton loader row builder ───────────────────────
+// Returns table rows of shimmering placeholder bars.
+function skeletonRows(cols, rows = 4) {
+  let out = '';
+  for (let i = 0; i < rows; i++) {
+    out += '<tr class="skeleton-row">';
+    for (let c = 0; c < cols; c++) {
+      const w = 40 + ((i * 7 + c * 13) % 45); // deterministic varied widths
+      out += `<td><span class="skeleton-bar" style="width:${w}%"></span></td>`;
+    }
+    out += '</tr>';
+  }
+  return out;
 }
 
 // ── Format currency ───────────────────────────────────

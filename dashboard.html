@@ -1099,7 +1099,7 @@ function applyOrderFilters() {
 async function loadOrdersPage() {
   const tbody = document.getElementById('orders-body');
   if (_ordersLoaded) { applyOrderFilters(); return; }
-  tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:24px;color:var(--muted)"><span class="spinner"></span></td></tr>';
+  tbody.innerHTML = skeletonRows(8);
   const orders = await Orders.getForUser(currentUser.uid, 200);
   userOrders = orders;
   _ordersLoaded = true;

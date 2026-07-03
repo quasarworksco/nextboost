@@ -857,14 +857,14 @@ async function loadOverview() {
     db.collection('recharges').where('status','==','pending').limit(100).get(),
   ]);
 
-  document.getElementById('stat-users').textContent   = usersSnap.size;
-  document.getElementById('stat-orders').textContent  = ordersSnap.size;
-  document.getElementById('stat-pending').textContent = rechargesSnap.size;
+  countUp(document.getElementById('stat-users'),   usersSnap.size);
+  countUp(document.getElementById('stat-orders'),  ordersSnap.size);
+  countUp(document.getElementById('stat-pending'), rechargesSnap.size);
 
   const revenue      = ordersSnap.docs.reduce((s, d) => s + (d.data().charge || 0), 0);
   const totalBalance = usersSnap.docs.reduce((s, d) => s + parseFloat(d.data().balance || 0), 0);
-  document.getElementById('stat-revenue').textContent       = formatUSD2(revenue);
-  document.getElementById('stat-total-balance').textContent = formatUSD2(totalBalance);
+  countUp(document.getElementById('stat-revenue'),       revenue,      { prefix: '$', decimals: 2 });
+  countUp(document.getElementById('stat-total-balance'), totalBalance, { prefix: '$', decimals: 2 });
 
   // Pending recharges
   const pendingDocs = rechargesSnap.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -1169,7 +1169,7 @@ function playNotificationSound() {
 async function loadAdminRecharges() {
   const filter = document.getElementById('recharge-filter').value;
   const tbody  = document.getElementById('admin-recharges-body');
-  tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:20px"><span class="spinner"></span></td></tr>';
+  tbody.innerHTML = skeletonRows(8);
 
   try {
     // Filter first, then orderBy — avoids requiring a composite index in Firestore
@@ -1289,7 +1289,7 @@ async function loadSiteAnalytics() {
 // ── Cupones ───────────────────────────────────────────
 async function loadCoupons() {
   const tbody = document.getElementById('coupons-body');
-  tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px"><span class="spinner"></span></td></tr>';
+  tbody.innerHTML = skeletonRows(6);
   const snap = await db.collection('coupons').orderBy('createdAt','desc').get();
   if (snap.empty) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--muted)">Sin cupones</td></tr>'; return; }
   tbody.innerHTML = snap.docs.map(d => {
@@ -1589,7 +1589,7 @@ function renderAdminOrdersTable(orders) {
 }
 async function loadAdminOrders() {
   const tbody = document.getElementById('admin-orders-body');
-  tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px"><span class="spinner"></span></td></tr>';
+  tbody.innerHTML = skeletonRows(7);
   const snap = await db.collection('orders').orderBy('createdAt','desc').limit(500).get();
   allOrders = snap.docs.map(d => ({ id: d.id, ...d.data() }));
   applyAdminOrderFilters();
@@ -1640,7 +1640,7 @@ let _usersFiltered = [];
 
 async function loadAdminUsers() {
   const tbody = document.getElementById('admin-users-body');
-  tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px"><span class="spinner"></span></td></tr>';
+  tbody.innerHTML = skeletonRows(6);
   const snap = await db.collection('users').orderBy('createdAt','desc').get();
   // Sort: active balance first (desc), then zero/no balance (by createdAt desc)
   allUsers = snap.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -1862,7 +1862,7 @@ function _loadAdminSvcCache() {
 
 async function loadAdminServices(forceRefresh) {
   const tbody = document.getElementById('admin-services-body');
-  tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:32px"><span class="spinner"></span></td></tr>';
+  tbody.innerHTML = skeletonRows(8, 5);
   try {
     const cached = !forceRefresh && _loadAdminSvcCache();
     if (cached) {
