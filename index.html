@@ -88,14 +88,6 @@
       border-color: var(--primary);
       background: linear-gradient(135deg, #7c6fff12, #00d4ff08);
     }
-    .pricing-card.featured::before {
-      content: '⚡ MÁS POPULAR';
-      position: absolute; top: 14px; right: -28px;
-      background: linear-gradient(135deg, var(--primary), var(--primary2));
-      color: #fff; font-size: 10px; font-weight: 700;
-      padding: 4px 36px; transform: rotate(45deg);
-      letter-spacing: .5px;
-    }
     .pricing-card:hover { transform: translateY(-4px); border-color: var(--primary); }
     .price-val { font-size: 42px; font-weight: 800; margin: 12px 0 6px; }
     .price-per { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
@@ -277,7 +269,7 @@
 </section>
 
 <!-- NETWORKS -->
-<section id="services" style="background:var(--bg2);max-width:100%;padding:64px 40px">
+<section id="services" class="section-dark" style="max-width:100%;padding:64px 40px">
   <div style="max-width:1100px;margin:0 auto">
     <h2>Elige tu <span class="gradient-text">plataforma</span></h2>
     <p class="subtitle">Crecimiento profesional para las redes sociales que más importan. Selecciona la tuya y comienza hoy.</p>
@@ -428,11 +420,6 @@
 
   </div>
 
-  <!-- Bonus note -->
-  <div style="max-width:560px;margin:0 auto;text-align:center;padding:20px 24px;background:var(--blue-xs);border:1.5px solid var(--border2);border-radius:12px">
-    <div style="font-size:13px;color:var(--blue);font-weight:600;margin-bottom:6px">¿Cómo funciona el bono?</div>
-    <div style="font-size:13px;color:var(--muted);line-height:1.7">Envías el pago y al aprobarlo manualmente, el administrador acredita el saldo base más el bono correspondiente. Los bonos se aplican una vez por recarga, sin límite de recargas.</div>
-  </div>
 </section>
 
 <!-- PAYMENTS -->
@@ -474,6 +461,17 @@
         </div>
         <div style="font-weight:600;color:var(--navy)">USDT TRC20</div>
         <div style="font-size:11px;color:#16a34a;font-weight:500;margin-top:4px">Instantáneo</div>
+      </div>
+
+      <!-- Pago Móvil (Bolívares) -->
+      <div class="payment-card">
+        <div class="pay-icon" style="background:#1438cc;border-radius:12px;width:52px;height:52px;display:flex;align-items:center;justify-content:center;margin:0 auto 10px">
+          <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
+            <rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/>
+          </svg>
+        </div>
+        <div style="font-weight:600;color:var(--navy)">Pago Móvil</div>
+        <div style="font-size:11px;color:#16a34a;font-weight:500;margin-top:4px">Bolívares · Tasa BCV</div>
       </div>
 
       <!-- PayPal -->
@@ -542,47 +540,17 @@
   <div style="max-width:900px;margin:0 auto;text-align:center">
     <div class="hero-badge" style="margin:0 auto 20px;display:table">Así de simple</div>
     <h2>Empieza en <span class="gradient-text">menos de 5 minutos</span></h2>
-    <p class="subtitle">Sin tecnicismos ni complicaciones. Cuatro pasos y tu crecimiento está en marcha.</p>
-    <div class="steps-grid">
-
-      <div class="step-card">
-        <div class="step-number">01</div>
-        <div class="step-icon">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-        </div>
-        <h3>Crea tu cuenta gratis</h3>
-        <p>Regístrate con tu correo en segundos. Sin tarjeta de crédito ni compromisos. Tu cuenta queda activa de inmediato.</p>
-        <a href="register.html" class="step-link">Registrarme →</a>
-      </div>
-
-      <div class="step-card">
-        <div class="step-number">02</div>
-        <div class="step-icon">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
-        </div>
-        <h3>Agrega saldo</h3>
-        <p>Recarga desde $5 vía Binance Pay, Zelle o USDT TRC20. El saldo se refleja en tu cuenta en minutos tras la confirmación.</p>
-      </div>
-
-      <div class="step-card">
-        <div class="step-number">03</div>
-        <div class="step-icon">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        </div>
-        <h3>Selecciona el servicio</h3>
-        <p>Elige la red social, el tipo de interacción (seguidores, likes, vistas…) y la cantidad que necesitas. Precios claros, sin sorpresas.</p>
-      </div>
-
-      <div class="step-card">
-        <div class="step-number">04</div>
-        <div class="step-icon">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-        </div>
-        <h3>Observa tu crecimiento</h3>
-        <p>Ingresa el enlace de tu perfil o publicación, confirma y listo. En minutos verás los resultados directamente en tu cuenta.</p>
-      </div>
-
+    <p class="subtitle" style="margin-bottom:28px">Sin tecnicismos ni complicaciones. Cuatro pasos y listo.</p>
+    <div class="steps-strip">
+      <div class="step-mini"><span class="step-n">1</span><span>Crea tu cuenta gratis</span></div>
+      <div class="step-sep">→</div>
+      <div class="step-mini"><span class="step-n">2</span><span>Agrega saldo</span></div>
+      <div class="step-sep">→</div>
+      <div class="step-mini"><span class="step-n">3</span><span>Elige el servicio</span></div>
+      <div class="step-sep">→</div>
+      <div class="step-mini"><span class="step-n">4</span><span>Observa tu crecimiento</span></div>
     </div>
+    <a href="register.html" class="btn btn-primary" style="margin-top:28px">Empezar ahora →</a>
   </div>
 </section>
 
@@ -680,12 +648,54 @@
 
 <!-- CTA -->
 <div class="cta-section">
-  <div style="max-width:600px;margin:0 auto">
-    <h2 style="font-size:36px;font-weight:800;margin-bottom:12px">¿Listo para dar el salto?</h2>
-    <p style="color:var(--muted);margin-bottom:28px">Únete a más de 1,200 clientes que ya están impulsando su presencia digital con NextBoost. Empieza gratis hoy.</p>
+  <!-- Decorative illustration: rising chart + floating social bubbles -->
+  <svg class="cta-art" viewBox="0 0 1200 400" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <defs>
+      <linearGradient id="ctaline" x1="0" y1="400" x2="1200" y2="0" gradientUnits="userSpaceOnUse">
+        <stop offset="0%" stop-color="#4d78ff" stop-opacity=".0"/>
+        <stop offset="60%" stop-color="#4d78ff" stop-opacity=".55"/>
+        <stop offset="100%" stop-color="#8fb0ff" stop-opacity=".9"/>
+      </linearGradient>
+    </defs>
+    <!-- grid dots -->
+    <g fill="rgba(255,255,255,.06)">
+      <circle cx="100" cy="80" r="2"/><circle cx="240" cy="140" r="2"/><circle cx="180" cy="260" r="2"/>
+      <circle cx="960" cy="90" r="2"/><circle cx="1080" cy="200" r="2"/><circle cx="900" cy="300" r="2"/>
+      <circle cx="620" cy="60" r="2"/><circle cx="540" cy="330" r="2"/><circle cx="740" cy="250" r="2"/>
+    </g>
+    <!-- ascending growth line -->
+    <path d="M-20 380 L180 320 L340 340 L520 240 L700 260 L880 150 L1080 90 L1240 20"
+          stroke="url(#ctaline)" stroke-width="3" stroke-linecap="round"/>
+    <circle cx="880" cy="150" r="6" fill="#4d78ff"/>
+    <circle cx="880" cy="150" r="12" fill="#4d78ff" opacity=".25"/>
+    <circle cx="1080" cy="90" r="6" fill="#8fb0ff"/>
+    <circle cx="1080" cy="90" r="12" fill="#8fb0ff" opacity=".25"/>
+    <!-- floating bubbles: heart / follower / play -->
+    <g class="cta-bubble" style="animation-delay:0s">
+      <circle cx="150" cy="150" r="26" fill="rgba(255,255,255,.07)" stroke="rgba(255,255,255,.14)"/>
+      <path d="M150 160c-7-5.4-11.5-9.3-11.5-14 0-3.2 2.5-5.5 5.7-5.5 2.3 0 4.3 1.2 5.8 3.2 1.5-2 3.5-3.2 5.8-3.2 3.2 0 5.7 2.3 5.7 5.5 0 4.7-4.5 8.6-11.5 14z" fill="#ff6b9d"/>
+    </g>
+    <g class="cta-bubble" style="animation-delay:1.2s">
+      <circle cx="1060" cy="270" r="26" fill="rgba(255,255,255,.07)" stroke="rgba(255,255,255,.14)"/>
+      <circle cx="1060" cy="262" r="7" fill="none" stroke="#7ea2ff" stroke-width="2.4"/>
+      <path d="M1046 284c2.6-6.4 8-9.4 14-9.4s11.4 3 14 9.4" fill="none" stroke="#7ea2ff" stroke-width="2.4" stroke-linecap="round"/>
+    </g>
+    <g class="cta-bubble" style="animation-delay:2.1s">
+      <circle cx="330" cy="90" r="22" fill="rgba(255,255,255,.07)" stroke="rgba(255,255,255,.14)"/>
+      <path d="M325 80l14 10-14 10z" fill="#5eead4"/>
+    </g>
+  </svg>
+
+  <div style="max-width:640px;margin:0 auto;position:relative;z-index:1">
+    <div class="cta-kicker">Empieza gratis · Sin tarjeta · Sin mensualidades</div>
+    <h2 style="font-size:clamp(38px,5vw,58px);margin-bottom:14px;color:#fff">¿Listo para <span style="background:linear-gradient(90deg,#7ea2ff,#5eead4);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent">dar el salto</span>?</h2>
+    <p style="color:rgba(255,255,255,.7);margin-bottom:30px;font-size:16px;line-height:1.7">Únete a más de <strong style="color:#fff">1,200 clientes</strong> que ya están impulsando su presencia digital con NextBoost.</p>
     <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
-      <a href="register.html" class="btn btn-primary btn-lg">Crear cuenta gratis →</a>
-      <a href="login.html" class="btn btn-ghost btn-lg">Ya tengo cuenta</a>
+      <a href="register.html" class="btn btn-primary btn-lg" style="box-shadow:0 8px 32px rgba(77,120,255,.45)">Crear cuenta gratis →</a>
+      <a href="login.html" class="btn btn-lg" style="background:rgba(255,255,255,.08);color:#fff;border:1.5px solid rgba(255,255,255,.25);backdrop-filter:blur(4px)">Ya tengo cuenta</a>
+    </div>
+    <div class="cta-trust">
+      <span>★★★★★</span> Valorado por creadores y agencias de toda Latinoamérica
     </div>
   </div>
 </div>
