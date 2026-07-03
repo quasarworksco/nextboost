@@ -498,7 +498,7 @@ tr:hover td { background: var(--blue-xs); }
 
 /* ─── SECTIONS ───────────────────────────────────────────── */
 section { padding: 64px 52px; max-width: 1200px; margin: 0 auto; }
-section h2 { font-family: 'Bebas Neue', sans-serif; font-size: clamp(34px, 5vw, 60px); letter-spacing: 1px; text-align: center; margin-bottom: 12px; color: var(--navy); }
+section h2 { font-family: 'Bebas Neue', sans-serif; font-size: clamp(32px, 4vw, 46px); letter-spacing: 1px; text-align: center; margin-bottom: 12px; color: var(--navy); }
 section .subtitle { text-align: center; color: var(--muted); margin-bottom: 44px; font-size: 16px; max-width: 540px; margin-left: auto; margin-right: auto; }
 
 /* Scroll-reveal: sections fade up as they enter the viewport */
@@ -1107,7 +1107,20 @@ section .subtitle { text-align: center; color: var(--muted); margin-bottom: 44px
 @media (max-width: 600px) {
   .nav-links { display: none; }
   section { padding: 44px 20px; }
-  .stats-bar { gap: 20px; padding: 20px; }
+  /* Landing sections with inline padding (services/payments) */
+  section[style*="padding"] { padding-left: 20px !important; padding-right: 20px !important; }
+
+  /* Navbar: keep logo + both buttons on screen */
+  .landing-nav { padding: 12px 16px; gap: 8px; }
+  .landing-nav .logo-img { height: 24px; }
+  .nav-cta { display: flex; gap: 6px; flex-shrink: 0; }
+  .nav-cta .btn-sm { padding: 6px 10px; font-size: 12px; white-space: nowrap; }
+
+  /* Stats bar: clean 2x2 grid instead of ragged wrapping */
+  .stats-bar { display: grid; grid-template-columns: 1fr 1fr; gap: 18px 12px; padding: 24px 20px; }
+  .stat-item .val { font-size: 32px; }
+  .stat-item .lbl { font-size: 10.5px; }
+
   .grid-4 { grid-template-columns: 1fr 1fr; }
   .auth-card { padding: 28px 22px; }
   .page { padding: 14px; }
@@ -1115,6 +1128,18 @@ section .subtitle { text-align: center; color: var(--muted); margin-bottom: 44px
   .topbar-title { font-size: 20px; }
   .hero h1 { font-size: 48px; }
   .cta-section { padding: 60px 20px; }
+
+  /* Tighter section headings on small screens */
+  section h2 { font-size: clamp(28px, 7.5vw, 38px); margin-bottom: 10px; }
+  section .subtitle { margin-bottom: 30px; font-size: 14.5px; }
+
+  /* Footer: compact, no dead gap between brand and link columns */
+  .landing-footer { padding: 28px 20px 0; }
+  .footer-inner { gap: 24px; padding-bottom: 20px; }
+  .footer-brand { flex: 1 1 100%; }
+  .footer-links { gap: 20px; width: 100%; display: grid; grid-template-columns: repeat(3, 1fr); }
+  .footer-col { min-width: 0; gap: 8px; }
+  .footer-bottom { flex-direction: column; gap: 6px; text-align: center; padding: 14px 0; }
 
   /* ── Orders table → card list on mobile ── */
   .orders-table-wrap { overflow: visible; }
@@ -1307,9 +1332,15 @@ section .subtitle { text-align: center; color: var(--muted); margin-bottom: 44px
 /* ── Platform cards (landing page) ── */
 .platforms-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  grid-template-columns: repeat(4, 1fr); /* 8 platforms = 2 balanced rows */
   gap: 16px;
   margin-top: 32px;
+  max-width: 820px;
+  margin-left: auto;
+  margin-right: auto;
+}
+@media (max-width: 900px) and (min-width: 601px) {
+  .platforms-grid { grid-template-columns: repeat(4, 1fr); }
 }
 .platform-card {
   display: flex;
