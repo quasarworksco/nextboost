@@ -1189,9 +1189,11 @@ function showOrderDetail(orderId) {
       <div class="info-row"><span class="info-label">Estado</span><span class="info-val">${statusBadge(o.status)}</span></div>
       ${o.remains !== null && o.remains !== undefined ? `<div class="info-row"><span class="info-label">Restantes</span><span class="info-val">${o.remains}</span></div>` : ''}
       ${o.startCount !== null && o.startCount !== undefined ? `<div class="info-row"><span class="info-label">Inicio</span><span class="info-val">${o.startCount}</span></div>` : ''}
-      ${(o.startCount !== null && o.startCount !== undefined && o.quantity) ? (() => {
-        const delivered = Math.max(0, parseInt(o.startCount||0) - parseInt(o.remains||0));
-        const pct = Math.min(100, Math.round((delivered / parseInt(o.quantity)) * 100));
+      ${(o.remains !== null && o.remains !== undefined && o.quantity) ? (() => {
+        const qty       = parseInt(o.quantity);
+        const remains   = Math.max(0, Math.min(qty, parseInt(o.remains) || 0));
+        const delivered = qty - remains;
+        const pct = Math.min(100, Math.round((delivered / qty) * 100));
         return `<div style="margin-top:8px">
           <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:6px">
             <span>Progreso de entrega</span><span>${pct}%</span>
