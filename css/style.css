@@ -971,6 +971,32 @@ section .subtitle { text-align: center; color: var(--muted); margin-bottom: 44px
 .toast.info    { border-left: 4px solid var(--blue); }
 .toast.info .toast-icon, .toast.info .toast-progress { color: var(--blue); }
 
+/* ─── EMPTY STATES ───────────────────────────────────────── */
+.empty-state {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 6px; padding: 40px 20px; text-align: center;
+}
+.empty-state .empty-icon {
+  width: 64px; height: 64px; border-radius: 50%;
+  background: var(--blue-xs);
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 8px; color: var(--blue-l);
+}
+.empty-state .empty-title { font-weight: 700; font-size: 15px; color: var(--navy); }
+.empty-state .empty-sub   { font-size: 13px; color: var(--muted); max-width: 280px; }
+.empty-state .btn { margin-top: 12px; }
+
+/* ─── STAT ICON COLOR VARIANTS ──────────────────────────── */
+.stat-icon.si-blue   { background: var(--blue-xs); color: var(--blue); }
+.stat-icon.si-green  { background: #ecfdf5; color: var(--green); }
+.stat-icon.si-yellow { background: #fffbeb; color: var(--yellow); }
+.stat-icon.si-purple { background: #f5f3ff; color: var(--purple); }
+.stat-icon.si-red    { background: #fef2f2; color: var(--red); }
+[data-theme="dark"] .stat-icon.si-green  { background: rgba(22,163,74,.15); }
+[data-theme="dark"] .stat-icon.si-yellow { background: rgba(217,119,6,.15); }
+[data-theme="dark"] .stat-icon.si-purple { background: rgba(124,58,237,.15); }
+[data-theme="dark"] .stat-icon.si-red    { background: rgba(220,38,38,.15); }
+
 /* ─── SKELETON LOADERS ───────────────────────────────────── */
 .skeleton-row td { padding: 14px 16px; }
 .skeleton-bar {

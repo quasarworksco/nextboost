@@ -112,22 +112,22 @@
       <div id="page-home" class="page-section">
         <div class="grid-4 mb-4" id="stats-grid">
           <div class="stat-card">
-            <div class="stat-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+            <div class="stat-icon si-green"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
             <div class="stat-value gradient-text" id="stat-balance">$0.00</div>
             <div class="stat-label">Saldo disponible</div>
           </div>
           <div class="stat-card">
-            <div class="stat-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg></div>
+            <div class="stat-icon si-blue"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg></div>
             <div class="stat-value" id="stat-orders">0</div>
             <div class="stat-label">Pedidos totales</div>
           </div>
           <div class="stat-card">
-            <div class="stat-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <div class="stat-icon si-green"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
             <div class="stat-value" id="stat-completed">0</div>
             <div class="stat-label">Completados</div>
           </div>
           <div class="stat-card">
-            <div class="stat-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></div>
+            <div class="stat-icon si-purple"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></div>
             <div class="stat-value" id="stat-spent">$0.00</div>
             <div class="stat-label">Total gastado</div>
           </div>
@@ -775,7 +775,7 @@ async function loadHomeStats() {
 // ── Recent orders ─────────────────────────────────────
 function renderRecentOrders(orders) {
   const tbody = document.getElementById('recent-orders-body');
-  if (!orders.length) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--muted)">Sin pedidos aún</td></tr>'; return; }
+  if (!orders.length) { tbody.innerHTML = emptyStateRow(6, { icon: 'box', title: 'Sin pedidos aún', sub: 'Haz tu primer pedido y empieza a crecer en redes.', actionHtml: '<button class="btn btn-primary btn-sm" onclick="showPage(\'new-order\')">+ Nuevo pedido</button>' }); return; }
   tbody.innerHTML = orders.map(o => `
     <tr>
       <td data-label="#">${o.id.slice(0,8)}</td>
@@ -1115,7 +1115,7 @@ function renderOrdersTable(orders) {
   const tbody = document.getElementById('orders-body');
   const label = document.getElementById('orders-count-label');
   if (label) label.textContent = orders.length ? `(${orders.length})` : '';
-  if (!orders.length) { tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:24px;color:var(--muted)">Sin pedidos aún</td></tr>'; return; }
+  if (!orders.length) { tbody.innerHTML = emptyStateRow(8, { icon: 'box', title: 'Sin pedidos aún', sub: 'Haz tu primer pedido y empieza a crecer en redes.', actionHtml: '<button class="btn btn-primary btn-sm" onclick="showPage(\'new-order\')">+ Nuevo pedido</button>' }); return; }
   tbody.innerHTML = orders.map(o => `
     <tr>
       <td data-label="#" style="font-family:monospace;font-size:11px">${o.id.slice(0,8)}</td>
@@ -1523,7 +1523,7 @@ async function loadRechargeHistory(forceRefresh) {
 
 function renderRechargeHistory(recharges) {
   const tbody = document.getElementById('recharge-history-body');
-  if (!recharges.length) { tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--muted)">Sin recargas</td></tr>'; return; }
+  if (!recharges.length) { tbody.innerHTML = emptyStateRow(4, { icon: 'card', title: 'Sin recargas todavía', sub: 'Agrega saldo para empezar a hacer pedidos.' }); return; }
   tbody.innerHTML = recharges.slice(0, 20).map(r => `<tr>
     <td data-label="Monto"><strong>${formatUSD2(r.amount)}</strong></td>
     <td data-label="Método">${r.method}</td>
@@ -1791,7 +1791,7 @@ async function loadReferrals() {
               ? '<span class="badge badge-active">✓ Bono pagado</span>'
               : '<span class="badge badge-pending">Sin recarga $35+</span>'}</td>
           </tr>`).join('')
-      : '<tr><td colspan="3" style="text-align:center;padding:24px;color:var(--muted)">Aún no tienes referidos</td></tr>';
+      : emptyStateRow(3, { icon: 'users', title: 'Aún no tienes referidos', sub: 'Comparte tu link y gana $5 por cada amigo que recargue $35 o más.' });
   } catch(e) {
     tbody.innerHTML = `<tr><td colspan="3" style="text-align:center;padding:24px;color:var(--muted)">Error: ${e.message}</td></tr>`;
   }
@@ -1852,7 +1852,7 @@ function renderMovements() {
   const tbody = document.getElementById('movements-body');
 
   if (!page.length) {
-    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:24px;color:var(--muted)">Sin movimientos</td></tr>';
+    tbody.innerHTML = emptyStateRow(4, { icon: 'chart', title: 'Sin movimientos', sub: 'Aquí verás tus recargas, pedidos y bonos.' });
     document.getElementById('load-more-mov').style.display = 'none';
     return;
   }
