@@ -10,18 +10,18 @@
   <meta property="og:type"        content="website">
   <meta property="og:title"       content="NextBoost — Impulsa tu Presencia en Redes Sociales">
   <meta property="og:description" content="Más seguidores, likes y vistas para Instagram, TikTok, YouTube y más. Entrega rápida, precios accesibles y soporte real.">
-  <meta property="og:image"       content="https://nextboostdgp.pages.dev/og-image.svg">
+  <meta property="og:image"       content="https://nextboost.dgp-link.com/og-image.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta property="og:site_name"   content="NextBoost">
   <meta name="twitter:card"        content="summary_large_image">
   <meta name="twitter:title"       content="NextBoost — Impulsa tu Presencia en Redes Sociales">
   <meta name="twitter:description" content="Haz crecer tu Instagram, TikTok y YouTube con seguidores, likes y vistas reales. Rápido, seguro y accesible.">
-  <meta name="twitter:image"       content="https://nextboostdgp.pages.dev/og-image.svg">
+  <meta name="twitter:image"       content="https://nextboost.dgp-link.com/og-image.png">
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#1438cc">
-  <link rel="canonical" href="https://nextboostdgp.pages.dev/">
-  <meta property="og:url" content="https://nextboostdgp.pages.dev/">
+  <link rel="canonical" href="https://nextboost.dgp-link.com/">
+  <meta property="og:url" content="https://nextboost.dgp-link.com/">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" onload="this.onload=null;this.rel='stylesheet'">
@@ -716,7 +716,7 @@
         <div class="footer-col-title">Soporte</div>
         <a href="#">Contacto</a>
         <a href="#faq">Preguntas frecuentes</a>
-        <a href="#">Estado del sistema</a>
+        <a href="status.html">Estado del sistema</a>
       </div>
     </div>
   </div>
@@ -740,16 +740,16 @@
     {
       "@type": "Organization",
       "name": "NextBoost",
-      "url": "https://nextboostdgp.pages.dev/",
-      "logo": "https://nextboostdgp.pages.dev/img/logo.png",
+      "url": "https://nextboost.dgp-link.com/",
+      "logo": "https://nextboost.dgp-link.com/img/logo.png",
       "description": "Panel SMM para crecer en Instagram, TikTok, YouTube, Facebook, Spotify y más. Seguidores, likes y vistas con entrega rápida.",
       "contactPoint": { "@type": "ContactPoint", "contactType": "customer support", "availableLanguage": "Spanish" }
     },
     {
       "@type": "WebSite",
       "name": "NextBoost",
-      "url": "https://nextboostdgp.pages.dev/",
-      "potentialAction": { "@type": "SearchAction", "target": "https://nextboostdgp.pages.dev/precios.html?q={search_term_string}", "query-input": "required name=search_term_string" }
+      "url": "https://nextboost.dgp-link.com/",
+      "potentialAction": { "@type": "SearchAction", "target": "https://nextboost.dgp-link.com/precios.html?q={search_term_string}", "query-input": "required name=search_term_string" }
     },
     {
       "@type": "FAQPage",
@@ -796,6 +796,11 @@
       if (!isOpen) item.classList.add('open');
     });
   });
+
+  // PWA service worker
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+  }
 
   // Scroll-reveal: fade sections up as they enter the viewport
   const revealTargets = document.querySelectorAll('section, .stats-bar, .cta-section');

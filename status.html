@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Estado del sistema — NextBoost</title>
+  <meta name="description" content="Estado en tiempo real de los servicios de NextBoost: plataforma web, base de datos y proveedor de servicios.">
+  <meta name="robots" content="noindex">
+  <link rel="stylesheet" href="css/style.css">
+<!-- Cloudflare Web Analytics -->
+<script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "1aea0aeb111349889a0e7e38d955d5a3"}'></script>
+<!-- End Cloudflare Web Analytics -->
+</head>
+<body>
+
+<nav class="landing-nav">
+  <a href="index.html"><img src="img/logo.png" alt="NextBoost" class="logo-img"></a>
+  <div class="nav-cta">
+    <a href="index.html" class="btn btn-ghost btn-sm">← Volver al inicio</a>
+  </div>
+</nav>
+
+<section style="padding-top:110px;max-width:680px">
+  <h2 style="font-size:clamp(30px,4vw,44px)">Estado del <span class="gradient-text">sistema</span></h2>
+  <p class="subtitle" style="margin-bottom:32px">Verificación en tiempo real de nuestros servicios</p>
+
+  <div class="card" style="margin-bottom:16px">
+    <div class="card-body" style="display:flex;flex-direction:column;gap:0;padding:8px 24px">
+
+      <div class="status-row" id="st-web">
+        <div>
+          <div class="st-name">Plataforma web</div>
+          <div class="st-desc">Sitio, panel de clientes y registro</div>
+        </div>
+        <span class="st-badge checking">Verificando…</span>
+      </div>
+
+      <div class="status-row" id="st-db">
+        <div>
+          <div class="st-name">Base de datos</div>
+          <div class="st-desc">Cuentas, saldos, pedidos y recargas</div>
+        </div>
+        <span class="st-badge checking">Verificando…</span>
+      </div>
+
+      <div class="status-row" id="st-api">
+        <div>
+          <div class="st-name">Motor de entrega</div>
+          <div class="st-desc">Procesamiento y entrega de pedidos</div>
+        </div>
+        <span class="st-badge checking">Verificando…</span>
+      </div>
+
+    </div>
+  </div>
+
+  <p style="text-align:center;font-size:12px;color:var(--muted)" id="last-check"></p>
+  <p style="text-align:center;font-size:13px;color:var(--muted);margin-top:16px">
+    ¿Ves algún problema? Escríbenos por <a href="dashboard.html">soporte desde tu panel</a>.
+  </p>
+</section>
+
+<style>
+  .status-row {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 16px; padding: 18px 0; border-bottom: 1.5px solid var(--border);
+  }
+  .status-row:last-child { border-bottom: none; }
+  .st-name { font-weight: 700; font-size: 15px; color: var(--navy); }
+  .st-desc { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+  .st-badge {
+    font-size: 12px; font-weight: 700; padding: 5px 12px; border-radius: 20px;
+    white-space: nowrap; display: inline-flex; align-items: center; gap: 6px;
+  }
+  .st-badge::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+  .st-badge.checking    { background: var(--blue-xs); color: var(--muted); }
+  .st-badge.operational { background: #ecfdf5; color: var(--green); }
+  .st-badge.down        { background: #fef2f2; color: var(--red); }
+  [data-theme="dark"] .st-badge.operational { background: rgba(22,163,74,.15); }
+  [data-theme="dark"] .st-badge.down        { background: rgba(220,38,38,.15); }
+</style>
+
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="js/config.js"></script>
+<script>
+  if (localStorage.getItem('nb_theme') === 'dark') document.documentElement.setAttribute('data-theme','dark');
+
+  function setStatus(id, ok) {
+    const badge = document.querySelector(`#${id} .st-badge`);
+    badge.className = 'st-badge ' + (ok ? 'operational' : 'down');
+    badge.textContent = ok ? 'Operativo' : 'Con problemas';
+  }
+
+  // 1. Web: if this page loaded, the web platform is up
+  setStatus('st-web', true);
+
+  // 2. Database: public read of settings doc
+  db.collection('settings').doc('main').get()
+    .then(() => setStatus('st-db', true))
+    .catch(() => setStatus('st-db', false));
+
+  // 3. Delivery engine: any HTTP response from the worker means it's reachable
+  fetch(PROVIDER.url, { method: 'POST', body: new URLSearchParams({ action: 'ping' }) })
+    .then(() => setStatus('st-api', true))
+    .catch(() => setStatus('st-api', false));
+
+  document.getElementById('last-check').textContent =
+    'Última verificación: ' + new Date().toLocaleString('es-ES', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' });
+</script>
+</body>
+</html>
