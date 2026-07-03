@@ -306,6 +306,7 @@
                     <option value="binance">Binance Pay — Instantáneo</option>
                     <option value="zelle">Zelle — 1-2 horas</option>
                     <option value="usdt">USDT TRC20 — Instantáneo</option>
+                    <option value="pagomovil" id="pm-option" style="display:none">Pago Móvil (Bs.) — Tasa BCV</option>
                     <option value="paypal">PayPal — A consultar</option>
                   </select>
                 </div>
@@ -1272,12 +1273,40 @@ async function loadPaymentSettings() {
   }
 }
 
+// ── BCV rate (Bolívares per USD) ──────────────────────
+// Fetched from the public dolarapi endpoint, cached 1 hour.
+let _bcvRate = null;
+async function getBCVRate() {
+  const cached = (() => {
+    try { return JSON.parse(localStorage.getItem('nb_bcv') || 'null'); } catch(e) { return null; }
+  })();
+  if (cached && Date.now() - cached.ts < 60 * 60 * 1000) { _bcvRate = cached.rate; return cached.rate; }
+  try {
+    const res  = await fetch('https://ve.dolarapi.com/v1/dolares/oficial');
+    const data = await res.json();
+    const rate = parseFloat(data.promedio);
+    if (rate > 0) {
+      _bcvRate = rate;
+      try { localStorage.setItem('nb_bcv', JSON.stringify({ rate, ts: Date.now() })); } catch(e) {}
+      return rate;
+    }
+  } catch(e) {}
+  // Fall back to stale cache if API is down
+  if (cached) { _bcvRate = cached.rate; return cached.rate; }
+  return null;
+}
+
 function updatePaymentInstructions() {
   const method = document.getElementById('pay-method').value;
   const box    = document.getElementById('payment-instructions');
   const waWrap = document.getElementById('whatsapp-btn-wrap');
   const waBtn  = document.getElementById('whatsapp-btn');
   const s      = paySettings;
+
+  // Show Pago Móvil option only if admin configured it
+  const pmConfigured = !!(s.pmPhone && s.pmBank);
+  const pmOpt = document.getElementById('pm-option');
+  if (pmOpt) pmOpt.style.display = pmConfigured ? '' : 'none';
 
   // Update minimum amount based on method
   const minGeneral = parseFloat(s.minRecharge) || 5;
@@ -1300,7 +1329,32 @@ function updatePaymentInstructions() {
     paypal: 'PayPal requiere coordinación previa. Contáctanos por WhatsApp para indicarte la cuenta correcta.',
   };
 
-  box.innerHTML  = map[method] || '';
+  if (method === 'pagomovil') {
+    if (!pmConfigured) {
+      box.innerHTML = '<span style="color:var(--muted)">Administrador aún no configuró Pago Móvil.</span>';
+    } else {
+      const amount = parseFloat(document.getElementById('recharge-amount').value) || 0;
+      const rateStr = _bcvRate
+        ? `Tasa BCV: <strong>Bs. ${_bcvRate.toFixed(2)}</strong> por USD`
+        : 'Cargando tasa BCV…';
+      const bsStr = (_bcvRate && amount > 0)
+        ? `<div style="margin-top:8px;padding:10px 14px;background:var(--blue-xs);border-radius:8px;font-size:15px">Debes transferir: <strong style="color:var(--blue)">Bs. ${(amount * _bcvRate).toLocaleString('es-VE', {minimumFractionDigits:2, maximumFractionDigits:2})}</strong></div>`
+        : '';
+      box.innerHTML = `
+        <strong style="color:var(--navy)">Datos de Pago Móvil:</strong><br>
+        Titular: <strong>${s.pmName || '—'}</strong><br>
+        Teléfono: <strong>${s.pmPhone}</strong><br>
+        Cédula: <strong>${s.pmCedula || '—'}</strong><br>
+        Banco: <strong>${s.pmBank}</strong><br>
+        <span style="font-size:12px;color:var(--muted)">${rateStr}</span>
+        ${bsStr}
+        <div style="font-size:12px;color:var(--muted);margin-top:8px">Ingresa arriba el monto en USD que quieres recargar — te mostramos el equivalente exacto en bolívares según la tasa BCV del día. Guarda el número de referencia de la transferencia.</div>`;
+      // Fetch rate if we don't have it, then re-render
+      if (!_bcvRate) getBCVRate().then(r => { if (r) updatePaymentInstructions(); });
+    }
+  } else {
+    box.innerHTML = map[method] || '';
+  }
   box.style.display = 'block';
 
   const amount = document.getElementById('recharge-amount').value || '?';

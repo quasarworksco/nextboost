@@ -645,6 +645,27 @@
                 <label>Dirección USDT TRC20</label>
                 <input type="text" class="input" id="settings-usdt" placeholder="T...">
               </div>
+
+              <div style="border-top:1.5px solid var(--border);margin:20px 0;padding-top:16px">
+                <div style="font-weight:700;font-size:13px;color:var(--navy);margin-bottom:12px">📱 Pago Móvil (Bolívares — Tasa BCV)</div>
+                <div class="form-group">
+                  <label>Nombre y apellido del titular</label>
+                  <input type="text" class="input" id="settings-pm-name" placeholder="Juan Pérez">
+                </div>
+                <div class="form-group">
+                  <label>Número de teléfono</label>
+                  <input type="text" class="input" id="settings-pm-phone" placeholder="0414-1234567">
+                </div>
+                <div class="form-group">
+                  <label>Cédula</label>
+                  <input type="text" class="input" id="settings-pm-cedula" placeholder="V-12.345.678">
+                </div>
+                <div class="form-group">
+                  <label>Banco</label>
+                  <input type="text" class="input" id="settings-pm-bank" placeholder="Banco de Venezuela">
+                </div>
+                <div style="font-size:12px;color:var(--muted);margin-bottom:8px">Si dejas estos campos vacíos, la opción de Pago Móvil no se muestra a los clientes. El monto en Bs se calcula automáticamente con la tasa BCV del día.</div>
+              </div>
               <div class="form-group">
                 <label>WhatsApp de soporte (con código de país)</label>
                 <input type="text" class="input" id="settings-whatsapp" placeholder="+1234567890">
@@ -2338,6 +2359,10 @@ async function loadSettings() {
   document.getElementById('settings-zelle').value      = d.zelle      || '';
   document.getElementById('settings-zelle-name').value = d.zelleName  || '';
   document.getElementById('settings-usdt').value       = d.usdt       || '';
+  document.getElementById('settings-pm-name').value    = d.pmName     || '';
+  document.getElementById('settings-pm-phone').value   = d.pmPhone    || '';
+  document.getElementById('settings-pm-cedula').value  = d.pmCedula   || '';
+  document.getElementById('settings-pm-bank').value    = d.pmBank     || '';
   document.getElementById('settings-whatsapp').value          = d.whatsapp          || '';
   document.getElementById('settings-min-recharge').value       = d.minRecharge      || '5';
   document.getElementById('settings-min-recharge-zelle').value = d.minRechargeZelle || '25';
@@ -2503,6 +2528,10 @@ document.getElementById('save-payments-btn').addEventListener('click', async () 
     zelle:     document.getElementById('settings-zelle').value.trim(),
     zelleName: document.getElementById('settings-zelle-name').value.trim(),
     usdt:      document.getElementById('settings-usdt').value.trim(),
+    pmName:    document.getElementById('settings-pm-name').value.trim(),
+    pmPhone:   document.getElementById('settings-pm-phone').value.trim(),
+    pmCedula:  document.getElementById('settings-pm-cedula').value.trim(),
+    pmBank:    document.getElementById('settings-pm-bank').value.trim(),
     whatsapp:         document.getElementById('settings-whatsapp').value.trim(),
     minRecharge:      parseFloat(document.getElementById('settings-min-recharge').value) || 5,
     minRechargeZelle: parseFloat(document.getElementById('settings-min-recharge-zelle').value) || 25,
