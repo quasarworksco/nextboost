@@ -1372,22 +1372,48 @@ function auditLog(action, details) {
   } catch(e) {}
 }
 
+const REFERRAL_MIN_RECHARGE = 35;
+const REFERRAL_BONUS        = 5;
+
 async function approveRecharge(rechargeId, userId, amount) {
   const r = allRecharges.find(x => x.id === rechargeId);
   const bonus = parseFloat(r?.couponBonus || 0);
   const total = amount + bonus;
-  const confirmMsg = bonus > 0
-    ? `¿Aprobar recarga de ${formatUSD2(amount)} + bono de cupón ${formatUSD2(bonus)} = ${formatUSD2(total)}?`
-    : `¿Aprobar recarga de ${formatUSD2(amount)}?`;
+
+  // Check referral eligibility
+  const userSnap  = await db.collection('users').doc(userId).get();
+  const userData  = userSnap.exists ? userSnap.data() : {};
+  const referrerUid = userData.referredBy || null;
+  const referralEligible = referrerUid && !userData.referralBonusGiven && amount >= REFERRAL_MIN_RECHARGE;
+
+  const confirmParts = [`¿Aprobar recarga de ${formatUSD2(amount)}`];
+  if (bonus > 0) confirmParts.push(`+ bono de cupón ${formatUSD2(bonus)}`);
+  if (referralEligible) confirmParts.push(`+ se pagará bono de referido ${formatUSD2(REFERRAL_BONUS)} a quien lo invitó`);
+  const confirmMsg = confirmParts.join(' ') + '?';
   if (!confirm(confirmMsg)) return;
+
   const now = firebase.firestore.FieldValue.serverTimestamp();
   const batch = db.batch();
   batch.update(db.collection('recharges').doc(rechargeId), { status: 'approved', approvedAt: now, approvedBy: adminUser.uid });
-  batch.update(db.collection('users').doc(userId), { balance: firebase.firestore.FieldValue.increment(total) });
+
+  const userUpdate = { balance: firebase.firestore.FieldValue.increment(total) };
+  if (referralEligible) userUpdate.referralBonusGiven = true;
+  batch.update(db.collection('users').doc(userId), userUpdate);
+
   batch.set(db.collection('balance_history').doc(), { userId, type: 'recharge', amount: total, description: bonus > 0 ? `Recarga aprobada + bono cupón ${r.couponCode} (${formatUSD2(bonus)})` : `Recarga aprobada por admin`, createdAt: now });
+
+  if (referralEligible) {
+    batch.update(db.collection('users').doc(referrerUid), { balance: firebase.firestore.FieldValue.increment(REFERRAL_BONUS) });
+    batch.set(db.collection('balance_history').doc(), {
+      userId: referrerUid, type: 'referral_bonus', amount: REFERRAL_BONUS,
+      description: `Bono por referido: ${userData.name || userData.email || userId.slice(0,8)}`,
+      createdAt: now,
+    });
+  }
+
   await batch.commit();
-  auditLog('recharge_approved', { rechargeId, userId, amount, bonus });
-  toast(`Recarga de ${formatUSD2(amount)} aprobada`, 'success');
+  auditLog('recharge_approved', { rechargeId, userId, amount, bonus, referralPaid: !!referralEligible });
+  toast(`Recarga de ${formatUSD2(amount)} aprobada${referralEligible ? ' + bono de referido pagado' : ''}`, 'success');
   // Send email to client
   try {
     const userSnap = await db.collection('users').doc(userId).get();

@@ -48,6 +48,9 @@
       <div class="nav-item" data-page="movements" data-title="Movimientos" onclick="showPage('movements');loadMovements()">
         <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></span> Movimientos
       </div>
+      <div class="nav-item" data-page="referrals" data-title="Referidos" onclick="showPage('referrals');loadReferrals()">
+        <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span> Referidos
+      </div>
       <div class="nav-item" data-page="support" data-title="Soporte" onclick="showPage('support');loadTickets()">
         <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span> Soporte
         <span class="badge badge-pending ml-auto" id="support-unread-badge" style="display:none"></span>
@@ -414,6 +417,49 @@
           </div>
           <div style="padding:12px 20px;text-align:center">
             <button class="btn btn-ghost btn-sm" id="load-more-mov" onclick="loadMoreMovements()" style="display:none">Cargar más</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ REFERRALS ═══ -->
+      <div id="page-referrals" class="page-section" style="display:none">
+        <div class="card mb-3">
+          <div class="card-header">Tu link de referidos</div>
+          <div class="card-body">
+            <p style="color:var(--muted);font-size:14px;margin-bottom:16px">
+              Comparte tu link. Cuando alguien se registre y haga su primera recarga de <strong>$35 o más</strong>, recibes un bono de <strong>$5</strong> automáticamente.
+            </p>
+            <div style="display:flex;gap:8px">
+              <input type="text" class="input" id="referral-link" readonly style="flex:1;font-size:13px">
+              <button class="btn btn-primary" onclick="copyReferralLink()">Copiar link</button>
+            </div>
+          </div>
+        </div>
+        <div class="grid-3 mb-3">
+          <div class="stat-card">
+            <div class="stat-value" id="ref-count">—</div>
+            <div class="stat-label">Referidos totales</div>
+          </div>
+          <div class="stat-card" style="border-left:3px solid var(--green)">
+            <div class="stat-value" id="ref-earned" style="color:var(--green)">—</div>
+            <div class="stat-label">Total ganado</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="ref-pending">—</div>
+            <div class="stat-label">Aún sin recargar $35+</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">Tus referidos</div>
+          <div class="card-body" style="padding:0">
+            <div class="table-wrap orders-table-wrap">
+              <table>
+                <thead><tr><th>Nombre</th><th>Registrado</th><th>Estado</th></tr></thead>
+                <tbody id="referrals-body">
+                  <tr><td colspan="3" style="text-align:center;padding:24px;color:var(--muted)">Cargando...</td></tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>
@@ -1706,6 +1752,50 @@ function setMovFilter(f) {
     btn.className = x === f ? 'btn btn-sm btn-primary' : 'btn btn-sm btn-ghost';
   });
   renderMovements();
+}
+
+// ── Referrals ─────────────────────────────────────────
+function copyReferralLink() {
+  const input = document.getElementById('referral-link');
+  input.select();
+  navigator.clipboard.writeText(input.value).then(() => toast('Link copiado', 'success'));
+}
+
+async function loadReferrals() {
+  const link = `${window.location.origin}/register.html?ref=${currentUser.uid}`;
+  document.getElementById('referral-link').value = link;
+
+  const tbody = document.getElementById('referrals-body');
+  tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;padding:24px;color:var(--muted)">Cargando...</td></tr>';
+
+  try {
+    const [referredSnap, bonusSnap] = await Promise.all([
+      db.collection('users').where('referredBy', '==', currentUser.uid).get(),
+      db.collection('balance_history').where('userId', '==', currentUser.uid).where('type', '==', 'referral_bonus').get(),
+    ]);
+
+    const referred = referredSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+    const totalEarned = bonusSnap.docs.reduce((s, d) => s + parseFloat(d.data().amount || 0), 0);
+    const qualified   = referred.filter(u => u.referralBonusGiven).length;
+    const pending     = referred.length - qualified;
+
+    document.getElementById('ref-count').textContent   = referred.length;
+    document.getElementById('ref-earned').textContent  = formatUSD2(totalEarned);
+    document.getElementById('ref-pending').textContent = pending;
+
+    tbody.innerHTML = referred.length
+      ? referred.map(u => `
+          <tr>
+            <td data-label="Nombre">${u.name || u.email || '—'}</td>
+            <td data-label="Registrado" style="color:var(--muted);font-size:12px">${formatDate(u.createdAt)}</td>
+            <td data-label="Estado">${u.referralBonusGiven
+              ? '<span class="badge badge-active">✓ Bono pagado</span>'
+              : '<span class="badge badge-pending">Sin recarga $35+</span>'}</td>
+          </tr>`).join('')
+      : '<tr><td colspan="3" style="text-align:center;padding:24px;color:var(--muted)">Aún no tienes referidos</td></tr>';
+  } catch(e) {
+    tbody.innerHTML = `<tr><td colspan="3" style="text-align:center;padding:24px;color:var(--muted)">Error: ${e.message}</td></tr>`;
+  }
 }
 
 async function loadMovements() {

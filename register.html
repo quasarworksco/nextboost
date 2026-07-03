@@ -106,6 +106,10 @@
       const cred = await auth.createUserWithEmailAndPassword(email, password);
       await cred.user.updateProfile({ displayName: name });
 
+      // Capture referral code (?ref=<referrer_uid>) if present
+      const refUid = new URLSearchParams(location.search).get('ref');
+      const referredBy = (refUid && refUid !== cred.user.uid) ? refUid : null;
+
       // Create user document in Firestore
       await db.collection('users').doc(cred.user.uid).set({
         name,
@@ -113,6 +117,8 @@
         balance: 0,
         role:    'user',
         apiKey:  null,
+        referredBy,
+        referralBonusGiven: false,
         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
       });
 

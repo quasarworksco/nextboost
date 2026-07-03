@@ -11,7 +11,7 @@ service cloud.firestore {
 
     // Users: read/update own doc, admin reads/writes all
     match /users/{uid} {
-      allow read:   if isOwner(uid) || isAdmin();
+      allow read:   if isOwner(uid) || isAdmin() || (isAuth() && resource.data.referredBy == request.auth.uid);
       allow create: if isOwner(uid);
       allow update: if isAdmin()
         || (isOwner(uid) && !('balance' in request.resource.data.diff(resource.data).affectedKeys()))
