@@ -178,8 +178,12 @@ const Orders = (() => {
     return snap.docs.map(d => ({ id: d.id, ...d.data() }));
   }
 
-  // Sync status from provider
-  async function syncStatus(orders) {
+  // Sync status from provider.
+  // allowRefund must ONLY be true when called from the admin panel — Firestore
+  // rules block non-admins from increasing their own balance, so client-side
+  // (dashboard) syncs never attempt refund crediting; they just update status.
+  // The admin's periodic/manual sync is what actually credits refunds.
+  async function syncStatus(orders, { allowRefund = false } = {}) {
     if (!orders.length) return;
     const TERMINAL = ['completed', 'cancelled', 'partial', 'canceled'];
     const withProvider = orders.filter(o =>
@@ -192,6 +196,7 @@ const Orders = (() => {
 
     const now   = firebase.firestore.FieldValue.serverTimestamp();
     const batch = db.batch();
+    const refundCandidates = [];
 
     withProvider.forEach(o => {
       const r = ids.length === 1 ? results : results[o.providerOrderId];
@@ -199,51 +204,68 @@ const Orders = (() => {
 
       const newStatus = (r.status || 'pending').toLowerCase();
       const remains   = r.remains != null ? parseInt(r.remains) : null;
-
-      const orderUpdate = {
-        status:     newStatus,
-        remains,
-        startCount: r.start_count || null,
-      };
-
-      // Refund only when provider actually refunded us (r.charge < providerCost)
       const cancelled = newStatus === 'cancelled' || newStatus === 'canceled';
       const partial   = newStatus === 'partial';
 
-      if ((cancelled || partial) && o.userId && o.charge > 0 && !o.refunded) {
-        const providerCharged  = r.charge != null ? parseFloat(r.charge) : null;
-        const providerOriginal = parseFloat(o.providerCost || o.charge);
-        // If provider didn't return a charge field, assume no refund
-        const providerRefund   = providerCharged != null ? Math.max(0, providerOriginal - providerCharged) : 0;
-
-        if (providerRefund > 0) {
-          // Pass refund to client proportionally to their charge
-          const refundAmt = +((providerRefund / providerOriginal) * parseFloat(o.charge)).toFixed(6);
-
-          orderUpdate.refunded     = true;
-          orderUpdate.refundAmount = refundAmt;
-
-          batch.update(db.collection('users').doc(o.userId), {
-            balance: firebase.firestore.FieldValue.increment(refundAmt),
-          });
-          batch.set(db.collection('balance_history').doc(), {
-            userId:      o.userId,
-            type:        'refund',
-            amount:      refundAmt,
-            description: `Reembolso: ${cancelled ? 'pedido cancelado' : 'pedido parcial'} — ${o.serviceName?.slice(0,50) || o.serviceId}`,
-            orderId:     o.id,
-            createdAt:   now,
-          });
-        } else {
-          // Provider did not refund (e.g. private account) — mark so we don't re-check
-          orderUpdate.refunded = false;
-        }
+      // Orders that might need a refund are processed separately via
+      // transaction (re-reads fresh state) to avoid double-crediting
+      // when sync runs concurrently from multiple sessions/tabs.
+      if (allowRefund && (cancelled || partial) && o.userId && o.charge > 0) {
+        refundCandidates.push({ order: o, r, newStatus, remains });
+        return;
       }
 
-      batch.update(db.collection('orders').doc(o.id), orderUpdate);
+      batch.update(db.collection('orders').doc(o.id), {
+        status: newStatus, remains, startCount: r.start_count || null,
+      });
     });
 
     await batch.commit();
+    if (!allowRefund) return;
+
+    // Process potential refunds one at a time, each in its own transaction
+    for (const { order: o, r, newStatus, remains } of refundCandidates) {
+      try {
+        await db.runTransaction(async (tx) => {
+          const orderRef  = db.collection('orders').doc(o.id);
+          const orderSnap = await tx.get(orderRef);
+          if (!orderSnap.exists) return;
+          const freshOrder = orderSnap.data();
+
+          const orderUpdate = { status: newStatus, remains, startCount: r.start_count || null };
+
+          if (!freshOrder.refunded) {
+            const providerCharged  = r.charge != null ? parseFloat(r.charge) : null;
+            const providerOriginal = parseFloat(freshOrder.providerCost || freshOrder.charge);
+            const providerRefund   = providerCharged != null ? Math.max(0, providerOriginal - providerCharged) : 0;
+
+            if (providerRefund > 0) {
+              const refundAmt = +((providerRefund / providerOriginal) * parseFloat(freshOrder.charge)).toFixed(6);
+              orderUpdate.refunded     = true;
+              orderUpdate.refundAmount = refundAmt;
+
+              tx.update(db.collection('users').doc(o.userId), {
+                balance: firebase.firestore.FieldValue.increment(refundAmt),
+              });
+              tx.set(db.collection('balance_history').doc(), {
+                userId:      o.userId,
+                type:        'refund',
+                amount:      refundAmt,
+                description: `Reembolso: ${newStatus.startsWith('cancel') ? 'pedido cancelado' : 'pedido parcial'} — ${o.serviceName?.slice(0,50) || o.serviceId}`,
+                orderId:     o.id,
+                createdAt:   now,
+              });
+            } else {
+              orderUpdate.refunded = false;
+            }
+          }
+
+          tx.update(orderRef, orderUpdate);
+        });
+      } catch(e) {
+        // Skip this order on transaction failure; next sync cycle will retry
+      }
+    }
   }
 
   return { place, getForUser, getAll, syncStatus };

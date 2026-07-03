@@ -14,7 +14,7 @@ service cloud.firestore {
       allow read:   if isOwner(uid) || isAdmin() || (isAuth() && resource.data.referredBy == request.auth.uid);
       allow create: if isOwner(uid);
       allow update: if isAdmin()
-        || (isOwner(uid) && !('balance' in request.resource.data.diff(resource.data).affectedKeys()))
+        || (isOwner(uid) && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name']))
         || (isOwner(uid)
             && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['balance'])
             && request.resource.data.balance <= resource.data.balance);
@@ -66,7 +66,7 @@ service cloud.firestore {
 
       match /used_by/{uid} {
         allow read:   if isAuth() && (isOwner(uid) || isAdmin());
-        allow create: if isAuth() && isOwner(uid);
+        allow create: if isAdmin();
         allow update: if isAdmin();
         allow delete: if isAdmin();
       }

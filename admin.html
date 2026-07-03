@@ -1374,55 +1374,129 @@ function auditLog(action, details) {
 
 const REFERRAL_MIN_RECHARGE = 35;
 const REFERRAL_BONUS        = 5;
+const _approveInFlight = new Set(); // guards against double-click double-processing
 
 async function approveRecharge(rechargeId, userId, amount) {
+  if (_approveInFlight.has(rechargeId)) return; // already processing, ignore repeat clicks
   const r = allRecharges.find(x => x.id === rechargeId);
-  const bonus = parseFloat(r?.couponBonus || 0);
-  const total = amount + bonus;
-
-  // Check referral eligibility
-  const userSnap  = await db.collection('users').doc(userId).get();
-  const userData  = userSnap.exists ? userSnap.data() : {};
-  const referrerUid = userData.referredBy || null;
-  const referralEligible = referrerUid && !userData.referralBonusGiven && amount >= REFERRAL_MIN_RECHARGE;
 
   const confirmParts = [`¿Aprobar recarga de ${formatUSD2(amount)}`];
-  if (bonus > 0) confirmParts.push(`+ bono de cupón ${formatUSD2(bonus)}`);
-  if (referralEligible) confirmParts.push(`+ se pagará bono de referido ${formatUSD2(REFERRAL_BONUS)} a quien lo invitó`);
-  const confirmMsg = confirmParts.join(' ') + '?';
+  if (r?.couponCode) confirmParts.push(`(se validará el cupón ${r.couponCode} al momento de aprobar)`);
+  const confirmMsg = confirmParts.join(' ') + '? (el bono de referido, si aplica, se calculará automáticamente)';
   if (!confirm(confirmMsg)) return;
 
+  _approveInFlight.add(rechargeId);
   const now = firebase.firestore.FieldValue.serverTimestamp();
-  const batch = db.batch();
-  batch.update(db.collection('recharges').doc(rechargeId), { status: 'approved', approvedAt: now, approvedBy: adminUser.uid });
+  let referralPaid  = false;
+  let couponApplied = 0;
 
-  const userUpdate = { balance: firebase.firestore.FieldValue.increment(total) };
-  if (referralEligible) userUpdate.referralBonusGiven = true;
-  batch.update(db.collection('users').doc(userId), userUpdate);
-
-  batch.set(db.collection('balance_history').doc(), { userId, type: 'recharge', amount: total, description: bonus > 0 ? `Recarga aprobada + bono cupón ${r.couponCode} (${formatUSD2(bonus)})` : `Recarga aprobada por admin`, createdAt: now });
-
-  if (referralEligible) {
-    batch.update(db.collection('users').doc(referrerUid), { balance: firebase.firestore.FieldValue.increment(REFERRAL_BONUS) });
-    batch.set(db.collection('balance_history').doc(), {
-      userId: referrerUid, type: 'referral_bonus', amount: REFERRAL_BONUS,
-      description: `Bono por referido: ${userData.name || userData.email || userId.slice(0,8)}`,
-      createdAt: now,
-    });
-  }
-
-  await batch.commit();
-  auditLog('recharge_approved', { rechargeId, userId, amount, bonus, referralPaid: !!referralEligible });
-  toast(`Recarga de ${formatUSD2(amount)} aprobada${referralEligible ? ' + bono de referido pagado' : ''}`, 'success');
-  // Send email to client
   try {
-    const userSnap = await db.collection('users').doc(userId).get();
-    const ud = userSnap.exists ? userSnap.data() : {};
-    const newBalance = (parseFloat(ud.balance || 0) + amount);
-    sendRechargeApprovedEmail(ud.email, ud.name, amount, newBalance);
-  } catch(e) {}
-  loadAdminRecharges();
-  loadOverview();
+    await db.runTransaction(async (tx) => {
+      const rechargeRef = db.collection('recharges').doc(rechargeId);
+      const userRef      = db.collection('users').doc(userId);
+
+      // ── All reads must happen before any writes in a Firestore transaction ──
+      const rechargeSnap = await tx.get(rechargeRef);
+      const userSnap      = await tx.get(userRef);
+
+      if (!rechargeSnap.exists) throw new Error('La recarga ya no existe.');
+      const rechargeData = rechargeSnap.data();
+      if (rechargeData.status !== 'pending') {
+        throw new Error('Esta recarga ya fue procesada (posible doble clic evitado).');
+      }
+      if (!userSnap.exists) throw new Error('Usuario no encontrado.');
+
+      // Authoritative amount comes from the freshly-read recharge document,
+      // never from the admin UI's cached copy — avoids crediting a stale
+      // or mismatched value if the local cache ever desyncs from Firestore.
+      const trueAmount = parseFloat(rechargeData.amount);
+
+      // Re-validate the coupon against its live Firestore doc — NEVER trust
+      // the couponBonus value the client wrote when submitting the recharge,
+      // it is untrusted client-supplied data and could be tampered with.
+      const couponCode = rechargeData.couponCode || null;
+      let couponSnap = null, couponUsedSnap = null;
+      if (couponCode) {
+        const couponRef = db.collection('coupons').doc(couponCode);
+        couponSnap = await tx.get(couponRef);
+        if (couponSnap.exists) {
+          couponUsedSnap = await tx.get(couponRef.collection('used_by').doc(userId));
+        }
+      }
+
+      let bonus = 0;
+      let couponValid = false;
+      if (couponSnap && couponSnap.exists && (!couponUsedSnap || !couponUsedSnap.exists)) {
+        const c = couponSnap.data();
+        const expired = c.expiresAt && c.expiresAt.toDate() < new Date();
+        const maxed   = c.maxUses > 0 && (c.usedCount || 0) >= c.maxUses;
+        if (c.active && !expired && !maxed) {
+          bonus = c.type === 'percent' ? +((trueAmount * c.value) / 100).toFixed(2) : parseFloat(c.value);
+          couponValid = true;
+        }
+      }
+      const total = trueAmount + bonus;
+
+      const referrerUid = userSnap.data().referredBy || null;
+      let referrerSnap  = null;
+      if (referrerUid && !userSnap.data().referralBonusGiven && trueAmount >= REFERRAL_MIN_RECHARGE) {
+        const referrerRef = db.collection('users').doc(referrerUid);
+        referrerSnap = await tx.get(referrerRef);
+      }
+      const referralEligible = !!(referrerSnap && referrerSnap.exists);
+
+      // ── Writes ──
+      tx.update(rechargeRef, { status: 'approved', approvedAt: now, approvedBy: adminUser.uid });
+
+      const userUpdate = { balance: firebase.firestore.FieldValue.increment(total) };
+      if (referralEligible) userUpdate.referralBonusGiven = true;
+      tx.update(userRef, userUpdate);
+
+      tx.set(db.collection('balance_history').doc(), {
+        userId, type: 'recharge', amount: total,
+        description: bonus > 0 ? `Recarga aprobada + bono cupón ${couponCode} (${formatUSD2(bonus)})` : `Recarga aprobada por admin`,
+        createdAt: now,
+      });
+
+      if (couponValid) {
+        const couponRef = db.collection('coupons').doc(couponCode);
+        tx.update(couponRef, { usedCount: firebase.firestore.FieldValue.increment(1) });
+        tx.set(couponRef.collection('used_by').doc(userId), { usedAt: now, userId });
+        couponApplied = bonus;
+      }
+
+      if (referralEligible) {
+        tx.update(db.collection('users').doc(referrerUid), { balance: firebase.firestore.FieldValue.increment(REFERRAL_BONUS) });
+        tx.set(db.collection('balance_history').doc(), {
+          userId: referrerUid, type: 'referral_bonus', amount: REFERRAL_BONUS,
+          description: `Bono por referido: ${userSnap.data().name || userSnap.data().email || userId.slice(0,8)}`,
+          createdAt: now,
+        });
+        referralPaid = true;
+      }
+    });
+
+    auditLog('recharge_approved', { rechargeId, userId, amount, couponApplied, referralPaid });
+    const msgParts = [`Recarga de ${formatUSD2(amount)} aprobada`];
+    if (couponApplied > 0) msgParts.push(`+ cupón ${formatUSD2(couponApplied)}`);
+    if (referralPaid) msgParts.push('+ bono de referido pagado');
+    toast(msgParts.join(' '), 'success');
+
+    // Send email to client (best-effort, outside the transaction)
+    try {
+      const userSnap = await db.collection('users').doc(userId).get();
+      const ud = userSnap.exists ? userSnap.data() : {};
+      const newBalance = parseFloat(ud.balance || 0);
+      sendRechargeApprovedEmail(ud.email, ud.name, amount, newBalance);
+    } catch(e) {}
+
+    loadAdminRecharges();
+    loadOverview();
+  } catch(e) {
+    toast('Error al aprobar: ' + e.message, 'error');
+  } finally {
+    _approveInFlight.delete(rechargeId);
+  }
 }
 
 async function rejectRecharge(rechargeId) {
@@ -1445,21 +1519,35 @@ async function deleteRecharge(rechargeId) {
   }
 }
 
+const _revertInFlight = new Set();
+
 async function revertRecharge(rechargeId, userId, amount) {
+  if (_revertInFlight.has(rechargeId)) return;
   if (!confirm(`¿Revertir recarga de ${formatUSD2(amount)}? Se descontará el saldo del usuario.`)) return;
+
+  _revertInFlight.add(rechargeId);
   const now = firebase.firestore.FieldValue.serverTimestamp();
-  const batch = db.batch();
-  batch.update(db.collection('recharges').doc(rechargeId), { status: 'reversed', reversedAt: now, reversedBy: adminUser.uid });
-  batch.update(db.collection('users').doc(userId), { balance: firebase.firestore.FieldValue.increment(-amount) });
-  batch.set(db.collection('balance_history').doc(), { userId, type: 'reversal', amount: -amount, description: `Recarga revertida por admin`, createdAt: now });
+
   try {
-    await batch.commit();
+    await db.runTransaction(async (tx) => {
+      const rechargeRef = db.collection('recharges').doc(rechargeId);
+      const rechargeSnap = await tx.get(rechargeRef);
+      if (!rechargeSnap.exists) throw new Error('La recarga ya no existe.');
+      if (rechargeSnap.data().status !== 'approved') {
+        throw new Error('Esta recarga ya no está aprobada (posible doble clic evitado).');
+      }
+      tx.update(rechargeRef, { status: 'reversed', reversedAt: now, reversedBy: adminUser.uid });
+      tx.update(db.collection('users').doc(userId), { balance: firebase.firestore.FieldValue.increment(-amount) });
+      tx.set(db.collection('balance_history').doc(), { userId, type: 'reversal', amount: -amount, description: `Recarga revertida por admin`, createdAt: now });
+    });
     auditLog('recharge_reversed', { rechargeId, userId, amount });
     toast(`Recarga de ${formatUSD2(amount)} revertida`, 'info');
     loadAdminRecharges();
     loadOverview();
   } catch(e) {
     toast('Error al revertir: ' + e.message, 'error');
+  } finally {
+    _revertInFlight.delete(rechargeId);
   }
 }
 
@@ -1523,7 +1611,7 @@ async function syncAllOrders(silent = false) {
       o.providerOrderId && ['pending','active','in progress','processing'].includes((o.status||'').toLowerCase())
     );
     if (!pending.length) { if (!silent) toast('Sin pedidos activos para sincronizar', 'info'); return; }
-    await Orders.syncStatus(pending);
+    await Orders.syncStatus(pending, { allowRefund: true });
     // Reload orders directly without calling loadAdminOrders (avoids re-triggering sync)
     const snap = await db.collection('orders').orderBy('createdAt','desc').limit(500).get();
     allOrders = snap.docs.map(d => ({ id: d.id, ...d.data() }));

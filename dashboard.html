@@ -1478,12 +1478,11 @@ document.getElementById('recharge-btn').addEventListener('click', async () => {
       createdAt:     firebase.firestore.FieldValue.serverTimestamp(),
     });
 
-    // Mark coupon as used
+    // Note: the coupon is validated and marked as used by the admin at
+    // approval time (not here) — this avoids "burning" a coupon on a
+    // recharge that later gets rejected, and prevents trusting client-
+    // supplied data for the actual bonus amount credited.
     if (_appliedCoupon) {
-      const now = firebase.firestore.FieldValue.serverTimestamp();
-      const couponRef = db.collection('coupons').doc(_appliedCoupon.code);
-      couponRef.update({ usedCount: firebase.firestore.FieldValue.increment(1) });
-      couponRef.collection('used_by').doc(currentUser.uid).set({ usedAt: now, userId: currentUser.uid });
       _appliedCoupon = null;
       document.getElementById('coupon-code').value = '';
       document.getElementById('coupon-result').innerHTML = '';
