@@ -497,9 +497,16 @@ tr:hover td { background: var(--blue-xs); }
 .stat-item .lbl { font-size: 12px; color: var(--muted); margin-top: 3px; font-weight: 500; text-transform: uppercase; letter-spacing: .5px; }
 
 /* ─── SECTIONS ───────────────────────────────────────────── */
-section { padding: 88px 52px; max-width: 1200px; margin: 0 auto; }
+section { padding: 64px 52px; max-width: 1200px; margin: 0 auto; }
 section h2 { font-family: 'Bebas Neue', sans-serif; font-size: clamp(34px, 5vw, 60px); letter-spacing: 1px; text-align: center; margin-bottom: 12px; color: var(--navy); }
-section .subtitle { text-align: center; color: var(--muted); margin-bottom: 52px; font-size: 16px; max-width: 540px; margin-left: auto; margin-right: auto; }
+section .subtitle { text-align: center; color: var(--muted); margin-bottom: 44px; font-size: 16px; max-width: 540px; margin-left: auto; margin-right: auto; }
+
+/* Scroll-reveal: sections fade up as they enter the viewport */
+.reveal { opacity: 0; transform: translateY(28px); transition: opacity .6s ease, transform .6s ease; }
+.reveal.reveal-visible { opacity: 1; transform: translateY(0); }
+@media (prefers-reduced-motion: reduce) {
+  .reveal { opacity: 1; transform: none; transition: none; }
+}
 
 /* ─── FEATURE CARDS ──────────────────────────────────────── */
 .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; }
@@ -546,7 +553,7 @@ section .subtitle { text-align: center; color: var(--muted); margin-bottom: 52px
 
 /* ─── CTA ────────────────────────────────────────────────── */
 .cta-section {
-  text-align: center; padding: 96px 52px;
+  text-align: center; padding: 72px 52px;
   background: linear-gradient(135deg, var(--navy) 0%, var(--navy-m) 100%);
   color: var(--white); overflow: hidden; position: relative;
 }
@@ -1073,7 +1080,7 @@ section .subtitle { text-align: center; color: var(--muted); margin-bottom: 52px
 
 @media (max-width: 600px) {
   .nav-links { display: none; }
-  section { padding: 60px 20px; }
+  section { padding: 44px 20px; }
   .stats-bar { gap: 20px; padding: 20px; }
   .grid-4 { grid-template-columns: 1fr 1fr; }
   .auth-card { padding: 28px 22px; }

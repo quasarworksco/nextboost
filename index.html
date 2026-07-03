@@ -280,7 +280,7 @@
 </section>
 
 <!-- NETWORKS -->
-<section id="services" style="background:var(--bg2);max-width:100%;padding:80px 40px">
+<section id="services" style="background:var(--bg2);max-width:100%;padding:64px 40px">
   <div style="max-width:1100px;margin:0 auto">
     <h2>Elige tu <span class="gradient-text">plataforma</span></h2>
     <p class="subtitle">Crecimiento profesional para las redes sociales que más importan. Selecciona la tuya y comienza hoy.</p>
@@ -439,10 +439,10 @@
 </section>
 
 <!-- PAYMENTS -->
-<section style="background:var(--bg2);max-width:100%;padding:60px 40px">
+<section style="background:var(--bg2);max-width:100%;padding:44px 40px">
   <div style="max-width:900px;margin:0 auto;text-align:center">
-    <h2>Métodos de <span class="gradient-text">pago</span></h2>
-    <p class="subtitle">Múltiples opciones para recargar tu saldo</p>
+    <h2 style="font-size:clamp(26px,3.4vw,38px);margin-bottom:6px">Métodos de <span class="gradient-text">pago</span></h2>
+    <p class="subtitle" style="margin-bottom:28px;font-size:14px">Múltiples opciones para recargar tu saldo</p>
     <div class="payment-grid">
 
       <!-- Binance Pay -->
@@ -492,7 +492,7 @@
       </div>
 
     </div>
-    <p style="font-size:13px;color:var(--muted);margin-top:24px">PayPal tiene un tiempo de procesamiento mayor. Contáctanos para coordinar.</p>
+    <p style="font-size:13px;color:var(--muted);margin-top:18px">PayPal tiene un tiempo de procesamiento mayor. Contáctanos para coordinar.</p>
   </div>
 </section>
 
@@ -795,6 +795,23 @@
       document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
       if (!isOpen) item.classList.add('open');
     });
+  });
+
+  // Scroll-reveal: fade sections up as they enter the viewport
+  const revealTargets = document.querySelectorAll('section, .stats-bar, .cta-section');
+  const revealObserver = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('reveal-visible');
+        revealObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+  revealTargets.forEach(el => {
+    // Skip the hero — it's visible on load and shouldn't flash
+    if (el.classList.contains('hero')) return;
+    el.classList.add('reveal');
+    revealObserver.observe(el);
   });
 </script>
 </body>
