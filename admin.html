@@ -64,6 +64,9 @@
       <div class="nav-item" data-page="coupons" data-title="Cupones" onclick="showPage('coupons');loadCoupons()">
         <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg></span> Cupones
       </div>
+      <div class="nav-item" data-page="analytics" data-title="Analíticas del sitio" onclick="showPage('analytics');loadSiteAnalytics()">
+        <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18.7 8l-5.1 5.1-2.8-2.8L7 14"/></svg></span> Analíticas
+      </div>
       <div class="nav-item" data-page="settings" data-title="Configuración" onclick="showPage('settings');loadSettings()">
         <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span> Configuración
       </div>
@@ -536,6 +539,81 @@
         </div>
       </div>
 
+      <!-- ═══ ANALYTICS ═══ -->
+      <div id="page-analytics" class="page-section" style="display:none">
+        <div class="card mb-3">
+          <div class="card-header flex items-center justify-between">
+            <span>Analíticas del sitio (Cloudflare Web Analytics)</span>
+            <div style="display:flex;gap:8px;align-items:center">
+              <select class="select" id="analytics-days" style="width:140px" onchange="loadSiteAnalytics()">
+                <option value="1">Últimas 24h</option>
+                <option value="7" selected>Últimos 7 días</option>
+                <option value="30">Últimos 30 días</option>
+              </select>
+              <button class="btn btn-ghost btn-sm" onclick="loadSiteAnalytics()">↻ Actualizar</button>
+            </div>
+          </div>
+          <div class="card-body">
+            <div id="analytics-error"></div>
+            <div class="grid-4 mb-4">
+              <div class="stat-card">
+                <div class="stat-value" id="an-total-visits">—</div>
+                <div class="stat-label">Visitas totales</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-value" id="an-top-country">—</div>
+                <div class="stat-label">País principal</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-value" id="an-top-device">—</div>
+                <div class="stat-label">Dispositivo principal</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-value" id="an-avg-daily">—</div>
+                <div class="stat-label">Promedio diario</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid-2 mb-3">
+          <div class="card">
+            <div class="card-header">Por país</div>
+            <div class="card-body" style="padding:0">
+              <div class="table-wrap admin-table-wrap">
+                <table>
+                  <thead><tr><th>País</th><th>Visitas</th></tr></thead>
+                  <tbody id="analytics-country-body"><tr><td colspan="2" style="text-align:center;padding:20px;color:var(--muted)">Sin datos</td></tr></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header">Por dispositivo</div>
+            <div class="card-body" style="padding:0">
+              <div class="table-wrap admin-table-wrap">
+                <table>
+                  <thead><tr><th>Dispositivo</th><th>Visitas</th></tr></thead>
+                  <tbody id="analytics-device-body"><tr><td colspan="2" style="text-align:center;padding:20px;color:var(--muted)">Sin datos</td></tr></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">Visitas por día</div>
+          <div class="card-body" style="padding:0">
+            <div class="table-wrap admin-table-wrap">
+              <table>
+                <thead><tr><th>Fecha</th><th>Visitas</th></tr></thead>
+                <tbody id="analytics-day-body"><tr><td colspan="2" style="text-align:center;padding:20px;color:var(--muted)">Sin datos</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div id="page-settings" class="page-section" style="display:none">
         <div class="card">
             <div class="card-header">Configuración del proveedor</div>
@@ -665,6 +743,21 @@
             </div>
           </div>
         </div>
+
+        <div class="card mt-4">
+          <div class="card-header">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:8px"><path d="M3 3v18h18"/><path d="M18.7 8l-5.1 5.1-2.8-2.8L7 14"/></svg>
+            Analíticas del sitio (Cloudflare)
+          </div>
+          <div class="card-body">
+            <div class="form-group">
+              <label>Clave de analíticas (Analytics Key)</label>
+              <input type="text" class="input" id="settings-analytics-key" placeholder="Clave compartida con el Worker" autocomplete="off">
+            </div>
+            <div id="settings-analytics-alert"></div>
+            <button class="btn btn-primary" onclick="saveAnalyticsSettings()">Guardar</button>
+          </div>
+        </div>
       </div>
 
     </div>
@@ -753,6 +846,7 @@ requireAdmin(async (user, data) => {
   watchPendingRecharges();
   loadTelegramConfig();
   loadEmailJSConfig();
+  loadAnalyticsKeyConfig();
 });
 
 // ── Overview ──────────────────────────────────────────
@@ -904,6 +998,29 @@ async function notifyTelegramRecharge(r) {
 let _ejsPubKey   = null;
 let _ejsService  = null;
 let _ejsTemplate = null;
+
+async function loadAnalyticsKeyConfig() {
+  try {
+    const snap = await db.collection('private_settings').doc('notifications').get();
+    if (snap.exists) {
+      const d = snap.data();
+      const el = document.getElementById('settings-analytics-key');
+      if (el) el.value = d.analyticsKey || '';
+    }
+  } catch(e) {}
+}
+
+async function saveAnalyticsSettings() {
+  const key     = document.getElementById('settings-analytics-key').value.trim();
+  const alertEl = document.getElementById('settings-analytics-alert');
+  try {
+    await db.collection('private_settings').doc('notifications').set({ analyticsKey: key }, { merge: true });
+    alertEl.innerHTML = '<div class="alert alert-success mt-2">Guardado correctamente.</div>';
+    setTimeout(() => alertEl.innerHTML = '', 3000);
+  } catch(e) {
+    alertEl.innerHTML = `<div class="alert alert-error mt-2">${e.message}</div>`;
+  }
+}
 
 async function loadEmailJSConfig() {
   try {
@@ -1117,6 +1234,57 @@ function openScreenshot(url) {
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') document.getElementById('screenshot-lightbox').style.display = 'none';
 });
+
+// ── Site analytics (Cloudflare Web Analytics via Worker) ──
+async function loadSiteAnalytics() {
+  const errorEl = document.getElementById('analytics-error');
+  errorEl.innerHTML = '';
+  const days = document.getElementById('analytics-days').value;
+
+  let analyticsKey = null;
+  try {
+    const snap = await db.collection('private_settings').doc('notifications').get();
+    analyticsKey = snap.exists ? (snap.data().analyticsKey || null) : null;
+  } catch(e) {}
+
+  if (!analyticsKey) {
+    errorEl.innerHTML = '<div class="alert alert-warning">Falta configurar la clave de analíticas. Contacta soporte técnico para activarla.</div>';
+    return;
+  }
+
+  try {
+    const res = await fetch(`${PROVIDER.url}/analytics?days=${days}`, {
+      headers: { 'X-Analytics-Key': analyticsKey },
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+
+    document.getElementById('an-total-visits').textContent = data.totalVisits.toLocaleString();
+    document.getElementById('an-top-country').textContent  = data.byCountry[0]?.[0] || '—';
+    document.getElementById('an-top-device').textContent   = data.byDevice[0]?.[0] || '—';
+    document.getElementById('an-avg-daily').textContent    = data.byDay.length
+      ? Math.round(data.totalVisits / data.byDay.length).toLocaleString()
+      : '0';
+
+    const countryBody = document.getElementById('analytics-country-body');
+    countryBody.innerHTML = data.byCountry.length
+      ? data.byCountry.map(([c,v]) => `<tr><td data-label="País">${c}</td><td data-label="Visitas"><strong>${v.toLocaleString()}</strong></td></tr>`).join('')
+      : '<tr><td colspan="2" style="text-align:center;padding:20px;color:var(--muted)">Sin datos</td></tr>';
+
+    const deviceBody = document.getElementById('analytics-device-body');
+    deviceBody.innerHTML = data.byDevice.length
+      ? data.byDevice.map(([d,v]) => `<tr><td data-label="Dispositivo">${d}</td><td data-label="Visitas"><strong>${v.toLocaleString()}</strong></td></tr>`).join('')
+      : '<tr><td colspan="2" style="text-align:center;padding:20px;color:var(--muted)">Sin datos</td></tr>';
+
+    const dayBody = document.getElementById('analytics-day-body');
+    dayBody.innerHTML = data.byDay.length
+      ? data.byDay.slice().reverse().map(([d,v]) => `<tr><td data-label="Fecha">${d}</td><td data-label="Visitas"><strong>${v.toLocaleString()}</strong></td></tr>`).join('')
+      : '<tr><td colspan="2" style="text-align:center;padding:20px;color:var(--muted)">Sin datos</td></tr>';
+
+  } catch(e) {
+    errorEl.innerHTML = `<div class="alert alert-error">Error al cargar analíticas: ${e.message}</div>`;
+  }
+}
 
 // ── Cupones ───────────────────────────────────────────
 async function loadCoupons() {
