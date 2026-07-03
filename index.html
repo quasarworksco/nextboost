@@ -139,7 +139,6 @@
   <div class="glow-orb" style="width:300px;height:300px;background:var(--accent);top:50%;left:10%"></div>
   <div class="hero-inner">
     <div class="hero-text">
-      <div class="hero-badge">Crecimiento real en redes sociales</div>
       <h1>Impulsa tu<br><span class="gradient-text">Presencia Digital</span><br>hoy mismo</h1>
       <p>Más seguidores, más likes, más visibilidad. Para creadores, marcas y agencias que quieren resultados reales en Instagram, TikTok, YouTube y más — sin esperar meses.</p>
       <div class="hero-btns">
@@ -164,7 +163,9 @@
         <!-- Stat card 1 - Instagram followers -->
         <rect x="30" y="100" width="220" height="64" rx="12" fill="#1e2d50"/>
         <circle cx="52" cy="132" r="14" fill="#e1306c22"/>
-        <text x="47" y="137" fill="#e1306c" font-size="14" font-family="Inter,sans-serif">📷</text>
+        <rect x="45" y="125" width="14" height="14" rx="4" fill="none" stroke="#e1306c" stroke-width="1.6"/>
+        <circle cx="52" cy="132" r="3.2" fill="none" stroke="#e1306c" stroke-width="1.6"/>
+        <circle cx="56.2" cy="127.8" r="1" fill="#e1306c"/>
         <text x="74" y="124" fill="rgba(255,255,255,.5)" font-size="9" font-family="Inter,sans-serif">Instagram · Seguidores</text>
         <text x="74" y="140" fill="white" font-size="16" font-weight="700" font-family="Inter,sans-serif">+12,450</text>
         <text x="74" y="154" fill="#22c55e" font-size="9" font-weight="600" font-family="Inter,sans-serif">▲ Entregando...</text>
@@ -199,7 +200,7 @@
         <!-- Recent order -->
         <rect x="30" y="316" width="220" height="44" rx="12" fill="#1e2d50"/>
         <circle cx="50" cy="338" r="10" fill="#e1306c22"/>
-        <text x="45" y="343" fill="#e1306c" font-size="11" font-family="Inter,sans-serif">♥</text>
+        <path d="M50 342.5c-3-2.4-5-4.1-5-6.1 0-1.4 1.1-2.4 2.5-2.4 1 0 1.9.5 2.5 1.4.6-.9 1.5-1.4 2.5-1.4 1.4 0 2.5 1 2.5 2.4 0 2-2 3.7-5 6.1z" fill="#e1306c"/>
         <text x="68" y="332" fill="rgba(255,255,255,.5)" font-size="9" font-family="Inter,sans-serif">Instagram · Likes</text>
         <text x="68" y="347" fill="white" font-size="11" font-weight="600" font-family="Inter,sans-serif">5,000 likes · $1.20</text>
         <rect x="196" y="328" width="44" height="18" rx="6" fill="#22c55e22"/>
@@ -208,10 +209,21 @@
         <!-- Bottom nav -->
         <rect x="20" y="388" width="240" height="62" rx="0" fill="#0d1633"/>
         <rect x="20" y="388" width="240" height="1" fill="rgba(255,255,255,.06)"/>
-        <text x="50" y="426" fill="#1438cc" font-size="18" font-family="Inter,sans-serif" text-anchor="middle">⊞</text>
-        <text x="110" y="426" fill="rgba(255,255,255,.3)" font-size="18" font-family="Inter,sans-serif" text-anchor="middle">+</text>
-        <text x="170" y="426" fill="rgba(255,255,255,.3)" font-size="18" font-family="Inter,sans-serif" text-anchor="middle">☰</text>
-        <text x="230" y="426" fill="rgba(255,255,255,.3)" font-size="18" font-family="Inter,sans-serif" text-anchor="middle">◎</text>
+        <!-- home (active) -->
+        <rect x="43" y="412" width="6" height="6" rx="1.5" fill="#4d78ff"/>
+        <rect x="51" y="412" width="6" height="6" rx="1.5" fill="#4d78ff"/>
+        <rect x="43" y="420" width="6" height="6" rx="1.5" fill="#4d78ff"/>
+        <rect x="51" y="420" width="6" height="6" rx="1.5" fill="#4d78ff"/>
+        <!-- add -->
+        <rect x="104" y="418" width="13" height="2.4" rx="1.2" fill="rgba(255,255,255,.3)"/>
+        <rect x="109.3" y="412.7" width="2.4" height="13" rx="1.2" fill="rgba(255,255,255,.3)"/>
+        <!-- list -->
+        <rect x="163" y="413" width="14" height="2.4" rx="1.2" fill="rgba(255,255,255,.3)"/>
+        <rect x="163" y="418" width="14" height="2.4" rx="1.2" fill="rgba(255,255,255,.3)"/>
+        <rect x="163" y="423" width="10" height="2.4" rx="1.2" fill="rgba(255,255,255,.3)"/>
+        <!-- profile -->
+        <circle cx="230" cy="416" r="3.4" fill="none" stroke="rgba(255,255,255,.3)" stroke-width="2"/>
+        <path d="M223.5 426c1.2-3 3.7-4.4 6.5-4.4s5.3 1.4 6.5 4.4" fill="none" stroke="rgba(255,255,255,.3)" stroke-width="2" stroke-linecap="round"/>
       </svg>
       <!-- Floating badges -->
       <div class="hero-badge-float hero-badge-float-1">🚀 +12K seguidores</div>
@@ -541,7 +553,7 @@
 </section>
 
 <!-- HOW IT WORKS -->
-<section id="how-it-works">
+<section id="how-it-works" style="background:var(--bg2);max-width:100%;padding-left:40px;padding-right:40px">
   <div style="max-width:900px;margin:0 auto;text-align:center">
     <div class="hero-badge" style="margin:0 auto 20px;display:table">Así de simple</div>
     <h2>Empieza en <span class="gradient-text">menos de 5 minutos</span></h2>
@@ -590,7 +602,7 @@
 </section>
 
 <!-- TESTIMONIALS -->
-<section id="testimonios" style="background:var(--bg2)">
+<section id="testimonios" style="background:var(--bg2);max-width:100%;padding-left:40px;padding-right:40px">
   <div style="max-width:900px;margin:0 auto;text-align:center">
     <div class="hero-badge" style="margin:0 auto 20px;display:table">Testimonios</div>
     <h2>Lo que dicen quienes<br><span class="gradient-text">ya están creciendo</span></h2>
@@ -722,7 +734,7 @@
   </div>
   <div class="footer-bottom">
     <span>© 2026 NextBoost by <strong>DGP Global Group</strong>. Todos los derechos reservados.</span>
-    <span style="color:var(--soft);font-size:11px">Hecho con pasión para el mundo hispanohablante</span>
+    
   </div>
 </footer>
 

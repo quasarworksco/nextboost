@@ -18,6 +18,7 @@
   --red:      #dc2626;
   --yellow:   #d97706;
   --purple:   #7c3aed;
+  --bg2:      #ffffff;
   --radius:   12px;
   --shadow:   0 2px 20px rgba(20,56,204,.07);
   --shadow-m: 0 6px 32px rgba(20,56,204,.13);
@@ -29,6 +30,7 @@
 [data-theme="dark"] {
   --white:    #1a1f2e;
   --off:      #131720;
+  --bg2:      #161b28;
   --navy:     #e8ecff;
   --navy-m:   #c5ccf5;
   --muted:    #7a88bb;
@@ -471,9 +473,46 @@ tr:hover td { background: var(--blue-xs); }
 }
 .hero h1 {
   font-family: 'Bebas Neue', sans-serif;
-  font-size: clamp(56px, 9vw, 104px); letter-spacing: 2px; line-height: 1.0;
+  font-size: clamp(64px, 10.5vw, 122px); letter-spacing: 2px; line-height: .98;
   margin-bottom: 22px; color: var(--navy);
   animation: fadeUp .6s ease .1s both;
+}
+/* Animated gradient sweep on the highlighted hero words */
+.hero .gradient-text {
+  background: linear-gradient(90deg, var(--blue), var(--blue-l), #7c3aed, var(--blue-l), var(--blue));
+  background-size: 300% 100%;
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: gradientSweep 6s ease-in-out infinite;
+}
+@keyframes gradientSweep {
+  0%, 100% { background-position: 0% 50%; }
+  50%      { background-position: 100% 50%; }
+}
+/* Soft glow pulse on the hero primary CTA */
+.hero-btns .btn-primary {
+  animation: ctaGlow 2.8s ease-in-out infinite;
+}
+@keyframes ctaGlow {
+  0%, 100% { box-shadow: 0 4px 18px rgba(20,56,204,.28); }
+  50%      { box-shadow: 0 6px 34px rgba(20,56,204,.55); }
+}
+/* Phone mockup levitates gently */
+.hero-visual svg {
+  animation: phoneFloat 6s ease-in-out infinite;
+}
+@keyframes phoneFloat {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50%      { transform: translateY(-14px) rotate(.6deg); }
+}
+/* Glow orbs breathe */
+.glow-orb { animation: orbPulse 9s ease-in-out infinite; }
+@keyframes orbPulse {
+  0%, 100% { opacity: .15; transform: scale(1); }
+  50%      { opacity: .26; transform: scale(1.15); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero .gradient-text, .hero-btns .btn-primary, .hero-visual svg, .glow-orb { animation: none; }
 }
 .hero p {
   font-size: 18px; color: var(--muted); max-width: 520px;
@@ -504,8 +543,33 @@ section .subtitle { text-align: center; color: var(--muted); margin-bottom: 44px
 /* Scroll-reveal: sections fade up as they enter the viewport */
 .reveal { opacity: 0; transform: translateY(28px); transition: opacity .6s ease, transform .6s ease; }
 .reveal.reveal-visible { opacity: 1; transform: translateY(0); }
+
+/* Staggered card entrances: children animate one-by-one after the
+   section becomes visible — this is what makes the page feel alive */
+.reveal .feature-card, .reveal .platform-card, .reveal .benefit-card,
+.reveal .step-card, .reveal .testimonial-card, .reveal .payment-card,
+.reveal .pricing-card {
+  opacity: 0; transform: translateY(24px) scale(.98);
+  transition: opacity .55s ease, transform .55s cubic-bezier(.22,.9,.36,1);
+}
+.reveal-visible .feature-card, .reveal-visible .platform-card, .reveal-visible .benefit-card,
+.reveal-visible .step-card, .reveal-visible .testimonial-card, .reveal-visible .payment-card,
+.reveal-visible .pricing-card {
+  opacity: 1; transform: translateY(0) scale(1);
+}
+.reveal-visible > * > * > :nth-child(1),  .reveal-visible > * > :nth-child(1)  { transition-delay: .05s; }
+.reveal-visible > * > * > :nth-child(2),  .reveal-visible > * > :nth-child(2)  { transition-delay: .12s; }
+.reveal-visible > * > * > :nth-child(3),  .reveal-visible > * > :nth-child(3)  { transition-delay: .19s; }
+.reveal-visible > * > * > :nth-child(4),  .reveal-visible > * > :nth-child(4)  { transition-delay: .26s; }
+.reveal-visible > * > * > :nth-child(5),  .reveal-visible > * > :nth-child(5)  { transition-delay: .33s; }
+.reveal-visible > * > * > :nth-child(6),  .reveal-visible > * > :nth-child(6)  { transition-delay: .40s; }
+.reveal-visible > * > * > :nth-child(7),  .reveal-visible > * > :nth-child(7)  { transition-delay: .47s; }
+.reveal-visible > * > * > :nth-child(8),  .reveal-visible > * > :nth-child(8)  { transition-delay: .54s; }
+
 @media (prefers-reduced-motion: reduce) {
-  .reveal { opacity: 1; transform: none; transition: none; }
+  .reveal, .reveal .feature-card, .reveal .platform-card, .reveal .benefit-card,
+  .reveal .step-card, .reveal .testimonial-card, .reveal .payment-card,
+  .reveal .pricing-card { opacity: 1; transform: none; transition: none; }
 }
 
 /* ─── FEATURE CARDS ──────────────────────────────────────── */
@@ -1126,7 +1190,7 @@ section .subtitle { text-align: center; color: var(--muted); margin-bottom: 44px
   .page { padding: 14px; }
   .topbar { padding: 12px 16px; }
   .topbar-title { font-size: 20px; }
-  .hero h1 { font-size: 48px; }
+  .hero h1 { font-size: clamp(52px, 15vw, 62px); }
   .cta-section { padding: 60px 20px; }
 
   /* Tighter section headings on small screens */
