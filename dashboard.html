@@ -1189,19 +1189,36 @@ function showOrderDetail(orderId) {
       <div class="info-row"><span class="info-label">Estado</span><span class="info-val">${statusBadge(o.status)}</span></div>
       ${o.remains !== null && o.remains !== undefined ? `<div class="info-row"><span class="info-label">Restantes</span><span class="info-val">${o.remains}</span></div>` : ''}
       ${o.startCount !== null && o.startCount !== undefined ? `<div class="info-row"><span class="info-label">Inicio</span><span class="info-val">${o.startCount}</span></div>` : ''}
-      ${(o.remains !== null && o.remains !== undefined && o.quantity) ? (() => {
+      ${o.quantity ? (() => {
         const qty       = parseInt(o.quantity);
-        const remains   = Math.max(0, Math.min(qty, parseInt(o.remains) || 0));
-        const delivered = qty - remains;
-        const pct = Math.min(100, Math.round((delivered / qty) * 100));
+        const status    = (o.status || '').toLowerCase();
+        const completed = status === 'completed';
+        const remainsRaw = parseInt(o.remains);
+        const hasRemains = Number.isFinite(remainsRaw);
+
+        let pct, delivered;
+        if (completed) {
+          // Terminal state: always full bar
+          pct = 100;
+          delivered = hasRemains ? qty - Math.max(0, Math.min(qty, remainsRaw)) : qty;
+        } else if (hasRemains) {
+          const remains = Math.max(0, Math.min(qty, remainsRaw));
+          delivered = qty - remains;
+          // Never show 100% while the provider still marks it in progress
+          pct = Math.min(99, Math.round((delivered / qty) * 100));
+        } else {
+          // No delivery data yet from provider — don't fake a bar
+          return `<div style="font-size:12px;color:var(--muted);margin-top:8px">Progreso: esperando datos del proveedor. Usa "Sincronizar" para actualizar.</div>`;
+        }
+
         return `<div style="margin-top:8px">
           <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:6px">
-            <span>Progreso de entrega</span><span>${pct}%</span>
+            <span>Progreso de entrega</span><span>${pct}%${completed ? '' : ' · en progreso'}</span>
           </div>
           <div style="background:var(--border);border-radius:99px;height:8px;overflow:hidden">
-            <div style="width:${pct}%;height:100%;background:${pct===100?'var(--green)':'var(--blue)'};border-radius:99px;transition:width .5s"></div>
+            <div style="width:${pct}%;height:100%;background:${completed?'var(--green)':'var(--blue)'};border-radius:99px;transition:width .5s"></div>
           </div>
-          <div style="font-size:11px;color:var(--muted);margin-top:4px">${delivered.toLocaleString()} de ${parseInt(o.quantity).toLocaleString()} entregados</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px">${delivered.toLocaleString()} de ${qty.toLocaleString()} entregados</div>
         </div>`;
       })() : ''}
       <div class="info-row"><span class="info-label">ID proveedor</span><span class="info-val" style="font-family:monospace">${o.providerOrderId||'—'}</span></div>
