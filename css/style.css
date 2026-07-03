@@ -438,6 +438,7 @@ tr:hover td { background: var(--blue-xs); }
 .logo span { color: var(--blue); }
 .logo-img { height: 30px; width: auto; display: block; }
 .logo-img-xl { height: 44px; }
+.sidebar-logo .logo-img { height: 24px; }
 .nav-links { display: flex; align-items: center; gap: 6px; }
 .nav-links a {
   color: var(--navy); font-size: 13px; font-weight: 700;
