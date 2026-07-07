@@ -751,6 +751,10 @@
             <div style="display:flex;gap:10px;flex-wrap:wrap">
               <button class="btn btn-primary" onclick="saveTelegramSettings()">Guardar</button>
               <button class="btn btn-outline" onclick="testTelegramNotif()">Enviar mensaje de prueba</button>
+              <button class="btn btn-outline" onclick="testLowBalanceAlert()">Probar alerta de saldo bajo</button>
+            </div>
+            <div style="font-size:12px;color:var(--muted);margin-top:10px;padding-top:10px;border-top:1.5px solid var(--border)">
+              Recibirás una alerta automática por Telegram cuando tu saldo con el proveedor baje de <strong>$10 USD</strong>, para que ningún pedido de tus clientes falle. Se envía una sola vez por episodio y se reactiva cuando recargas.
             </div>
           </div>
         </div>
@@ -942,11 +946,39 @@ async function loadOverview() {
 }
 
 // ── Provider balance ──────────────────────────────────
+const PROVIDER_LOW_THRESHOLD = 10; // USD — alert admin below this
 async function checkProviderBalance() {
   try {
     const res = await SmmAPI.getBalance();
-    document.getElementById('provider-balance').textContent = formatUSD2(res.balance);
+    const bal = parseFloat(res.balance);
+    document.getElementById('provider-balance').textContent = formatUSD2(bal);
+    maybeAlertLowProviderBalance(bal, res.currency || 'USD');
   } catch(e) { document.getElementById('provider-balance').textContent = '$—'; }
+}
+
+// Alert to Telegram when provider wallet drops below threshold.
+// Anti-spam: alert once per low episode; re-arms only after balance recovers.
+async function maybeAlertLowProviderBalance(bal, currency) {
+  if (!Number.isFinite(bal)) return;
+  const KEY = 'nb_provider_low_alerted';
+  const alreadyAlerted = localStorage.getItem(KEY) === '1';
+
+  if (bal >= PROVIDER_LOW_THRESHOLD) {
+    // Recovered — clear the flag so a future drop alerts again
+    if (alreadyAlerted) localStorage.removeItem(KEY);
+    return;
+  }
+  // Below threshold
+  if (alreadyAlerted) return;               // already warned this episode
+  // Telegram config may not have loaded yet (parallel init) — ensure it
+  if (!_tgToken || !_tgChatId) { await loadTelegramConfig(); }
+  if (!_tgToken || !_tgChatId) return;      // no Telegram configured
+
+  const msg = `⚠️ <b>Saldo bajo con el proveedor</b>\n\n`
+            + `Tu saldo actual es <b>${formatUSD2(bal)} ${currency}</b>, por debajo del mínimo de ${formatUSD2(PROVIDER_LOW_THRESHOLD)}.\n\n`
+            + `<i>Recarga tu billetera con el proveedor para que los pedidos de tus clientes no fallen.</i>`;
+  const result = await sendTelegramMessage(_tgToken, _tgChatId, msg);
+  if (result.ok) localStorage.setItem(KEY, '1');
 }
 
 // ── Telegram notification config ───────────────────────
@@ -992,6 +1024,24 @@ async function testTelegramNotif() {
   } else {
     alertEl.innerHTML = `<div class="alert alert-error mt-2">Error: ${result.error || 'No se pudo conectar con Telegram'}</div>`;
   }
+  setTimeout(() => alertEl.innerHTML = '', 5000);
+}
+
+async function testLowBalanceAlert() {
+  const alertEl = document.getElementById('settings-tg-alert');
+  const token  = document.getElementById('settings-tg-token').value.trim();
+  const chatId = document.getElementById('settings-tg-chatid').value.trim();
+  if (!token || !chatId) {
+    alertEl.innerHTML = '<div class="alert alert-error mt-2">Ingresa el token y el Chat ID primero.</div>';
+    return;
+  }
+  const msg = `⚠️ <b>Saldo bajo con el proveedor</b> (prueba)\n\n`
+            + `Ejemplo: tu saldo bajó a <b>$8.50 USD</b>, por debajo del mínimo de ${formatUSD2(PROVIDER_LOW_THRESHOLD)}.\n\n`
+            + `<i>Así se verá la alerta real cuando ocurra.</i>`;
+  const result = await sendTelegramMessage(token, chatId, msg);
+  alertEl.innerHTML = result.ok
+    ? '<div class="alert alert-success mt-2">Alerta de prueba enviada. Revisa tu Telegram.</div>'
+    : `<div class="alert alert-error mt-2">Error: ${result.error || 'No se pudo conectar con Telegram'}</div>`;
   setTimeout(() => alertEl.innerHTML = '', 5000);
 }
 
