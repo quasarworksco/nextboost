@@ -78,7 +78,7 @@
   const _platform = new URLSearchParams(location.search).get('platform');
   if (_platform) {
     const badge = document.getElementById('platform-badge');
-    badge.textContent = '📲 Regístrate para ver servicios de ' + _platform;
+    badge.textContent = 'Regístrate para ver servicios de ' + _platform;
     badge.style.display = 'block';
   }
 
@@ -95,7 +95,7 @@
     const confirm  = document.getElementById('confirm').value;
 
     if (password !== confirm) {
-      alertEl.innerHTML = '<div class="alert alert-error">❌ Las contraseñas no coinciden.</div>';
+      alertEl.innerHTML = '<div class="alert alert-error">Las contraseñas no coinciden.</div>';
       return;
     }
 

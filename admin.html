@@ -258,7 +258,7 @@
           <div class="card-header flex items-center justify-between">
             <span>Solicitudes de recarga</span>
             <div style="display:flex;gap:8px">
-              <button class="btn btn-ghost btn-sm" onclick="exportRechargesCSV()">⬇ CSV</button>
+              <button class="btn btn-ghost btn-sm" onclick="exportRechargesCSV()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> CSV</button>
               <select class="select" id="recharge-filter" style="width:160px" onchange="loadAdminRecharges()">
                 <option value="pending">Pendientes</option>
                 <option value="approved">Aprobadas</option>
@@ -299,7 +299,7 @@
           <div class="card-header flex items-center justify-between">
             <span>Todos los pedidos <span id="admin-orders-count" style="font-size:13px;font-weight:400;color:var(--muted)"></span></span>
             <div style="display:flex;gap:8px">
-              <button class="btn btn-ghost btn-sm" onclick="exportOrdersCSV()">⬇ CSV</button>
+              <button class="btn btn-ghost btn-sm" onclick="exportOrdersCSV()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> CSV</button>
               <span id="admin-sync-last" style="font-size:11px;color:var(--muted)"></span>
               <button class="btn btn-ghost btn-sm" onclick="syncAllOrders()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg> Sincronizar</button>
             </div>
@@ -550,7 +550,7 @@
                 <option value="7" selected>Últimos 7 días</option>
                 <option value="30">Últimos 30 días</option>
               </select>
-              <button class="btn btn-ghost btn-sm" onclick="loadSiteAnalytics()">↻ Actualizar</button>
+              <button class="btn btn-ghost btn-sm" onclick="loadSiteAnalytics()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg> Actualizar</button>
             </div>
           </div>
           <div class="card-body">
@@ -988,7 +988,7 @@ async function testTelegramNotif() {
   const result = await sendTelegramMessage(token, chatId,
     '✅ <b>NextBoost</b> — Notificaciones configuradas correctamente. Este es un mensaje de prueba.');
   if (result.ok) {
-    alertEl.innerHTML = '<div class="alert alert-success mt-2">✓ Mensaje enviado. Revisa tu Telegram.</div>';
+    alertEl.innerHTML = '<div class="alert alert-success mt-2">Mensaje enviado. Revisa tu Telegram.</div>';
   } else {
     alertEl.innerHTML = `<div class="alert alert-error mt-2">Error: ${result.error || 'No se pudo conectar con Telegram'}</div>`;
   }
@@ -1108,7 +1108,7 @@ async function testEmailNotif() {
       amount:       '$10.00',
       new_balance:  '$10.00',
     });
-    alertEl.innerHTML = '<div class="alert alert-success mt-2">✓ Email de prueba enviado a ' + adminUser.email + '</div>';
+    alertEl.innerHTML = '<div class="alert alert-success mt-2">Email de prueba enviado a ' + adminUser.email + '</div>';
   } catch(e) {
     alertEl.innerHTML = `<div class="alert alert-error mt-2">Error: ${e.text || e.message}</div>`;
   }
@@ -1255,10 +1255,10 @@ async function loadAdminRecharges() {
         ` : r.status === 'approved' ? `
           <div style="display:flex;flex-direction:column;gap:6px;min-width:90px">
             <button class="btn btn-outline btn-sm" style="color:var(--red);border-color:var(--red);width:100%" onclick="revertRecharge('${r.id}','${r.userId}',${r.amount})">↩ Revertir</button>
-            <button class="btn btn-ghost btn-sm" style="width:100%" onclick="deleteRecharge('${r.id}')">🗑 Eliminar</button>
+            <button class="btn btn-ghost btn-sm" style="width:100%" onclick="deleteRecharge('${r.id}')">Eliminar</button>
           </div>
         ` : `
-          <button class="btn btn-ghost btn-sm" style="width:100%" onclick="deleteRecharge('${r.id}')">🗑 Eliminar</button>
+          <button class="btn btn-ghost btn-sm" style="width:100%" onclick="deleteRecharge('${r.id}')">Eliminar</button>
         `}
       </td>
     </tr>`).join('');
@@ -1338,7 +1338,7 @@ async function loadCoupons() {
     const expired = c.expiresAt && c.expiresAt.toDate() < new Date();
     const expiryStr = c.expiresAt
       ? `<span style="color:${expired ? 'var(--red)' : 'var(--muted)'}">
-          ${expired ? '⚠ ' : ''}${c.expiresAt.toDate().toLocaleDateString('es', {day:'2-digit',month:'short',year:'numeric'})}
+          ${expired ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> ' : ''}${c.expiresAt.toDate().toLocaleDateString('es', {day:'2-digit',month:'short',year:'numeric'})}
          </span>`
       : '<span style="color:var(--muted)">Sin límite</span>';
     return `<tr>
@@ -1350,7 +1350,7 @@ async function loadCoupons() {
       <td data-label="Estado">${c.active && !expired ? '<span class="badge badge-active">Activo</span>' : '<span class="badge badge-canceled">Inactivo</span>'}</td>
       <td data-label="" style="display:flex;gap:6px">
         <button class="btn btn-ghost btn-sm" onclick="toggleCoupon('${d.id}',${!!c.active})">${c.active ? 'Desactivar' : 'Activar'}</button>
-        <button class="btn btn-ghost btn-sm" style="color:var(--red)" onclick="deleteCoupon('${d.id}')">🗑</button>
+        <button class="btn btn-ghost btn-sm" style="color:var(--red)" onclick="deleteCoupon('${d.id}')">Eliminar</button>
       </td>
     </tr>`;
   }).join('');
