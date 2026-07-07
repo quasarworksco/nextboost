@@ -647,7 +647,7 @@
               </div>
 
               <div style="border-top:1.5px solid var(--border);margin:20px 0;padding-top:16px">
-                <div style="font-weight:700;font-size:13px;color:var(--navy);margin-bottom:12px">📱 Pago Móvil (Bolívares — Tasa BCV)</div>
+                <div style="font-weight:700;font-size:13px;color:var(--navy);margin-bottom:12px">Pago Móvil (Bolívares — Tasa BCV)</div>
                 <div class="form-group">
                   <label>Nombre y apellido del titular</label>
                   <input type="text" class="input" id="settings-pm-name" placeholder="Juan Pérez">
@@ -665,6 +665,24 @@
                   <input type="text" class="input" id="settings-pm-bank" placeholder="Banco de Venezuela">
                 </div>
                 <div style="font-size:12px;color:var(--muted);margin-bottom:8px">Si dejas estos campos vacíos, la opción de Pago Móvil no se muestra a los clientes. El monto en Bs se calcula automáticamente con la tasa BCV del día.</div>
+              </div>
+
+              <div style="border-top:1.5px solid var(--border);margin:20px 0;padding-top:16px">
+                <div style="font-weight:700;font-size:13px;color:var(--navy);margin-bottom:12px">Nequi (Pesos colombianos)</div>
+                <div class="form-group">
+                  <label>Nombre del titular</label>
+                  <input type="text" class="input" id="settings-nequi-name" placeholder="Juan Pérez">
+                </div>
+                <div class="form-group">
+                  <label>Número Nequi</label>
+                  <input type="text" class="input" id="settings-nequi-phone" placeholder="300 1234567">
+                </div>
+                <div class="form-group">
+                  <label>Tasa COP por USD</label>
+                  <input type="number" class="input" id="settings-cop-rate" placeholder="4000" min="1" step="1">
+                  <div style="font-size:12px;color:var(--muted);margin-top:4px">Cuántos pesos colombianos equivale 1 USD. Ej: 4000 → mínimo $5 = 20.000 COP.</div>
+                </div>
+                <div style="font-size:12px;color:var(--muted);margin-bottom:8px">Si dejas nombre y número vacíos, la opción de Nequi no se muestra a los clientes.</div>
               </div>
               <div class="form-group">
                 <label>WhatsApp de soporte (con código de país)</label>
@@ -2363,6 +2381,9 @@ async function loadSettings() {
   document.getElementById('settings-pm-phone').value   = d.pmPhone    || '';
   document.getElementById('settings-pm-cedula').value  = d.pmCedula   || '';
   document.getElementById('settings-pm-bank').value    = d.pmBank     || '';
+  document.getElementById('settings-nequi-name').value  = d.nequiName  || '';
+  document.getElementById('settings-nequi-phone').value = d.nequiPhone || '';
+  document.getElementById('settings-cop-rate').value    = d.copRate    || '4000';
   document.getElementById('settings-whatsapp').value          = d.whatsapp          || '';
   document.getElementById('settings-min-recharge').value       = d.minRecharge      || '5';
   document.getElementById('settings-min-recharge-zelle').value = d.minRechargeZelle || '25';
@@ -2532,6 +2553,9 @@ document.getElementById('save-payments-btn').addEventListener('click', async () 
     pmPhone:   document.getElementById('settings-pm-phone').value.trim(),
     pmCedula:  document.getElementById('settings-pm-cedula').value.trim(),
     pmBank:    document.getElementById('settings-pm-bank').value.trim(),
+    nequiName:  document.getElementById('settings-nequi-name').value.trim(),
+    nequiPhone: document.getElementById('settings-nequi-phone').value.trim(),
+    copRate:    parseFloat(document.getElementById('settings-cop-rate').value) || 4000,
     whatsapp:         document.getElementById('settings-whatsapp').value.trim(),
     minRecharge:      parseFloat(document.getElementById('settings-min-recharge').value) || 5,
     minRechargeZelle: parseFloat(document.getElementById('settings-min-recharge-zelle').value) || 25,

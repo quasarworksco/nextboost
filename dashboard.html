@@ -307,6 +307,7 @@
                     <option value="zelle">Zelle — 1-2 horas</option>
                     <option value="usdt">USDT TRC20 — Instantáneo</option>
                     <option value="pagomovil" id="pm-option" style="display:none">Pago Móvil (Bs.) — Tasa BCV</option>
+                    <option value="nequi" id="nequi-option" style="display:none">Nequi (COP) — Pesos colombianos</option>
                     <option value="paypal">PayPal — A consultar</option>
                   </select>
                 </div>
@@ -724,7 +725,7 @@ requireAuth(async user => {
 function showBalanceToast(diff) {
   const el = document.createElement('div');
   el.style.cssText = 'position:fixed;top:20px;right:20px;z-index:9999;background:var(--green,#22c55e);color:#fff;padding:12px 20px;border-radius:12px;font-weight:700;font-size:14px;box-shadow:0 4px 20px rgba(0,0,0,.15);animation:slideInRight .3s ease';
-  el.textContent = `+$${diff} añadido a tu saldo 💰`;
+  el.textContent = `+$${diff} añadido a tu saldo`;
   document.body.appendChild(el);
   setTimeout(() => el.remove(), 4000);
 }
@@ -1327,6 +1328,12 @@ function updatePaymentInstructions() {
   const pmOpt = document.getElementById('pm-option');
   if (pmOpt) pmOpt.style.display = pmConfigured ? '' : 'none';
 
+  // Show Nequi option only if admin configured it
+  const nequiConfigured = !!(s.nequiName && s.nequiPhone);
+  const copRate = parseFloat(s.copRate) || 4000;
+  const nequiOpt = document.getElementById('nequi-option');
+  if (nequiOpt) nequiOpt.style.display = nequiConfigured ? '' : 'none';
+
   // Update minimum amount based on method
   const minGeneral = parseFloat(s.minRecharge) || 5;
   const minZelle   = parseFloat(s.minRechargeZelle) || 25;
@@ -1348,7 +1355,23 @@ function updatePaymentInstructions() {
     paypal: 'PayPal requiere coordinación previa. Contáctanos por WhatsApp para indicarte la cuenta correcta.',
   };
 
-  if (method === 'pagomovil') {
+  if (method === 'nequi') {
+    if (!nequiConfigured) {
+      box.innerHTML = '<span style="color:var(--muted)">Administrador aún no configuró Nequi.</span>';
+    } else {
+      const amount = parseFloat(document.getElementById('recharge-amount').value) || 0;
+      const copStr = amount > 0
+        ? `<div style="margin-top:8px;padding:10px 14px;background:var(--blue-xs);border-radius:8px;font-size:15px">Debes transferir: <strong style="color:var(--blue)">$${(amount * copRate).toLocaleString('es-CO', {minimumFractionDigits:0, maximumFractionDigits:0})} COP</strong></div>`
+        : '';
+      box.innerHTML = `
+        <strong style="color:var(--navy)">Datos de Nequi:</strong><br>
+        Titular: <strong>${s.nequiName}</strong><br>
+        Número Nequi: <strong>${s.nequiPhone}</strong><br>
+        <span style="font-size:12px;color:var(--muted)">Tasa: <strong>$${copRate.toLocaleString('es-CO')} COP</strong> por USD · Mínimo $5 USD (${(5*copRate).toLocaleString('es-CO')} COP)</span>
+        ${copStr}
+        <div style="font-size:12px;color:var(--muted);margin-top:8px">Ingresa arriba el monto en USD que quieres recargar — te mostramos el equivalente exacto en pesos colombianos. Guarda el comprobante de la transferencia.</div>`;
+    }
+  } else if (method === 'pagomovil') {
     if (!pmConfigured) {
       box.innerHTML = '<span style="color:var(--muted)">Administrador aún no configuró Pago Móvil.</span>';
     } else {
